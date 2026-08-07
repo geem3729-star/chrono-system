@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Character Encoding -->
+    <meta charset="UTF-8">
+
+    <!-- Responsive Design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Browser Title -->
+    <title>Chronos System V4</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    
+
+    <!-- ==========================
+         MAIN CONTAINER
+    =========================== -->
+
+    <div class="container">
+
+        <header>
+
+            <h1>⏳ CHRONOS SYSTEM</h1>
+
+            <p>
+                Academic Countdown & Progress Dashboard
+            </p>
+
+        </header>
+<!-- ==========================
+             EVENT FORM - WITH THUMBNAIL
+        =========================== -->
+
+        <section class="form">
+
+            <h2>Add Assessment</h2>
+
+            <!-- Event Title -->
+            <div class="input-group">
+                <label>Assessment Name</label>
+                <input type="text" id="eventTitle" placeholder="Example: Practical 2">
+            </div>
+
+            <!-- Category -->
+            <div class="input-group">
+                <label>Category</label>
+                <select id="category">
+                    <option value="Academic">📚 Academic</option>
+                    <option value="Project">💻 Project</option>
+                    <option value="Personal">🏠 Personal</option>
+                </select>
+            </div>
+
+            <!-- Module -->
+            <div class="input-group">
+                <label>Module</label>
+                <select id="module">
+                    <option value="CMPG172">CMPG172</option>
+                    <option value="MTHS171">MTHS171</option>
+                    <option value="MTHS172">MTHS172</option>
+                    <option value="APPM172">APPM172</option>
+                    <option value="STTN111">STTN111</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- Assessment Type -->
+            <div class="input-group">
+                <label>Assessment Type</label>
+                <select id="assessmentType">
+                    <option value="Assignment">Assignment</option>
+                    <option value="Homework">Homework</option>
+                    <option value="Tutorial">Tutorial</option>
+                    <option value="Quiz">Quiz</option>
+                    <option value="Practical">Practical</option>
+                    <option value="Semester Test">Semester Test</option>
+                    <option value="Project">Project</option>
+                    <option value="Exam">Exam</option>
+                </select>
+            </div>
+
+            <!-- Assessment Weight -->
+            <div class="input-group">
+                <label>Weight (%)</label>
+                <input type="number" id="weight" placeholder="20">
+            </div>
+
+            <!-- Current Mark -->
+            <div class="input-group">
+                <label>Current Mark (%)</label>
+                <input type="number" id="currentMark" placeholder="65">
+            </div>
+
+            <!-- Target Mark -->
+            <div class="input-group">
+                <label>Target Mark (%)</label>
+                <input type="number" id="targetMark" placeholder="75">
+            </div>
+
+            <!-- Deadline Date -->
+            <div class="input-group">
+                <label>Deadline Date</label>
+                <input type="date" id="eventDate">
+            </div>
+
+            <!-- Deadline Time -->
+            <div class="input-group">
+                <label>Deadline Time</label>
+                <input type="time" id="eventTime">
+            </div>
+
+            <!-- ===== CONSEQUENCE ===== -->
+            <div class="input-group">
+                <label>⚠️ CONSEQUENCE (What happens if you fail?)</label>
+                <input type="text" id="consequence" placeholder="Example: Fail the module, lose scholarship, etc.">
+            </div>
+
+            <!-- ===== SEVERITY ===== -->
+            <div class="input-group">
+                <label>🔥 SEVERITY</label>
+                <select id="severity">
+                    <option value="low">🟢 Low - Minor impact</option>
+                    <option value="medium" selected>🟡 Medium - Significant impact</option>
+                    <option value="high">🟠 High - Major setback</option>
+                    <option value="critical">🔴 CRITICAL - Life-changing</option>
+                </select>
+            </div>
+
+            <!-- ===== NEW: THUMBNAIL IMAGE ===== -->
+            <div class="input-group">
+                <label>🖼️ Thumbnail Image (Optional)</label>
+                <input type="file" id="thumbnail" accept="image/*">
+                <small style="color: #666; font-size: 0.7rem; display: block; margin-top: 4px;">
+                    Upload an image to show inside the deadline card
+                </small>
+            </div>
+
+            <!-- Add Button -->
+            <button id="addButton">➕ Add Assessment</button>
+
+        </section>
+
+        <!-- ==========================
+             DASHBOARD
+        =========================== -->
+
+        <section class="dashboard">
+
+            <h2>Dashboard</h2>
+
+            <div class="dashboard-grid">
+
+                <div class="dashboard-card">
+                    <h3>Total Assessments</h3>
+                    <h1 id="totalAssessments">0</h1>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Average Mark</h3>
+                    <h1 id="averageMark">0%</h1>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Upcoming Deadlines</h3>
+                    <h1 id="upcomingCount">0</h1>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Target Average</h3>
+                    <h1 id="targetAverage">0%</h1>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ==========================
+             COUNTDOWN LIST
+        =========================== -->
+
+        <section>
+
+            <h2>Upcoming Countdowns</h2>
+
+            <div id="eventsContainer">
+                <!-- JavaScript will create cards here -->
+            </div>
+
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
