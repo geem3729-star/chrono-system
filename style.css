@@ -800,14 +800,15 @@ button.delete-btn:hover {
     stroke-linecap: round;
     transition: stroke-dashoffset 1s ease;
 }
+
 /* ===========================================
-   CARD THUMBNAIL - BIGGER & BETTER
+   CARD THUMBNAIL - SHOW FULL IMAGE
    =========================================== */
 
 .card-thumbnail {
     width: 100%;
     height: 220px !important;
-    background-size: cover;
+    background-size: contain;  /* CHANGE: was 'cover' - now shows FULL image */
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 16px;
@@ -816,6 +817,7 @@ button.delete-btn:hover {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.3); /* Adds dark background for empty space */
 }
 
 .card-thumbnail:hover {
@@ -823,6 +825,7 @@ button.delete-btn:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
+/* No image placeholder */
 .card-thumbnail.no-image {
     background: linear-gradient(135deg, rgba(255, 140, 0, 0.08), rgba(255, 140, 0, 0.02));
     display: flex;
@@ -876,7 +879,6 @@ button.delete-btn:hover {
 @media (max-width: 600px) {
     .card-thumbnail {
         height: 180px !important;
-        border-radius: 12px;
     }
     .card-thumbnail.no-image {
         min-height: 100px;
