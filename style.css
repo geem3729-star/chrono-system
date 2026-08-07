@@ -801,79 +801,71 @@ button.delete-btn:hover {
     transition: stroke-dashoffset 1s ease;
 }
 /* ===========================================
-   CARD THUMBNAIL IMAGE
+   CARD THUMBNAIL - BIGGER & BETTER
    =========================================== */
 
 .card-thumbnail {
     width: 100%;
-    height: 140px;
+    height: 220px !important;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-radius: 12px;
-    margin-bottom: 14px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    transition: all 0.3s ease;
 }
 
 .card-thumbnail:hover {
-    transform: scale(1.01);
-    border-color: rgba(255, 140, 0, 0.3);
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* If no image, show a gradient placeholder */
 .card-thumbnail.no-image {
-    background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(255, 140, 0, 0.01));
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.08), rgba(255, 140, 0, 0.02));
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80px;
-    height: auto;
-    padding: 20px;
-    border: 1px dashed rgba(255, 140, 0, 0.15);
+    min-height: 120px;
+    height: auto !important;
+    padding: 30px;
+    border: 2px dashed rgba(255, 140, 0, 0.1);
+    color: #555;
+    font-size: 0.9rem;
 }
 
-.card-thumbnail.no-image::after {
-    content: '🖼️ No Thumbnail';
-    color: #444;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-/* Dark overlay on thumbnail for text readability */
 .card-thumbnail .overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 20px 16px 12px 16px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    padding: 30px 16px 14px 16px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
 }
 
 .card-thumbnail .overlay .module-tag {
     display: inline-block;
-    padding: 3px 12px;
-    background: rgba(255, 140, 0, 0.2);
+    padding: 4px 14px;
+    background: rgba(255, 140, 0, 0.25);
     backdrop-filter: blur(10px);
     border-radius: 50px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: #ff8c00;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.15);
 }
 
 .card-thumbnail .overlay .category-tag {
     display: inline-block;
-    padding: 3px 12px;
-    background: rgba(255, 255, 255, 0.06);
+    padding: 4px 14px;
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
     border-radius: 50px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #aaa;
     text-transform: uppercase;
@@ -881,26 +873,13 @@ button.delete-btn:hover {
     margin-left: 6px;
 }
 
-/* Card content adjusts when thumbnail exists */
-.card.has-thumbnail .card-content {
-    padding-top: 0;
-}
-
-.card.has-thumbnail .card-thumbnail {
-    height: 160px;
-}
-
-/* Mobile adjustments */
 @media (max-width: 600px) {
     .card-thumbnail {
-        height: 100px;
+        height: 180px !important;
+        border-radius: 12px;
     }
-    .card.has-thumbnail .card-thumbnail {
-        height: 120px;
-    }
-    .card-thumbnail .overlay .module-tag,
-    .card-thumbnail .overlay .category-tag {
-        font-size: 0.55rem;
-        padding: 2px 10px;
+    .card-thumbnail.no-image {
+        min-height: 100px;
+        padding: 20px;
     }
 }
