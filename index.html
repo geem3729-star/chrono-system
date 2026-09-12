@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chronos System - Login</title>
+<title>Chronos System</title>
 <style>
 * {
     margin: 0;
@@ -19,9 +19,8 @@ body {
 }
 
 /* ===========================================
-   LOGIN / SIGNUP SCREEN
+   AUTH SCREEN
    =========================================== */
-
 #authScreen {
     display: flex;
     justify-content: center;
@@ -40,11 +39,7 @@ body {
     width: 100%;
     max-width: 420px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.auth-logo {
     text-align: center;
-    margin-bottom: 30px;
 }
 
 .auth-logo h1 {
@@ -60,87 +55,43 @@ body {
 .auth-logo p {
     color: #666;
     font-size: 0.9rem;
-    margin-top: 4px;
+    margin-top: 6px;
+    margin-bottom: 32px;
 }
 
-.auth-tabs {
+.google-btn {
     display: flex;
-    gap: 8px;
-    background: #1a1a26;
-    padding: 5px;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ddd;
     border-radius: 12px;
-    margin-bottom: 24px;
-}
-
-.auth-tab {
-    flex: 1;
-    padding: 10px;
-    background: transparent;
-    border: none;
-    color: #666;
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.auth-tab.active {
-    background: #ff8c00;
-    color: #fff;
-}
-
-.auth-form .input-group {
-    margin-bottom: 16px;
-}
-
-.auth-form .input-group label {
-    display: block;
-    color: #888;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.auth-form .input-group input {
-    width: 100%;
-    padding: 14px 16px;
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border 0.3s;
-}
-
-.auth-form .input-group input:focus {
-    border-color: #ff8c00;
-}
-
-.auth-submit {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #ff8c00, #e67600);
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-top: 8px;
+    margin-bottom: 20px;
 }
 
-.auth-submit:hover {
+.google-btn:hover {
+    background: #f5f5f5;
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255, 140, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+}
+
+.google-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.auth-hint {
+    color: #555;
+    font-size: 0.75rem;
+    line-height: 1.6;
 }
 
 .auth-error {
@@ -150,22 +101,13 @@ body {
     border-radius: 10px;
     padding: 10px 14px;
     font-size: 0.8rem;
-    margin-bottom: 16px;
+    margin-top: 16px;
     display: none;
-}
-
-.auth-hint {
-    text-align: center;
-    color: #555;
-    font-size: 0.75rem;
-    margin-top: 20px;
-    line-height: 1.6;
 }
 
 /* ===========================================
    MAIN APP
    =========================================== */
-
 #mainApp {
     display: none;
     padding: 24px;
@@ -241,7 +183,7 @@ header p {
     border-color: rgba(239, 68, 68, 0.3);
 }
 
-/* ---------- FORM ---------- */
+/* FORM */
 .form {
     background: #16161f;
     border: 1px solid #2a2a3a;
@@ -350,7 +292,7 @@ header p {
     border-color: #f87171;
 }
 
-/* ---------- DASHBOARD ---------- */
+/* DASHBOARD */
 .dashboard { margin-bottom: 40px; }
 
 .dashboard h2 {
@@ -401,7 +343,7 @@ header p {
     background-clip: text;
 }
 
-/* ---------- EVENTS ---------- */
+/* EVENTS */
 #eventsContainer {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -702,6 +644,29 @@ header p {
 
 .empty-state h3 { color: #555; font-weight: 400; }
 
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #ff8c00;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #1a1a26;
+    border-top-color: #ff8c00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0d0d14; }
 ::-webkit-scrollbar-thumb { background: #ff8c00; border-radius: 10px; }
@@ -709,70 +674,34 @@ header p {
 </head>
 <body>
 
-<!-- ===========================================
-     AUTH SCREEN (LOGIN / SIGNUP)
-     =========================================== -->
-<div id="authScreen">
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <p>Loading Chronos...</p>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" style="display: none;">
     <div class="auth-box">
         <div class="auth-logo">
-            <h1>⏳ CHRONOS</h1>
+            <h1>⏳ MASTER TIMING</h1>
             <p>Your time. Your rules.</p>
+            <p>TIME WASTED NEVER REGAINED</p>
         </div>
-
-        <div class="auth-tabs">
-            <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
-            <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
-        </div>
-
-        <div class="auth-error" id="authError"></div>
-
-        <!-- LOGIN FORM -->
-        <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
-            <div class="input-group">
-                <label>👤 Username</label>
-                <input type="text" id="loginUser" placeholder="Enter username" required>
-            </div>
-            <div class="input-group">
-                <label>🔒 Password</label>
-                <input type="password" id="loginPass" placeholder="Enter password" required>
-            </div>
-            <button type="submit" class="auth-submit">Sign In</button>
-        </form>
-
-        <!-- SIGNUP FORM -->
-        <form class="auth-form" id="signupForm" style="display: none;" onsubmit="handleSignup(event)">
-            <div class="input-group">
-                <label>👤 Username</label>
-                <input type="text" id="signupUser" placeholder="Choose a username" required minlength="3">
-            </div>
-            <div class="input-group">
-                <label>📧 Email (optional)</label>
-                <input type="email" id="signupEmail" placeholder="you@example.com">
-            </div>
-            <div class="input-group">
-                <label>🔒 Password</label>
-                <input type="password" id="signupPass" placeholder="Min 4 characters" required minlength="4">
-            </div>
-            <div class="input-group">
-                <label>🔒 Confirm Password</label>
-                <input type="password" id="signupPassConfirm" placeholder="Repeat password" required minlength="4">
-            </div>
-            <button type="submit" class="auth-submit">Create Account</button>
-        </form>
-
+        <button id="googleSignInBtn" class="google-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Sign In with Google
+        </button>
         <p class="auth-hint">
-            🔐 Your account is stored locally in your browser.<br>
-            No server. No tracking. Just you and your time.
+            🔐 Sign in with your Google account to sync your deadlines across all devices.
         </p>
+        <div class="auth-error" id="authError"></div>
     </div>
 </div>
 
-<!-- ===========================================
-     MAIN APP (Only shown after login)
-     =========================================== -->
+<!-- MAIN APP -->
 <div id="mainApp">
     <div class="container">
-
         <header>
             <div class="header-user">
                 <span class="user-badge" id="userBadge">👤 User</span>
@@ -782,7 +711,6 @@ header p {
             <p>Track your deadlines. Own your time.</p>
         </header>
 
-        <!-- FORM -->
         <section class="form">
             <h2>➕ Add New Deadline</h2>
 
@@ -810,7 +738,7 @@ header p {
                         <option value="MTHS171">MTHS171</option>
                         <option value="MTHS172">MTHS172</option>
                         <option value="APPM172">APPM172</option>
-                        <option value="NPHY172">NPHY172</option>
+                        <option value="STTN111">STTN111</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
@@ -908,7 +836,6 @@ header p {
             <button type="button" class="btn-add" id="addButton">➕ Add Deadline</button>
         </section>
 
-        <!-- DASHBOARD -->
         <section class="dashboard">
             <h2>📊 Dashboard</h2>
             <div class="dashboard-grid">
@@ -931,7 +858,6 @@ header p {
             </div>
         </section>
 
-        <!-- DEADLINE LIST -->
         <section>
             <h2 style="color: #ff8c00; margin-bottom: 20px;">📋 Upcoming Deadlines</h2>
             <div id="eventsContainer">
@@ -941,152 +867,45 @@ header p {
                 </div>
             </div>
         </section>
-
     </div>
 </div>
 
-<script>
+<script type="module">
 // ===========================================
-// AUTH SYSTEM
+// FIREBASE IMPORTS
 // ===========================================
-
-let currentUser = null;
-
-// Get all users
-function getUsers() {
-    return JSON.parse(localStorage.getItem('chronosUsers')) || {};
-}
-
-// Save users
-function saveUsers(users) {
-    localStorage.setItem('chronosUsers', JSON.stringify(users));
-}
-
-// Simple hash (not secure but better than plain text)
-function hashPassword(password) {
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return 'h_' + Math.abs(hash).toString(36);
-}
-
-// Show error
-function showError(msg) {
-    const err = document.getElementById('authError');
-    err.textContent = msg;
-    err.style.display = 'block';
-    setTimeout(() => { err.style.display = 'none'; }, 4000);
-}
-
-// Switch tab
-function switchTab(tab) {
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    const tabLogin = document.getElementById('tabLogin');
-    const tabSignup = document.getElementById('tabSignup');
-
-    if (tab === 'login') {
-        loginForm.style.display = 'block';
-        signupForm.style.display = 'none';
-        tabLogin.classList.add('active');
-        tabSignup.classList.remove('active');
-    } else {
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'block';
-        tabLogin.classList.remove('active');
-        tabSignup.classList.add('active');
-    }
-}
-
-// Signup
-function handleSignup(e) {
-    e.preventDefault();
-    const username = document.getElementById('signupUser').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const pass = document.getElementById('signupPass').value;
-    const passConfirm = document.getElementById('signupPassConfirm').value;
-
-    if (username.length < 3) return showError('Username must be at least 3 characters');
-    if (pass.length < 4) return showError('Password must be at least 4 characters');
-    if (pass !== passConfirm) return showError('Passwords do not match!');
-
-    const users = getUsers();
-    const key = username.toLowerCase();
-
-    if (users[key]) return showError('Username already taken!');
-
-    users[key] = {
-        username: username,
-        email: email,
-        password: hashPassword(pass),
-        createdAt: new Date().toISOString()
-    };
-
-    saveUsers(users);
-    localStorage.setItem('chronosCurrentUser', key);
-    currentUser = key;
-
-    alert('✅ Account created! Welcome, ' + username);
-    showMainApp();
-}
-
-// Login
-function handleLogin(e) {
-    e.preventDefault();
-    const username = document.getElementById('loginUser').value.trim();
-    const pass = document.getElementById('loginPass').value;
-
-    const users = getUsers();
-    const key = username.toLowerCase();
-    const user = users[key];
-
-    if (!user) return showError('User not found. Please sign up first.');
-    if (user.password !== hashPassword(pass)) return showError('Wrong password!');
-
-    localStorage.setItem('chronosCurrentUser', key);
-    currentUser = key;
-    showMainApp();
-}
-
-// Logout
-function handleLogout() {
-    if (confirm('Logout?')) {
-        localStorage.removeItem('chronosCurrentUser');
-        currentUser = null;
-        location.reload();
-    }
-}
-
-// Show main app
-function showMainApp() {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-
-    const users = getUsers();
-    const user = users[currentUser];
-    document.getElementById('userBadge').textContent = '👤 ' + (user ? user.username : 'User');
-
-    loadUserEvents();
-    initApp();
-}
-
-// Check if already logged in
-function checkAuth() {
-    const saved = localStorage.getItem('chronosCurrentUser');
-    if (saved && getUsers()[saved]) {
-        currentUser = saved;
-        showMainApp();
-    }
-}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // ===========================================
-// APP LOGIC (scoped per user)
+// FIREBASE CONFIG
 // ===========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
+    authDomain: "chronos-system-e3d4c.firebaseapp.com",
+    databaseURL: "https://chronos-system-e3d4c-default-rtdb.firebaseio.com",
+    projectId: "chronos-system-e3d4c",
+    storageBucket: "chronos-system-e3d4c.firebasestorage.app",
+    messagingSenderId: "314230379065",
+    appId: "1:314230379065:web:22827183f5e4cb7f7173e8",
+    measurementId: "G-P16DP8LMFX"
+};
 
-let events = [];
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+// ===========================================
+// ELEMENTS
+// ===========================================
+const loadingScreen = document.getElementById('loadingScreen');
+const authScreen = document.getElementById('authScreen');
+const mainApp = document.getElementById('mainApp');
+const googleSignInBtn = document.getElementById('googleSignInBtn');
+const authError = document.getElementById('authError');
+const userBadge = document.getElementById('userBadge');
 
 const eventTitle = document.getElementById('eventTitle');
 const category = document.getElementById('category');
@@ -1110,20 +929,87 @@ const upcomingCount = document.getElementById('upcomingCount');
 const targetAverage = document.getElementById('targetAverage');
 const schoolFields = document.getElementById('schoolFields');
 
-// Load user's events (separate per user!)
-function loadUserEvents() {
+// ===========================================
+// STATE
+// ===========================================
+let currentUser = null;
+let events = [];
+
+// ===========================================
+// AUTH
+// ===========================================
+googleSignInBtn.addEventListener('click', async () => {
+    try {
+        authError.style.display = 'none';
+        await signInWithPopup(auth, provider);
+    } catch (error) {
+        console.error('Sign in error:', error);
+        authError.textContent = 'Sign-in failed: ' + error.message;
+        authError.style.display = 'block';
+    }
+});
+
+window.handleLogout = async function() {
+    if (confirm('Logout?')) {
+        await signOut(auth);
+    }
+};
+
+onAuthStateChanged(auth, async (user) => {
+    loadingScreen.style.display = 'none';
+    
+    if (user) {
+        currentUser = user;
+        userBadge.textContent = '👤 ' + (user.displayName || user.email);
+        authScreen.style.display = 'none';
+        mainApp.style.display = 'block';
+        await loadUserEvents();
+        initApp();
+    } else {
+        currentUser = null;
+        events = [];
+        authScreen.style.display = 'flex';
+        mainApp.style.display = 'none';
+    }
+});
+
+// ===========================================
+// DATABASE
+// ===========================================
+async function loadUserEvents() {
     if (!currentUser) return;
-    events = JSON.parse(localStorage.getItem('chronosEvents_' + currentUser)) || [];
+    try {
+        const dbRef = ref(db);
+        const snapshot = await get(child(dbRef, `users/${currentUser.uid}/events`));
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            events = Array.isArray(data) ? data.filter(e => e) : Object.values(data).filter(e => e);
+        } else {
+            events = [];
+        }
+    } catch (error) {
+        console.error('Load error:', error);
+        events = [];
+    }
 }
 
-function saveEvents() {
+async function saveEvents() {
     if (!currentUser) return;
-    localStorage.setItem('chronosEvents_' + currentUser, JSON.stringify(events));
+    try {
+        await set(ref(db, `users/${currentUser.uid}/events`), events);
+        console.log('Saved to cloud ✅');
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('⚠️ Could not save to cloud. Check your internet.');
+    }
 }
 
-function toggleSchoolFields() {
+// ===========================================
+// UI FUNCTIONS
+// ===========================================
+window.toggleSchoolFields = function() {
     schoolFields.style.display = category.value === 'Personal' ? 'none' : 'block';
-}
+};
 
 function getTimeRemaining(deadlineISO) {
     const now = new Date().getTime();
@@ -1153,8 +1039,6 @@ function getStatus(mark) {
 }
 
 function displayEvents() {
-    if (!eventsContainer) return;
-
     if (events.length === 0) {
         eventsContainer.innerHTML = `
             <div class="empty-state">
@@ -1273,17 +1157,16 @@ function displayEvents() {
     eventsContainer.innerHTML = html;
 }
 
-function deleteEvent(id) {
+window.deleteEvent = async function(id) {
     if (confirm('Delete this deadline?')) {
         events = events.filter(event => event.id !== id);
-        saveEvents();
+        await saveEvents();
         displayEvents();
         updateDashboard();
     }
-}
+};
 
 function updateDashboard() {
-    if (!totalAssessments) return;
     totalAssessments.textContent = events.length;
     let currentTotal = 0, targetTotal = 0, upcoming = 0, academicCount = 0;
     const now = new Date().getTime();
@@ -1307,7 +1190,7 @@ function updateDashboard() {
     upcomingCount.textContent = upcoming;
 }
 
-function addEvent() {
+async function addEvent() {
     const title = eventTitle.value.trim();
     const date = eventDate.value;
     const time = eventTime.value;
@@ -1342,25 +1225,24 @@ function addEvent() {
         thumbnail: null
     };
 
-    if (thumbnail.files && thumbnail.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            newEvent.thumbnail = e.target.result;
-            events.push(newEvent);
-            saveEvents();
-            displayEvents();
-            updateDashboard();
-            clearForm();
-            alert('✅ Deadline added successfully!');
-        };
-        reader.readAsDataURL(thumbnail.files[0]);
-    } else {
+    const finalize = async () => {
         events.push(newEvent);
-        saveEvents();
+        await saveEvents();
         displayEvents();
         updateDashboard();
         clearForm();
-        alert('✅ Deadline added successfully!');
+        alert('✅ Deadline added and synced to cloud!');
+    };
+
+    if (thumbnail.files && thumbnail.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            newEvent.thumbnail = e.target.result;
+            await finalize();
+        };
+        reader.readAsDataURL(thumbnail.files[0]);
+    } else {
+        await finalize();
     }
 }
 
@@ -1431,10 +1313,7 @@ setInterval(function() {
     }
 }, 1000);
 
-// Check auth on page load
-checkAuth();
-
-console.log('✅ Chronos System with Auth loaded!');
+console.log('✅ Chronos System with Google Auth + Cloud Sync loaded!');
 </script>
 
 </body>
