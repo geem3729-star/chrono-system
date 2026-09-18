@@ -265,14 +265,6 @@ body {
 .view { display: none; }
 .view.active { display: block; }
 
-.view-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 16px;
-    letter-spacing: 0.5px;
-}
-
 .coming-soon {
     background: #0f0f18;
     border: 1px dashed #2a2a3a;
@@ -329,7 +321,7 @@ body {
 }
 
 /* ============================================================
-   ACADEMIC OVERVIEW - Module cards
+   MODULES
    ============================================================ */
 .modules-row {
     display: grid;
@@ -344,7 +336,6 @@ body {
     padding: 18px 14px;
     text-align: center;
     transition: all 0.3s;
-    position: relative;
 }
 
 .module-card:hover { transform: translateY(-3px); border-color: #3a3a4a; }
@@ -418,7 +409,6 @@ body {
 .module-badge.atrisk { color: #f87171; background: rgba(248,113,113,0.1); }
 .module-badge.warning { color: #facc15; background: rgba(250,204,21,0.1); }
 
-/* Overall average card */
 .overall-card {
     background: #16161f;
     border: 1px solid #2a2a3a;
@@ -437,7 +427,7 @@ body {
 .overall-card .overall-tagline { font-size: 0.7rem; color: #4ade80; font-weight: 800; margin-top: 8px; }
 
 /* ============================================================
-   UPCOMING COUNTDOWNS
+   COUNTDOWNS
    ============================================================ */
 .countdown-mini {
     background: #16161f;
@@ -534,38 +524,6 @@ body {
 /* ============================================================
    GRADE CALCULATOR
    ============================================================ */
-.calc-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    align-items: center;
-}
-
-.calc-ring-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.calc-ring {
-    position: relative;
-    width: 140px;
-    height: 140px;
-}
-
-.calc-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.calc-ring .ring-bg { fill: none; stroke: #1a1a26; stroke-width: 10; }
-.calc-ring .ring-progress { fill: none; stroke-width: 10; stroke-linecap: round; }
-
-.calc-ring .center {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-}
-
-.calc-ring .center .label { font-size: 0.6rem; color: #888; font-weight: 700; }
-.calc-ring .center .value { font-size: 1.8rem; font-weight: 900; color: #ff8c00; line-height: 1; }
-
 .calc-scenarios {
     display: flex;
     flex-direction: column;
@@ -701,11 +659,10 @@ body {
 .auth-logo h1 {
     font-size: 2rem; font-weight: 800;
     background: linear-gradient(135deg, #ff8c00, #ff6a00);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: 2px;
-        -webkit-background-clip: text;
-    background-clip: text;                  ← ADD THIS LINE
+    -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
 }
 
 .auth-logo p { color: #666; font-size: 0.9rem; margin-top: 6px; margin-bottom: 32px; }

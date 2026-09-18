@@ -1,653 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Golden Plan</title>
-<link rel="stylesheet" href="style.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Plan</title>
 
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
-<!-- ================= LOADING ================= -->
-<div id="loadingScreen" class="loading-screen">
-    <div class="loading-spinner"></div>
-    <p>Loading Golden Plan...</p>
-</div>
-
-<!-- ================= AUTH ================= -->
-<div id="authScreen" style="display:none;">
-    <div class="auth-box">
-        <div class="auth-logo">
-            <h1>👑 GOLDEN PLAN</h1>
-            <p>Academic Command Center</p>
-        </div>
-        <button id="googleSignInBtn" class="google-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-            Sign In with Google
-        </button>
-        <p class="auth-hint">🔐 Sign in to sync your academic data across all devices.</p>
+    <!-- ============================================================
+         LOADING SCREEN - shows while checking auth
+         ============================================================ -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Loading Golden Plan...</p>
     </div>
-</div>
 
-<!-- ================= MAIN APP ================= -->
-<div id="app" class="app" style="display:none;">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <span class="crown">👑</span>
-            <div>
-                <h2>GOLDEN PLAN</h2>
-                <small>Academic Command Center</small>
+    <!-- ============================================================
+         AUTH SCREEN - shows when NOT signed in
+         ============================================================ -->
+    <div id="authScreen" style="display:none;">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <h1>👑 GOLDEN PLAN</h1>
+                <p>Academic Command Center</p>
             </div>
+            <button id="googleSignInBtn" class="google-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Sign In with Google
+            </button>
+            <p class="auth-hint">🔐 Sign in to sync your academic data across all devices.</p>
         </div>
+    </div>
 
-        <div class="nav-section">
-            <div class="nav-section-title">Main</div>
-            <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
-                <span class="nav-icon">🏠</span> Dashboard
-            </button>
-        </div>
+    <!-- ============================================================
+         MAIN APP - shows when signed in
+         ============================================================ -->
+    <div id="app" class="app" style="display:none;">
 
-        <div class="nav-section">
-            <div class="nav-section-title">Academics</div>
-            <button class="nav-item" data-view="modules" onclick="switchView('modules', this)">
-                <span class="nav-icon">📚</span> Modules
-            </button>
-            <button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)">
-                <span class="nav-icon">📝</span> Assessments
-            </button>
-            <button class="nav-item" data-view="marks" onclick="switchView('marks', this)">
-                <span class="nav-icon">📊</span> Marks
-            </button>
-            <button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)">
-                <span class="nav-icon">🧮</span> Grade Calculator
-            </button>
-            <button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)">
-                <span class="nav-icon">✅</span> Exam Eligibility
-            </button>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Planner</div>
-            <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)">
-                <span class="nav-icon">📅</span> Calendar
-            </button>
-            <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)">
-                <span class="nav-icon">⏳</span> Countdowns
-            </button>
-            <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)">
-                <span class="nav-icon">📖</span> Study Plan
-            </button>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Personal</div>
-            <button class="nav-item" data-view="goals" onclick="switchView('goals', this)">
-                <span class="nav-icon">🎯</span> Goals
-            </button>
-            <button class="nav-item" data-view="projects" onclick="switchView('projects', this)">
-                <span class="nav-icon">💻</span> Projects
-            </button>
-            <button class="nav-item" data-view="habits" onclick="switchView('habits', this)">
-                <span class="nav-icon">🔁</span> Habits
-            </button>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Tools</div>
-            <button class="nav-item" data-view="notes" onclick="switchView('notes', this)">
-                <span class="nav-icon">📝</span> Notes
-            </button>
-            <button class="nav-item" data-view="resources" onclick="switchView('resources', this)">
-                <span class="nav-icon">📚</span> Resources
-            </button>
-        </div>
-
-        <div class="sidebar-footer">
-            <div class="golden-focus">
-                <div class="icon">👑</div>
-                <div class="title">GOLDEN FOCUS</div>
-                <div class="quote">"Discipline today, freedom tomorrow."</div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- MAIN AREA -->
-    <div class="main-area">
-
-        <!-- TOP BAR -->
-        <div class="topbar">
-            <div class="topbar-left">
-                <h1 id="greeting">Good evening, Master G! 👋</h1>
-                <p>Stay focused. Stay consistent. Achieve greatness.</p>
-            </div>
-            <div class="topbar-right">
-                <button class="icon-btn" title="Search">🔍</button>
-                <button class="icon-btn" title="Notifications">🔔</button>
-                <button class="icon-btn" title="Calendar">📅</button>
-                <div class="user-pill">
-                    <div class="user-avatar" id="userAvatar">M</div>
-                    <span class="user-name" id="userName">Master G</span>
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span class="crown">👑</span>
+                <div>
+                    <h2>GOLDEN PLAN</h2>
+                    <small>Academic Command Center</small>
                 </div>
-                <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
             </div>
-        </div>
 
-        <!-- CONTENT -->
-        <div class="content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </button>
+            </div>
 
-            <!-- DASHBOARD VIEW -->
-            <div class="view active" id="view-dashboard">
-                <div class="dashboard-grid">
+            <div class="nav-section">
+                <div class="nav-section-title">Academics</div>
+                <button class="nav-item" data-view="modules" onclick="switchView('modules', this)">
+                    <span class="nav-icon">📚</span> Modules
+                </button>
+                <button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)">
+                    <span class="nav-icon">📝</span> Assessments
+                </button>
+                <button class="nav-item" data-view="marks" onclick="switchView('marks', this)">
+                    <span class="nav-icon">📊</span> Marks
+                </button>
+                <button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)">
+                    <span class="nav-icon">🧮</span> Grade Calculator
+                </button>
+                <button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)">
+                    <span class="nav-icon">✅</span> Exam Eligibility
+                </button>
+            </div>
 
-                    <!-- LEFT COLUMN -->
-                    <div class="left-col">
+            <div class="nav-section">
+                <div class="nav-section-title">Planner</div>
+                <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)">
+                    <span class="nav-icon">📅</span> Calendar
+                </button>
+                <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)">
+                    <span class="nav-icon">⏳</span> Countdowns
+                </button>
+                <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)">
+                    <span class="nav-icon">📖</span> Study Plan
+                </button>
+            </div>
 
-                        <!-- Academic Overview -->
-                        <div class="panel">
-                            <div class="panel-title">📊 Academic Overview</div>
-                            <div class="modules-row" id="modulesRow">
-                                <div class="module-card" style="grid-column: 1/-1;">
-                                    <p style="color:#666;font-size:0.8rem;padding:20px;">Loading modules...</p>
-                                </div>
-                            </div>
-                        </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Personal</div>
+                <button class="nav-item" data-view="goals" onclick="switchView('goals', this)">
+                    <span class="nav-icon">🎯</span> Goals
+                </button>
+                <button class="nav-item" data-view="projects" onclick="switchView('projects', this)">
+                    <span class="nav-icon">💻</span> Projects
+                </button>
+                <button class="nav-item" data-view="habits" onclick="switchView('habits', this)">
+                    <span class="nav-icon">🔁</span> Habits
+                </button>
+            </div>
 
-                        <!-- Assessments Overview -->
-                        <div class="panel">
-                            <div class="panel-title">📝 Assessments Overview</div>
-                            <div style="overflow-x:auto;">
-                                <table class="assessments-table" id="assessTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Assessment</th>
-                                            <th>Weight</th>
-                                            <th>Due Date</th>
-                                            <th>My Mark</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="assessBody">
-                                        <tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div style="text-align:center;margin-top:16px;">
-                                <button class="quick-action" style="display:inline-flex;align-items:center;gap:8px;width:auto;padding:10px 20px;" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
-                                    View all assessments →
-                                </button>
-                            </div>
-                        </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Tools</div>
+                <button class="nav-item" data-view="notes" onclick="switchView('notes', this)">
+                    <span class="nav-icon">📝</span> Notes
+                </button>
+                <button class="nav-item" data-view="resources" onclick="switchView('resources', this)">
+                    <span class="nav-icon">📚</span> Resources
+                </button>
+            </div>
 
-                        <!-- Bottom Row: Grade Calc + Exam Eligibility -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="sidebar-footer">
+                <div class="golden-focus">
+                    <div class="icon">👑</div>
+                    <div class="title">GOLDEN FOCUS</div>
+                    <div class="quote">"Discipline today, freedom tomorrow."</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN AREA ========== -->
+        <div class="main-area">
+
+            <!-- TOP BAR -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1 id="greeting">Good evening! 👋</h1>
+                    <p>Stay focused. Stay consistent. Achieve greatness.</p>
+                </div>
+                <div class="topbar-right">
+                    <button class="icon-btn" title="Search">🔍</button>
+                    <button class="icon-btn" title="Notifications">🔔</button>
+                    <button class="icon-btn" title="Calendar">📅</button>
+                    <div class="user-pill">
+                        <div class="user-avatar" id="userAvatar">?</div>
+                        <span class="user-name" id="userName">Guest</span>
+                    </div>
+                    <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
+                </div>
+            </div>
+
+            <!-- CONTENT - views switch here -->
+            <div class="content">
+
+                <!-- DASHBOARD VIEW -->
+                <div class="view active" id="view-dashboard">
+                    <div class="dashboard-grid">
+
+                        <!-- LEFT COLUMN -->
+                        <div class="left-col">
+
                             <div class="panel">
-                                <div class="panel-title">🧮 Grade Calculator</div>
-                                <div class="calc-grid" style="grid-template-columns:1fr;gap:12px;">
-                                    <div class="calc-scenarios" id="calcScenarios">
-                                        <div class="calc-scenario">
-                                            <span class="score">Enter marks to see scenarios</span>
-                                        </div>
+                                <div class="panel-title">📊 Academic Overview</div>
+                                <div class="modules-row" id="modulesRow">
+                                    <div class="module-card" style="grid-column: 1/-1;">
+                                        <p style="color:#666;font-size:0.8rem;padding:20px;">Loading modules...</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="panel">
-                                <div class="panel-title">✅ Exam Eligibility</div>
-                                <div id="examEligList">
-                                    <p style="color:#666;font-size:0.8rem;">Add modules to check eligibility</p>
+                                <div class="panel-title">📝 Assessments Overview</div>
+                                <div style="overflow-x:auto;">
+                                    <table class="assessments-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Assessment</th>
+                                                <th>Weight</th>
+                                                <th>Due Date</th>
+                                                <th>My Mark</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="assessBody">
+                                            <tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                                <div class="panel">
+                                    <div class="panel-title">🧮 Grade Calculator</div>
+                                    <div id="calcScenarios" class="calc-scenarios">
+                                        <div class="calc-scenario">
+                                            <span class="score">Add modules to see scenarios</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="panel">
+                                    <div class="panel-title">✅ Exam Eligibility</div>
+                                    <div id="examEligList">
+                                        <p style="color:#666;font-size:0.8rem;">Add modules to check eligibility</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN -->
+                        <div class="right-col">
+
+                            <div class="panel">
+                                <div class="panel-title">⏳ Upcoming Countdowns</div>
+                                <div id="upcomingCountdowns">
+                                    <p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-title">⚡ Quick Actions</div>
+                                <div class="quick-actions">
+                                    <div class="quick-action" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
+                                        <span class="qa-icon">➕</span>Add<br>Assessment
+                                    </div>
+                                    <div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))">
+                                        <span class="qa-icon">⏳</span>Add<br>Countdown
+                                    </div>
+                                    <div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))">
+                                        <span class="qa-icon">🎯</span>Add<br>Goal
+                                    </div>
+                                    <div class="quick-action" onclick="switchView('notes', document.querySelector('[data-view=notes]'))">
+                                        <span class="qa-icon">📝</span>Add<br>Note
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- RIGHT COLUMN -->
-                    <div class="right-col">
-
-                        <!-- Upcoming Countdowns -->
-                        <div class="panel">
-                            <div class="panel-title">⏳ Upcoming Countdowns</div>
-                            <div id="upcomingCountdowns">
-                                <p style="color:#666;font-size:0.8rem;">No deadlines yet</p>
-                            </div>
-                        </div>
-
-                        <!-- Quick Actions -->
-                        <div class="panel">
-                            <div class="panel-title">⚡ Quick Actions</div>
-                            <div class="quick-actions">
-                                <div class="quick-action" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
-                                    <span class="qa-icon">➕</span>Add<br>Assessment
-                                </div>
-                                <div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))">
-                                    <span class="qa-icon">⏳</span>Add<br>Countdown
-                                </div>
-                                <div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))">
-                                    <span class="qa-icon">🎯</span>Add<br>Goal
-                                </div>
-                                <div class="quick-action" onclick="switchView('notes', document.querySelector('[data-view=notes]'))">
-                                    <span class="qa-icon">📝</span>Add<br>Note
-                                </div>
-                            </div>
-                        </div>
+                <!-- PLACEHOLDER VIEWS -->
+                <div class="view" id="view-modules">
+                    <div class="coming-soon">
+                        <div class="icon">📚</div>
+                        <h2>Modules</h2>
+                        <p>Coming soon - Add and manage your modules</p>
                     </div>
                 </div>
+
+                <div class="view" id="view-assessments">
+                    <div class="coming-soon">
+                        <div class="icon">📝</div>
+                        <h2>Assessments</h2>
+                        <p>Coming soon - Full assessment management</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-marks">
+                    <div class="coming-soon">
+                        <div class="icon">📊</div>
+                        <h2>Marks</h2>
+                        <p>Coming soon - Track all your marks</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-gradecalc">
+                    <div class="coming-soon">
+                        <div class="icon">🧮</div>
+                        <h2>Grade Calculator</h2>
+                        <p>Coming soon - Calculate what you need</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-examelig">
+                    <div class="coming-soon">
+                        <div class="icon">✅</div>
+                        <h2>Exam Eligibility</h2>
+                        <p>Coming soon - Check exam qualification</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-calendar">
+                    <div class="coming-soon">
+                        <div class="icon">📅</div>
+                        <h2>Calendar</h2>
+                        <p>Coming soon - Monthly view</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-countdowns">
+                    <div class="coming-soon">
+                        <div class="icon">⏳</div>
+                        <h2>Countdowns</h2>
+                        <p>Coming soon - All your deadlines with live countdown</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-studyplan">
+                    <div class="coming-soon">
+                        <div class="icon">📖</div>
+                        <h2>Study Plan</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-goals">
+                    <div class="coming-soon">
+                        <div class="icon">🎯</div>
+                        <h2>Goals</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-projects">
+                    <div class="coming-soon">
+                        <div class="icon">💻</div>
+                        <h2>Projects</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-habits">
+                    <div class="coming-soon">
+                        <div class="icon">🔁</div>
+                        <h2>Habits</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-notes">
+                    <div class="coming-soon">
+                        <div class="icon">📝</div>
+                        <h2>Notes</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
+                <div class="view" id="view-resources">
+                    <div class="coming-soon">
+                        <div class="icon">📚</div>
+                        <h2>Resources</h2>
+                        <p>Coming soon</p>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- PLACEHOLDER VIEWS -->
-            <div class="view" id="view-modules">
-                <div class="coming-soon">
-                    <div class="icon">📚</div>
-                    <h2>Modules</h2>
-                    <p>Coming in Phase 2 - Add and manage your modules</p>
+            <!-- BOTTOM BAR -->
+            <div class="bottom-bar">
+                <div class="bottom-steps">
+                    <div class="bottom-step">
+                        <span class="bs-icon">📝</span>
+                        <div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div>
+                    </div>
+                    <span style="color:#333;">→</span>
+                    <div class="bottom-step">
+                        <span class="bs-icon">🎯</span>
+                        <div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div>
+                    </div>
+                    <span style="color:#333;">→</span>
+                    <div class="bottom-step">
+                        <span class="bs-icon">📊</span>
+                        <div class="bs-label"><strong>Track</strong><span>Measure progress</span></div>
+                    </div>
+                    <span style="color:#333;">→</span>
+                    <div class="bottom-step">
+                        <span class="bs-icon">🏆</span>
+                        <div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="view" id="view-assessments">
-                <div class="coming-soon">
-                    <div class="icon">📝</div>
-                    <h2>Assessments</h2>
-                    <p>Coming in Phase 3 - Full assessment management</p>
+                <div class="bottom-quote">
+                    "The more you sweat in peace, the less you bleed in war."
                 </div>
-            </div>
-
-            <div class="view" id="view-marks">
-                <div class="coming-soon">
-                    <div class="icon">📊</div>
-                    <h2>Marks</h2>
-                    <p>Coming soon - Track all your marks</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-gradecalc">
-                <div class="coming-soon">
-                    <div class="icon">🧮</div>
-                    <h2>Grade Calculator</h2>
-                    <p>Coming soon - Calculate what you need</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-examelig">
-                <div class="coming-soon">
-                    <div class="icon">✅</div>
-                    <h2>Exam Eligibility</h2>
-                    <p>Coming soon - Check exam qualification</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-calendar">
-                <div class="coming-soon">
-                    <div class="icon">📅</div>
-                    <h2>Calendar</h2>
-                    <p>Coming soon - Monthly view</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-countdowns">
-                <div class="coming-soon">
-                    <div class="icon">⏳</div>
-                    <h2>Countdowns</h2>
-                    <p>Coming in Phase 3 - All your deadlines with live countdown</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-studyplan">
-                <div class="coming-soon">
-                    <div class="icon">📖</div>
-                    <h2>Study Plan</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-goals">
-                <div class="coming-soon">
-                    <div class="icon">🎯</div>
-                    <h2>Goals</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-projects">
-                <div class="coming-soon">
-                    <div class="icon">💻</div>
-                    <h2>Projects</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-habits">
-                <div class="coming-soon">
-                    <div class="icon">🔁</div>
-                    <h2>Habits</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-notes">
-                <div class="coming-soon">
-                    <div class="icon">📝</div>
-                    <h2>Notes</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-            <div class="view" id="view-resources">
-                <div class="coming-soon">
-                    <div class="icon">📚</div>
-                    <h2>Resources</h2>
-                    <p>Coming soon</p>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- BOTTOM BAR -->
-        <div class="bottom-bar">
-            <div class="bottom-steps">
-                <div class="bottom-step">
-                    <span class="bs-icon">📝</span>
-                    <div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div>
-                </div>
-                <span style="color:#333;">→</span>
-                <div class="bottom-step">
-                    <span class="bs-icon">🎯</span>
-                    <div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div>
-                </div>
-                <span style="color:#333;">→</span>
-                <div class="bottom-step">
-                    <span class="bs-icon">📊</span>
-                    <div class="bs-label"><strong>Track</strong><span>Measure progress</span></div>
-                </div>
-                <span style="color:#333;">→</span>
-                <div class="bottom-step">
-                    <span class="bs-icon">🏆</span>
-                    <div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div>
-                </div>
-            </div>
-            <div class="bottom-quote">
-                "The more you sweat in peace, the less you bleed in war."
             </div>
         </div>
     </div>
-</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
-    authDomain: "chronos-system-e3d4c.firebaseapp.com",
-    databaseURL: "https://chronos-system-e3d4c-default-rtdb.firebaseio.com",
-    projectId: "chronos-system-e3d4c",
-    storageBucket: "chronos-system-e3d4c.firebasestorage.app",
-    messagingSenderId: "314230379065",
-    appId: "1:314230379065:web:22827183f5e4cb7f7173e8"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
-
-let currentUser = null;
-let events = [];
-let modules = [];
-
-// ================= VIEW SWITCHER =================
-window.switchView = function(viewName, el) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    
-    const view = document.getElementById('view-' + viewName);
-    if (view) view.classList.add('active');
-    if (el) el.classList.add('active');
-};
-
-// ================= AUTH =================
-document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-    try { await signInWithPopup(auth, provider); } catch (e) { alert('Sign-in failed: ' + e.message); }
-});
-
-window.handleLogout = async function() {
-    if (confirm('Logout?')) await signOut(auth);
-};
-
-onAuthStateChanged(auth, async (user) => {
-    document.getElementById('loadingScreen').style.display = 'none';
-    if (user) {
-        currentUser = user;
-        const name = user.displayName || user.email.split('@')[0];
-        const initial = name.charAt(0).toUpperCase();
-        document.getElementById('userName').textContent = name;
-        document.getElementById('userAvatar').textContent = initial;
-        document.getElementById('greeting').textContent = `Good evening, ${name}! 👋`;
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('app').style.display = 'grid';
-        await loadData();
-        renderDashboard();
-    } else {
-        document.getElementById('authScreen').style.display = 'flex';
-        document.getElementById('app').style.display = 'none';
-    }
-});
-
-// ================= LOAD DATA =================
-async function loadData() {
-    if (!currentUser) return;
-    try {
-        const dbRef = ref(db);
-        const eventsSnap = await get(child(dbRef, `users/${currentUser.uid}/events`));
-        if (eventsSnap.exists()) {
-            const data = eventsSnap.val();
-            events = Array.isArray(data) ? data.filter(e => e) : Object.values(data).filter(e => e);
-        } else events = [];
-        
-        const modSnap = await get(child(dbRef, `users/${currentUser.uid}/modules`));
-        if (modSnap.exists()) {
-            const data = modSnap.val();
-            modules = Array.isArray(data) ? data.filter(m => m) : Object.values(data).filter(m => m);
-        } else modules = [];
-    } catch (e) { console.error(e); }
-}
-
-// ================= TIME HELPERS =================
-function getTimeRemaining(iso) {
-    const diff = new Date(iso).getTime() - Date.now();
-    if (diff <= 0) return { days:0,hours:0,minutes:0,seconds:0,isOverdue:true };
-    const s = Math.floor(diff/1000);
-    return {
-        days: Math.floor(s/86400),
-        hours: Math.floor((s%86400)/3600),
-        minutes: Math.floor((s%3600)/60),
-        seconds: s%60,
-        isOverdue: false
-    };
-}
-
-// ================= RENDER DASHBOARD =================
-function renderDashboard() {
-    renderModules();
-    renderUpcoming();
-    renderAssessTable();
-}
-
-function renderModules() {
-    const row = document.getElementById('modulesRow');
-    if (!modules.length) {
-        // Show a default placeholder card
-        row.innerHTML = `
-            <div class="module-card" style="grid-column:1/-1;">
-                <p style="color:#666;font-size:0.8rem;padding:20px;">
-                    No modules yet. Add modules in Phase 2.
-                </p>
-            </div>
-            <div class="overall-card">
-                <div class="trophy">🏆</div>
-                <div class="overall-pct">0%</div>
-                <div class="overall-label">Overall Average</div>
-                <div class="overall-tagline">Add modules to begin</div>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '';
-    let total = 0;
-    modules.forEach(m => {
-        const mark = m.currentMark || 0;
-        total += mark;
-        const pct = Math.min(100, mark);
-        const circumference = 2 * Math.PI * 36;
-        const offset = circumference - (pct/100) * circumference;
-        let color = '#4ade80';
-        if (mark < 50) color = '#f87171';
-        else if (mark < 60) color = '#fb923c';
-        else if (mark < 75) color = '#facc15';
-        
-        let badgeClass = 'eligible', badgeText = '✅ Eligible';
-        if (mark < 50) { badgeClass = 'atrisk'; badgeText = '⚠️ At Risk'; }
-        else if (mark < 60) { badgeClass = 'warning'; badgeText = '🟡 Warning'; }
-        
-        html += `
-            <div class="module-card">
-                <div class="module-header">
-                    <div>
-                        <span class="module-name">${m.name || 'Module'}</span>
-                        <span class="module-full">${m.fullName || ''}</span>
-                    </div>
-                </div>
-                <div class="module-ring">
-                    <svg viewBox="0 0 90 90">
-                        <circle class="ring-bg" cx="45" cy="45" r="36"/>
-                        <circle class="ring-progress" cx="45" cy="45" r="36"
-                                stroke="${color}"
-                                stroke-dasharray="${circumference}"
-                                stroke-dashoffset="${offset}"/>
-                    </svg>
-                    <div class="center">
-                        <div class="pct">${mark}%</div>
-                        <div class="pct-label">CURRENT</div>
-                    </div>
-                </div>
-                <div class="module-mark">${mark} / 100</div>
-                <div class="module-badge ${badgeClass}">${badgeText}</div>
-            </div>
-        `;
-    });
-    
-    const avg = Math.round(total / modules.length);
-    let avgTagline = 'Good Progress!';
-    if (avg < 50) avgTagline = 'Needs Focus!';
-    else if (avg < 60) avgTagline = 'Keep Pushing!';
-    else if (avg >= 75) avgTagline = 'Excellent!';
-    
-    html += `
-        <div class="overall-card">
-            <div class="trophy">🏆</div>
-            <div class="overall-pct">${avg}%</div>
-            <div class="overall-label">Overall Average</div>
-            <div class="overall-tagline">${avgTagline}</div>
-        </div>
-    `;
-    
-    row.innerHTML = html;
-}
-
-function renderUpcoming() {
-    const container = document.getElementById('upcomingCountdowns');
-    const now = Date.now();
-    const upcoming = events
-        .filter(e => new Date(e.deadline).getTime() > now)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-        .slice(0, 4);
-    
-    if (!upcoming.length) {
-        container.innerHTML = '<p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p>';
-        return;
-    }
-    
-    let html = '';
-    upcoming.forEach(e => {
-        const r = getTimeRemaining(e.deadline);
-        const dateObj = new Date(e.deadline);
-        const dateStr = dateObj.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' });
-        const timeStr = dateObj.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
-        const color = e.color || '#ff8c00';
-        
-        html += `
-            <div class="countdown-mini" style="border-left-color:${color};">
-                <div class="cm-header">
-                    <span class="cm-title">${e.title || 'Deadline'}</span>
-                    <span class="cm-date">${dateStr} · ${timeStr}</span>
-                </div>
-                <div class="cm-grid">
-                    <div class="cm-item">
-                        <span class="cm-num">${String(r.days).padStart(2,'0')}</span>
-                        <span class="cm-lbl">DAYS</span>
-                    </div>
-                    <div class="cm-item">
-                        <span class="cm-num">${String(r.hours).padStart(2,'0')}</span>
-                        <span class="cm-lbl">HRS</span>
-                    </div>
-                    <div class="cm-item">
-                        <span class="cm-num">${String(r.minutes).padStart(2,'0')}</span>
-                        <span class="cm-lbl">MIN</span>
-                    </div>
-                    <div class="cm-item">
-                        <span class="cm-num">${String(r.seconds).padStart(2,'0')}</span>
-                        <span class="cm-lbl">SEC</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
-
-function renderAssessTable() {
-    const body = document.getElementById('assessBody');
-    const recent = [...events].sort((a, b) => new Date(b.deadline) - new Date(a.deadline)).slice(0, 5);
-    
-    if (!recent.length) {
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>';
-        return;
-    }
-    
-    let html = '';
-    recent.forEach(e => {
-        const dateObj = new Date(e.deadline);
-        const dateStr = dateObj.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' });
-        const isPast = dateObj.getTime() < Date.now();
-        const statusClass = isPast ? 'status-ok' : 'status-pending';
-        const statusText = isPast ? '✅ Completed' : '⏳ Upcoming';
-        
-        html += `
-            <tr>
-                <td>
-                    <div class="assess-name">${e.title || 'Assessment'}</div>
-                    <div class="assess-module">${e.module || 'No module'}</div>
-                </td>
-                <td>${e.weight || 0}%</td>
-                <td>${dateStr}</td>
-                <td>${e.currentMark || '-'} / 100</td>
-                <td class="${statusClass}">${statusText}</td>
-            </tr>
-        `;
-    });
-    body.innerHTML = html;
-}
-
-// ================= LIVE UPDATE =================
-setInterval(() => {
-    if (currentUser) renderUpcoming();
-}, 1000);
-
-console.log('👑 Golden Plan loaded!');
-</script>
+    <!-- ============================================================
+         JAVASCRIPT - loaded from external file
+         ============================================================ -->
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
