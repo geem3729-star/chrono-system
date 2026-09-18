@@ -3,884 +3,381 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chronos System</title>
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body {
-    background: #0a0a0f;
-    color: #e0e0e0;
-    min-height: 100vh;
-}
-
-/* ===========================================
-   AUTH SCREEN
-   =========================================== */
-#authScreen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 24px;
-    background: radial-gradient(ellipse at 30% 20%, rgba(255, 140, 0, 0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 80%, rgba(255, 140, 0, 0.05) 0%, transparent 50%);
-}
-
-.auth-box {
-    background: #16161f;
-    border: 1px solid #2a2a3a;
-    border-radius: 20px;
-    padding: 40px 36px;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    text-align: center;
-}
-
-.auth-logo h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: 2px;
-}
-
-.auth-logo p {
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 6px;
-    margin-bottom: 32px;
-}
-
-.google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 20px;
-    background: #fff;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-bottom: 20px;
-}
-
-.google-btn:hover {
-    background: #f5f5f5;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
-}
-
-.google-btn img {
-    width: 20px;
-    height: 20px;
-}
-
-.auth-hint {
-    color: #555;
-    font-size: 0.75rem;
-    line-height: 1.6;
-}
-
-.auth-error {
-    color: #f87171;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.8rem;
-    margin-top: 16px;
-    display: none;
-}
-
-/* ===========================================
-   MAIN APP
-   =========================================== */
-#mainApp {
-    display: none;
-    padding: 24px;
-    min-height: 100vh;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-header {
-    text-align: center;
-    padding: 30px 20px 40px;
-    border-bottom: 2px solid rgba(255, 140, 0, 0.15);
-    margin-bottom: 40px;
-    position: relative;
-}
-
-header h1 {
-    font-size: 2.8rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: 2px;
-}
-
-header p {
-    color: #666;
-    font-size: 1.1rem;
-    margin-top: 6px;
-    letter-spacing: 1px;
-}
-
-.header-user {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.user-badge {
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    padding: 8px 16px;
-    border-radius: 50px;
-    color: #ff8c00;
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.logout-btn {
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    padding: 8px 16px;
-    border-radius: 50px;
-    color: #888;
-    font-size: 0.75rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.logout-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-/* FORM */
-.form {
-    background: #16161f;
-    border: 1px solid #2a2a3a;
-    border-radius: 16px;
-    padding: 30px 35px;
-    margin-bottom: 40px;
-}
-
-.form h2 {
-    color: #ff8c00;
-    font-size: 1.3rem;
-    margin-bottom: 24px;
-    font-weight: 700;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-bottom: 16px;
-}
-
-@media (max-width: 768px) {
-    .form-row { grid-template-columns: 1fr; }
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.input-group label {
-    color: #888;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.input-group input,
-.input-group select {
-    padding: 12px 16px;
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border 0.3s;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-    border-color: #ff8c00;
-}
-
-.input-group input[type="color"] {
-    padding: 4px;
-    height: 48px;
-    cursor: pointer;
-}
-
-.input-group small {
-    color: #555;
-    font-size: 0.7rem;
-    margin-top: 4px;
-}
-
-.btn-add {
-    padding: 16px;
-    background: linear-gradient(135deg, #ff8c00, #e67600);
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    width: 100%;
-    margin-top: 8px;
-}
-
-.btn-add:hover {
-    background: #e67600;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255, 140, 0, 0.3);
-}
-
-.delete-btn {
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    padding: 6px 14px;
-    border-radius: 8px;
-    color: #666;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.delete-btn:hover {
-    background: #2a1a1a;
-    color: #f87171;
-    border-color: #f87171;
-}
-
-/* DASHBOARD */
-.dashboard { margin-bottom: 40px; }
-
-.dashboard h2 {
-    color: #ff8c00;
-    font-size: 1.3rem;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-@media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 480px) { .dashboard-grid { grid-template-columns: 1fr; } }
-
-.dashboard-card {
-    background: #16161f;
-    border: 1px solid #2a2a3a;
-    border-radius: 14px;
-    padding: 22px 20px;
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.dashboard-card:hover {
-    border-color: #ff8c00;
-    transform: translateY(-3px);
-}
-
-.dashboard-card h3 {
-    color: #666;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.dashboard-card h1 {
-    font-size: 2.4rem;
-    font-weight: 800;
-    margin-top: 6px;
-    background: linear-gradient(135deg, #ff8c00, #ff6a00);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* EVENTS */
-#eventsContainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 24px;
-    margin-top: 20px;
-}
-
-@media (max-width: 768px) { #eventsContainer { grid-template-columns: 1fr; } }
-
-.card {
-    background: #16161f;
-    border: 1px solid #2a2a3a;
-    border-radius: 16px;
-    padding: 24px;
-    border-left: 6px solid #ff8c00;
-    transition: all 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    border-color: #3a3a4a;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-}
-
-.card h2 {
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.card p {
-    color: #999;
-    font-size: 0.85rem;
-    margin: 4px 0;
-}
-
-.card p strong { color: #666; }
-
-.card-thumbnail {
-    width: 100%;
-    height: 220px !important;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    border: 1px solid #2a2a3a;
-    background-color: #0d0d14;
-}
-
-.card-thumbnail.no-image {
-    background: #1a1a26;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
-    color: #444;
-    font-size: 0.85rem;
-    border: 2px dashed #2a2a3a;
-}
-
-.card-thumbnail.ratio-16-9 { aspect-ratio: 16/9; height: auto !important; }
-.card-thumbnail.ratio-21-9 { aspect-ratio: 21/9; height: auto !important; }
-.card-thumbnail.ratio-4-3 { aspect-ratio: 4/3; height: auto !important; }
-.card-thumbnail.ratio-1-1 { aspect-ratio: 1/1; height: auto !important; }
-.card-thumbnail.ratio-3-2 { aspect-ratio: 3/2; height: auto !important; }
-.card-thumbnail.ratio-19-6-9 { aspect-ratio: 19.6/9; height: auto !important; }
-
-#previewContainer { display: none; }
-
-#imagePreview {
-    width: 100%;
-    height: 200px;
-    background: #1a1a26;
-    border: 2px dashed #2a2a3a;
-    border-radius: 12px;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #555;
-    font-size: 0.85rem;
-}
-
-.progress {
-    width: 100%;
-    height: 6px;
-    background: #1a1a26;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 10px 0;
-}
-
-.progress-bar {
-    height: 100%;
-    border-radius: 10px;
-    background: #ff8c00;
-    transition: width 0.8s ease;
-}
-
-.consequence-box {
-    background: #1a1a26;
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin: 12px 0;
-    border-left: 4px solid #666;
-}
-
-.consequence-box .label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #666;
-    font-weight: 600;
-}
-
-.consequence-box .text {
-    color: #ccc;
-    font-size: 0.9rem;
-    margin-top: 2px;
-}
-
-.consequence-box.severity-critical { border-left-color: #ef4444; animation: glowRed 1.5s infinite; }
-.consequence-box.severity-high { border-left-color: #fb923c; }
-.consequence-box.severity-medium { border-left-color: #facc15; }
-.consequence-box.severity-low { border-left-color: #4ade80; }
-
-@keyframes glowRed {
-    0%, 100% { border-left-color: #ef4444; }
-    50% { border-left-color: #dc2626; box-shadow: 0 0 20px rgba(239, 68, 68, 0.15); }
-}
-
-.severity-badge {
-    display: inline-block;
-    padding: 2px 12px;
-    border-radius: 50px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.15);
-}
-
-.stakes-meter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.stakes-meter .bar-track {
-    flex: 1;
-    height: 4px;
-    background: #1a1a26;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.stakes-meter .bar-fill {
-    height: 100%;
-    border-radius: 10px;
-    background: #ef4444;
-}
-
-.stakes-meter .stakes-label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    color: #666;
-    font-weight: 600;
-    min-width: 45px;
-    text-align: right;
-}
-
-.countdown-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: #0d0d14;
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin: 14px 0;
-    border: 1px solid #2a2a3a;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.pie-timer {
-    width: 80px;
-    height: 80px;
-    flex-shrink: 0;
-    transform: rotate(-90deg);
-}
-
-.pie-timer .bg {
-    fill: none;
-    stroke: #2a2a3a;
-    stroke-width: 6;
-}
-
-.pie-timer .progress {
-    fill: none;
-    stroke-width: 6;
-    stroke-linecap: round;
-}
-
-.pie-timer .center-text {
-    transform: rotate(90deg);
-    font-size: 18px;
-    font-weight: 800;
-    fill: #fff;
-    text-anchor: middle;
-    dominant-baseline: central;
-}
-
-.pie-timer .center-label {
-    transform: rotate(90deg);
-    font-size: 7px;
-    fill: #666;
-    text-anchor: middle;
-    dominant-baseline: central;
-    text-transform: uppercase;
-}
-
-.countdown-numbers {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    flex: 1;
-    min-width: 160px;
-}
-
-.countdown-numbers .unit {
-    text-align: center;
-    padding: 6px 4px;
-    background: #0d0d14;
-    border-radius: 10px;
-    border: 1px solid #1a1a26;
-}
-
-.countdown-numbers .unit .number {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #fff;
-    display: block;
-    line-height: 1.1;
-    letter-spacing: 1px;
-}
-
-.countdown-numbers .unit .label {
-    font-size: 0.55rem;
-    text-transform: uppercase;
-    color: #666;
-    letter-spacing: 1px;
-    font-weight: 600;
-    display: block;
-    margin-top: 2px;
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid #1a1a26;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.status-badge {
-    padding: 3px 14px;
-    border-radius: 50px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.status-badge.excellent { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
-.status-badge.good { color: #facc15; background: rgba(250, 204, 21, 0.1); }
-.status-badge.warning { color: #fb923c; background: rgba(251, 146, 60, 0.1); }
-.status-badge.risk { color: #f87171; background: rgba(248, 113, 113, 0.1); }
-
-.empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    color: #444;
-}
-
-.empty-state .icon {
-    font-size: 4rem;
-    opacity: 0.3;
-    margin-bottom: 15px;
-}
-
-.empty-state h3 { color: #555; font-weight: 400; }
-
-.loading-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: #ff8c00;
-}
-
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #1a1a26;
-    border-top-color: #ff8c00;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0d0d14; }
-::-webkit-scrollbar-thumb { background: #ff8c00; border-radius: 10px; }
-</style>
+<title>Golden Plan</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!-- LOADING SCREEN -->
+<!-- ================= LOADING ================= -->
 <div id="loadingScreen" class="loading-screen">
     <div class="loading-spinner"></div>
-    <p>Loading Chronos...</p>
+    <p>Loading Golden Plan...</p>
 </div>
 
-<!-- AUTH SCREEN -->
-<div id="authScreen" style="display: none;">
+<!-- ================= AUTH ================= -->
+<div id="authScreen" style="display:none;">
     <div class="auth-box">
         <div class="auth-logo">
-            <h1>⏳ MASTER TIMING</h1>
-            <p>Your time. Your rules.</p>
-            <p>TIME WASTED NEVER REGAINED</p>
+            <h1>👑 GOLDEN PLAN</h1>
+            <p>Academic Command Center</p>
         </div>
         <button id="googleSignInBtn" class="google-btn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
             Sign In with Google
         </button>
-        <p class="auth-hint">
-            🔐 Sign in with your Google account to sync your deadlines across all devices.
-        </p>
-        <div class="auth-error" id="authError"></div>
+        <p class="auth-hint">🔐 Sign in to sync your academic data across all devices.</p>
     </div>
 </div>
 
-<!-- MAIN APP -->
-<div id="mainApp">
-    <div class="container">
-        <header>
-            <div class="header-user">
-                <span class="user-badge" id="userBadge">👤 User</span>
-                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+<!-- ================= MAIN APP ================= -->
+<div id="app" class="app" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <span class="crown">👑</span>
+            <div>
+                <h2>GOLDEN PLAN</h2>
+                <small>Academic Command Center</small>
             </div>
-            <h1>⏳ CHRONOS SYSTEM</h1>
-            <p>Track your deadlines. Own your time.</p>
-        </header>
+        </div>
 
-        <section class="form">
-            <h2>➕ Add New Deadline</h2>
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
+                <span class="nav-icon">🏠</span> Dashboard
+            </button>
+        </div>
 
-            <div class="form-row">
-                <div class="input-group">
-                    <label>📌 Event Name</label>
-                    <input type="text" id="eventTitle" placeholder="e.g., Semester Test">
-                </div>
-                <div class="input-group">
-                    <label>📂 Category</label>
-                    <select id="category" onchange="toggleSchoolFields()">
-                        <option value="Academic">📚 Academic</option>
-                        <option value="Project">💻 Project</option>
-                        <option value="Personal">🏠 Personal</option>
-                    </select>
-                </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Academics</div>
+            <button class="nav-item" data-view="modules" onclick="switchView('modules', this)">
+                <span class="nav-icon">📚</span> Modules
+            </button>
+            <button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)">
+                <span class="nav-icon">📝</span> Assessments
+            </button>
+            <button class="nav-item" data-view="marks" onclick="switchView('marks', this)">
+                <span class="nav-icon">📊</span> Marks
+            </button>
+            <button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)">
+                <span class="nav-icon">🧮</span> Grade Calculator
+            </button>
+            <button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)">
+                <span class="nav-icon">✅</span> Exam Eligibility
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Planner</div>
+            <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)">
+                <span class="nav-icon">📅</span> Calendar
+            </button>
+            <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)">
+                <span class="nav-icon">⏳</span> Countdowns
+            </button>
+            <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)">
+                <span class="nav-icon">📖</span> Study Plan
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Personal</div>
+            <button class="nav-item" data-view="goals" onclick="switchView('goals', this)">
+                <span class="nav-icon">🎯</span> Goals
+            </button>
+            <button class="nav-item" data-view="projects" onclick="switchView('projects', this)">
+                <span class="nav-icon">💻</span> Projects
+            </button>
+            <button class="nav-item" data-view="habits" onclick="switchView('habits', this)">
+                <span class="nav-icon">🔁</span> Habits
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Tools</div>
+            <button class="nav-item" data-view="notes" onclick="switchView('notes', this)">
+                <span class="nav-icon">📝</span> Notes
+            </button>
+            <button class="nav-item" data-view="resources" onclick="switchView('resources', this)">
+                <span class="nav-icon">📚</span> Resources
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="golden-focus">
+                <div class="icon">👑</div>
+                <div class="title">GOLDEN FOCUS</div>
+                <div class="quote">"Discipline today, freedom tomorrow."</div>
             </div>
+        </div>
+    </aside>
 
-            <div class="form-row">
-                <div class="input-group">
-                    <label>📚 Module</label>
-                    <select id="module">
-                        <option value="None">None</option>
-                        <option value="CMPG172">CMPG172</option>
-                        <option value="MTHS171">MTHS171</option>
-                        <option value="MTHS172">MTHS172</option>
-                        <option value="APPM172">APPM172</option>
-                        <option value="STTN111">STTN111</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>📝 Assessment Type</label>
-                    <select id="assessmentType">
-                        <option value="Assignment">Assignment</option>
-                        <option value="Homework">Homework</option>
-                        <option value="Tutorial">Tutorial</option>
-                        <option value="Quiz">Quiz</option>
-                        <option value="Practical">Practical</option>
-                        <option value="Semester Test">Semester Test</option>
-                        <option value="Project">Project</option>
-                        <option value="Exam">Exam</option>
-                        <option value="Event">Event</option>
-                    </select>
-                </div>
+    <!-- MAIN AREA -->
+    <div class="main-area">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1 id="greeting">Good evening, Master G! 👋</h1>
+                <p>Stay focused. Stay consistent. Achieve greatness.</p>
             </div>
+            <div class="topbar-right">
+                <button class="icon-btn" title="Search">🔍</button>
+                <button class="icon-btn" title="Notifications">🔔</button>
+                <button class="icon-btn" title="Calendar">📅</button>
+                <div class="user-pill">
+                    <div class="user-avatar" id="userAvatar">M</div>
+                    <span class="user-name" id="userName">Master G</span>
+                </div>
+                <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
+            </div>
+        </div>
 
-            <div id="schoolFields">
-                <div class="form-row">
-                    <div class="input-group">
-                        <label>🎯 Weight (%)</label>
-                        <input type="number" id="weight" placeholder="20">
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- DASHBOARD VIEW -->
+            <div class="view active" id="view-dashboard">
+                <div class="dashboard-grid">
+
+                    <!-- LEFT COLUMN -->
+                    <div class="left-col">
+
+                        <!-- Academic Overview -->
+                        <div class="panel">
+                            <div class="panel-title">📊 Academic Overview</div>
+                            <div class="modules-row" id="modulesRow">
+                                <div class="module-card" style="grid-column: 1/-1;">
+                                    <p style="color:#666;font-size:0.8rem;padding:20px;">Loading modules...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assessments Overview -->
+                        <div class="panel">
+                            <div class="panel-title">📝 Assessments Overview</div>
+                            <div style="overflow-x:auto;">
+                                <table class="assessments-table" id="assessTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Assessment</th>
+                                            <th>Weight</th>
+                                            <th>Due Date</th>
+                                            <th>My Mark</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assessBody">
+                                        <tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="text-align:center;margin-top:16px;">
+                                <button class="quick-action" style="display:inline-flex;align-items:center;gap:8px;width:auto;padding:10px 20px;" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
+                                    View all assessments →
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row: Grade Calc + Exam Eligibility -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                            <div class="panel">
+                                <div class="panel-title">🧮 Grade Calculator</div>
+                                <div class="calc-grid" style="grid-template-columns:1fr;gap:12px;">
+                                    <div class="calc-scenarios" id="calcScenarios">
+                                        <div class="calc-scenario">
+                                            <span class="score">Enter marks to see scenarios</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-title">✅ Exam Eligibility</div>
+                                <div id="examEligList">
+                                    <p style="color:#666;font-size:0.8rem;">Add modules to check eligibility</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label>📊 Current Mark (%)</label>
-                        <input type="number" id="currentMark" placeholder="65">
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="right-col">
+
+                        <!-- Upcoming Countdowns -->
+                        <div class="panel">
+                            <div class="panel-title">⏳ Upcoming Countdowns</div>
+                            <div id="upcomingCountdowns">
+                                <p style="color:#666;font-size:0.8rem;">No deadlines yet</p>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="panel">
+                            <div class="panel-title">⚡ Quick Actions</div>
+                            <div class="quick-actions">
+                                <div class="quick-action" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
+                                    <span class="qa-icon">➕</span>Add<br>Assessment
+                                </div>
+                                <div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))">
+                                    <span class="qa-icon">⏳</span>Add<br>Countdown
+                                </div>
+                                <div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))">
+                                    <span class="qa-icon">🎯</span>Add<br>Goal
+                                </div>
+                                <div class="quick-action" onclick="switchView('notes', document.querySelector('[data-view=notes]'))">
+                                    <span class="qa-icon">📝</span>Add<br>Note
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label>🏆 Target Mark (%)</label>
-                        <input type="number" id="targetMark" placeholder="75">
-                    </div>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="input-group">
-                    <label>📅 Deadline Date</label>
-                    <input type="date" id="eventDate">
-                </div>
-                <div class="input-group">
-                    <label>⏰ Deadline Time</label>
-                    <input type="time" id="eventTime">
+            <!-- PLACEHOLDER VIEWS -->
+            <div class="view" id="view-modules">
+                <div class="coming-soon">
+                    <div class="icon">📚</div>
+                    <h2>Modules</h2>
+                    <p>Coming in Phase 2 - Add and manage your modules</p>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="input-group">
-                    <label>⚠️ Consequence</label>
-                    <input type="text" id="consequence" placeholder="e.g., Fail the module">
-                </div>
-                <div class="input-group">
-                    <label>🔥 Severity</label>
-                    <select id="severity">
-                        <option value="low">🟢 Low</option>
-                        <option value="medium" selected>🟡 Medium</option>
-                        <option value="high">🟠 High</option>
-                        <option value="critical">🔴 CRITICAL</option>
-                    </select>
+            <div class="view" id="view-assessments">
+                <div class="coming-soon">
+                    <div class="icon">📝</div>
+                    <h2>Assessments</h2>
+                    <p>Coming in Phase 3 - Full assessment management</p>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="input-group">
-                    <label>🎨 Choose Color</label>
-                    <input type="color" id="eventColor" value="#ff8c00">
-                </div>
-                <div class="input-group">
-                    <label>🖼️ Thumbnail Image</label>
-                    <input type="file" id="thumbnail" accept="image/*">
+            <div class="view" id="view-marks">
+                <div class="coming-soon">
+                    <div class="icon">📊</div>
+                    <h2>Marks</h2>
+                    <p>Coming soon - Track all your marks</p>
                 </div>
             </div>
 
-            <div class="input-group" id="previewContainer">
-                <label>👁️ Image Preview</label>
-                <div id="imagePreview">No image selected</div>
-            </div>
-
-            <div class="form-row">
-                <div class="input-group">
-                    <label>📐 Image Aspect Ratio</label>
-                    <select id="aspectRatio">
-                        <option value="16/10">16:10 (Laptop/Tablet) ⭐</option>
-                        <option value="16/9">16:9 (Widescreen)</option>
-                        <option value="21/9">21:9 (Ultra-wide)</option>
-                        <option value="4/3">4:3 (Standard Photo)</option>
-                        <option value="1/1">1:1 (Square)</option>
-                        <option value="3/2">3:2 (Classic Photo)</option>
-                        <option value="19.6/9">19.6:9 (Cinematic)</option>
-                    </select>
+            <div class="view" id="view-gradecalc">
+                <div class="coming-soon">
+                    <div class="icon">🧮</div>
+                    <h2>Grade Calculator</h2>
+                    <p>Coming soon - Calculate what you need</p>
                 </div>
             </div>
 
-            <button type="button" class="btn-add" id="addButton">➕ Add Deadline</button>
-        </section>
-
-        <section class="dashboard">
-            <h2>📊 Dashboard</h2>
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <h3>Total Deadlines</h3>
-                    <h1 id="totalAssessments">0</h1>
-                </div>
-                <div class="dashboard-card">
-                    <h3>Average Mark</h3>
-                    <h1 id="averageMark">0%</h1>
-                </div>
-                <div class="dashboard-card">
-                    <h3>Upcoming</h3>
-                    <h1 id="upcomingCount">0</h1>
-                </div>
-                <div class="dashboard-card">
-                    <h3>Target Average</h3>
-                    <h1 id="targetAverage">0%</h1>
+            <div class="view" id="view-examelig">
+                <div class="coming-soon">
+                    <div class="icon">✅</div>
+                    <h2>Exam Eligibility</h2>
+                    <p>Coming soon - Check exam qualification</p>
                 </div>
             </div>
-        </section>
 
-        <section>
-            <h2 style="color: #ff8c00; margin-bottom: 20px;">📋 Upcoming Deadlines</h2>
-            <div id="eventsContainer">
-                <div class="empty-state">
-                    <div class="icon">📋</div>
-                    <h3>No deadlines yet.<br>Add one above to start tracking!</h3>
+            <div class="view" id="view-calendar">
+                <div class="coming-soon">
+                    <div class="icon">📅</div>
+                    <h2>Calendar</h2>
+                    <p>Coming soon - Monthly view</p>
                 </div>
             </div>
-        </section>
+
+            <div class="view" id="view-countdowns">
+                <div class="coming-soon">
+                    <div class="icon">⏳</div>
+                    <h2>Countdowns</h2>
+                    <p>Coming in Phase 3 - All your deadlines with live countdown</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-studyplan">
+                <div class="coming-soon">
+                    <div class="icon">📖</div>
+                    <h2>Study Plan</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-goals">
+                <div class="coming-soon">
+                    <div class="icon">🎯</div>
+                    <h2>Goals</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-projects">
+                <div class="coming-soon">
+                    <div class="icon">💻</div>
+                    <h2>Projects</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-habits">
+                <div class="coming-soon">
+                    <div class="icon">🔁</div>
+                    <h2>Habits</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-notes">
+                <div class="coming-soon">
+                    <div class="icon">📝</div>
+                    <h2>Notes</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+            <div class="view" id="view-resources">
+                <div class="coming-soon">
+                    <div class="icon">📚</div>
+                    <h2>Resources</h2>
+                    <p>Coming soon</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM BAR -->
+        <div class="bottom-bar">
+            <div class="bottom-steps">
+                <div class="bottom-step">
+                    <span class="bs-icon">📝</span>
+                    <div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div>
+                </div>
+                <span style="color:#333;">→</span>
+                <div class="bottom-step">
+                    <span class="bs-icon">🎯</span>
+                    <div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div>
+                </div>
+                <span style="color:#333;">→</span>
+                <div class="bottom-step">
+                    <span class="bs-icon">📊</span>
+                    <div class="bs-label"><strong>Track</strong><span>Measure progress</span></div>
+                </div>
+                <span style="color:#333;">→</span>
+                <div class="bottom-step">
+                    <span class="bs-icon">🏆</span>
+                    <div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div>
+                </div>
+            </div>
+            <div class="bottom-quote">
+                "The more you sweat in peace, the less you bleed in war."
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="module">
-// ===========================================
-// FIREBASE IMPORTS
-// ===========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ===========================================
-// FIREBASE CONFIG
-// ===========================================
 const firebaseConfig = {
     apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
     authDomain: "chronos-system-e3d4c.firebaseapp.com",
@@ -888,8 +385,7 @@ const firebaseConfig = {
     projectId: "chronos-system-e3d4c",
     storageBucket: "chronos-system-e3d4c.firebasestorage.app",
     messagingSenderId: "314230379065",
-    appId: "1:314230379065:web:22827183f5e4cb7f7173e8",
-    measurementId: "G-P16DP8LMFX"
+    appId: "1:314230379065:web:22827183f5e4cb7f7173e8"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -897,423 +393,260 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
-// ===========================================
-// ELEMENTS
-// ===========================================
-const loadingScreen = document.getElementById('loadingScreen');
-const authScreen = document.getElementById('authScreen');
-const mainApp = document.getElementById('mainApp');
-const googleSignInBtn = document.getElementById('googleSignInBtn');
-const authError = document.getElementById('authError');
-const userBadge = document.getElementById('userBadge');
-
-const eventTitle = document.getElementById('eventTitle');
-const category = document.getElementById('category');
-const moduleSelect = document.getElementById('module');
-const assessmentType = document.getElementById('assessmentType');
-const weight = document.getElementById('weight');
-const currentMark = document.getElementById('currentMark');
-const targetMark = document.getElementById('targetMark');
-const eventDate = document.getElementById('eventDate');
-const eventTime = document.getElementById('eventTime');
-const consequence = document.getElementById('consequence');
-const severity = document.getElementById('severity');
-const eventColor = document.getElementById('eventColor');
-const thumbnail = document.getElementById('thumbnail');
-const aspectRatio = document.getElementById('aspectRatio');
-const addButton = document.getElementById('addButton');
-const eventsContainer = document.getElementById('eventsContainer');
-const totalAssessments = document.getElementById('totalAssessments');
-const averageMark = document.getElementById('averageMark');
-const upcomingCount = document.getElementById('upcomingCount');
-const targetAverage = document.getElementById('targetAverage');
-const schoolFields = document.getElementById('schoolFields');
-
-// ===========================================
-// STATE
-// ===========================================
 let currentUser = null;
 let events = [];
+let modules = [];
 
-// ===========================================
-// AUTH
-// ===========================================
-googleSignInBtn.addEventListener('click', async () => {
-    try {
-        authError.style.display = 'none';
-        await signInWithPopup(auth, provider);
-    } catch (error) {
-        console.error('Sign in error:', error);
-        authError.textContent = 'Sign-in failed: ' + error.message;
-        authError.style.display = 'block';
-    }
+// ================= VIEW SWITCHER =================
+window.switchView = function(viewName, el) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    const view = document.getElementById('view-' + viewName);
+    if (view) view.classList.add('active');
+    if (el) el.classList.add('active');
+};
+
+// ================= AUTH =================
+document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); } catch (e) { alert('Sign-in failed: ' + e.message); }
 });
 
 window.handleLogout = async function() {
-    if (confirm('Logout?')) {
-        await signOut(auth);
-    }
+    if (confirm('Logout?')) await signOut(auth);
 };
 
 onAuthStateChanged(auth, async (user) => {
-    loadingScreen.style.display = 'none';
-    
+    document.getElementById('loadingScreen').style.display = 'none';
     if (user) {
         currentUser = user;
-        userBadge.textContent = '👤 ' + (user.displayName || user.email);
-        authScreen.style.display = 'none';
-        mainApp.style.display = 'block';
-        await loadUserEvents();
-        initApp();
+        const name = user.displayName || user.email.split('@')[0];
+        const initial = name.charAt(0).toUpperCase();
+        document.getElementById('userName').textContent = name;
+        document.getElementById('userAvatar').textContent = initial;
+        document.getElementById('greeting').textContent = `Good evening, ${name}! 👋`;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('app').style.display = 'grid';
+        await loadData();
+        renderDashboard();
     } else {
-        currentUser = null;
-        events = [];
-        authScreen.style.display = 'flex';
-        mainApp.style.display = 'none';
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
     }
 });
 
-// ===========================================
-// DATABASE
-// ===========================================
-async function loadUserEvents() {
+// ================= LOAD DATA =================
+async function loadData() {
     if (!currentUser) return;
     try {
         const dbRef = ref(db);
-        const snapshot = await get(child(dbRef, `users/${currentUser.uid}/events`));
-        if (snapshot.exists()) {
-            const data = snapshot.val();
+        const eventsSnap = await get(child(dbRef, `users/${currentUser.uid}/events`));
+        if (eventsSnap.exists()) {
+            const data = eventsSnap.val();
             events = Array.isArray(data) ? data.filter(e => e) : Object.values(data).filter(e => e);
-        } else {
-            events = [];
-        }
-    } catch (error) {
-        console.error('Load error:', error);
-        events = [];
-    }
+        } else events = [];
+        
+        const modSnap = await get(child(dbRef, `users/${currentUser.uid}/modules`));
+        if (modSnap.exists()) {
+            const data = modSnap.val();
+            modules = Array.isArray(data) ? data.filter(m => m) : Object.values(data).filter(m => m);
+        } else modules = [];
+    } catch (e) { console.error(e); }
 }
 
-async function saveEvents() {
-    if (!currentUser) return;
-    try {
-        await set(ref(db, `users/${currentUser.uid}/events`), events);
-        console.log('Saved to cloud ✅');
-    } catch (error) {
-        console.error('Save error:', error);
-        alert('⚠️ Could not save to cloud. Check your internet.');
-    }
-}
-
-// ===========================================
-// UI FUNCTIONS
-// ===========================================
-window.toggleSchoolFields = function() {
-    schoolFields.style.display = category.value === 'Personal' ? 'none' : 'block';
-};
-
-function getTimeRemaining(deadlineISO) {
-    const now = new Date().getTime();
-    const deadline = new Date(deadlineISO).getTime();
-    const diff = deadline - now;
-
-    if (diff <= 0) {
-        return { days: 0, hours: 0, minutes: 0, seconds: 0, totalSeconds: 0, isOverdue: true };
-    }
-
-    const totalSeconds = Math.floor(diff / 1000);
+// ================= TIME HELPERS =================
+function getTimeRemaining(iso) {
+    const diff = new Date(iso).getTime() - Date.now();
+    if (diff <= 0) return { days:0,hours:0,minutes:0,seconds:0,isOverdue:true };
+    const s = Math.floor(diff/1000);
     return {
-        days: Math.floor(totalSeconds / 86400),
-        hours: Math.floor((totalSeconds % 86400) / 3600),
-        minutes: Math.floor((totalSeconds % 3600) / 60),
-        seconds: totalSeconds % 60,
-        totalSeconds,
+        days: Math.floor(s/86400),
+        hours: Math.floor((s%86400)/3600),
+        minutes: Math.floor((s%3600)/60),
+        seconds: s%60,
         isOverdue: false
     };
 }
 
-function getStatus(mark) {
-    if (mark >= 75) return { label: '🌟 Excellent', class: 'excellent' };
-    if (mark >= 60) return { label: '✅ Good', class: 'good' };
-    if (mark >= 50) return { label: '⚠️ Warning', class: 'warning' };
-    return { label: '🚨 At Risk', class: 'risk' };
+// ================= RENDER DASHBOARD =================
+function renderDashboard() {
+    renderModules();
+    renderUpcoming();
+    renderAssessTable();
 }
 
-function displayEvents() {
-    if (events.length === 0) {
-        eventsContainer.innerHTML = `
-            <div class="empty-state">
-                <div class="icon">📋</div>
-                <h3>No deadlines yet.<br>Add one above to start tracking!</h3>
+function renderModules() {
+    const row = document.getElementById('modulesRow');
+    if (!modules.length) {
+        // Show a default placeholder card
+        row.innerHTML = `
+            <div class="module-card" style="grid-column:1/-1;">
+                <p style="color:#666;font-size:0.8rem;padding:20px;">
+                    No modules yet. Add modules in Phase 2.
+                </p>
+            </div>
+            <div class="overall-card">
+                <div class="trophy">🏆</div>
+                <div class="overall-pct">0%</div>
+                <div class="overall-label">Overall Average</div>
+                <div class="overall-tagline">Add modules to begin</div>
             </div>
         `;
         return;
     }
-
-    const sorted = [...events].sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
+    
     let html = '';
-    sorted.forEach(event => {
-        const remaining = getTimeRemaining(event.deadline);
-        const status = getStatus(event.currentMark || 0);
-
-        const d = String(remaining.days).padStart(2, '0');
-        const h = String(remaining.hours).padStart(2, '0');
-        const m = String(remaining.minutes).padStart(2, '0');
-        const s = String(remaining.seconds).padStart(2, '0');
-
-        const dateObj = new Date(event.deadline);
-        const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-        const maxSeconds = 90 * 86400;
-        const totalSecs = remaining.totalSeconds;
-        let percentRemaining = 0;
-        let pieColor = '#4ade80';
-        let pieClass = '';
-
-        if (remaining.isOverdue) {
-            percentRemaining = 0; pieColor = '#ef4444'; pieClass = 'overdue';
-        } else if (totalSecs > maxSeconds) {
-            percentRemaining = 100;
-        } else {
-            percentRemaining = (totalSecs / maxSeconds) * 100;
-        }
-        percentRemaining = Math.max(0, Math.min(100, percentRemaining));
-
-        if (totalSecs < 86400 && !remaining.isOverdue) { pieColor = '#f87171'; pieClass = 'danger'; }
-        else if (totalSecs < 604800 && !remaining.isOverdue) { pieColor = '#facc15'; }
-
-        const circumference = 2 * Math.PI * 34;
-        const offset = circumference - (percentRemaining / 100) * circumference;
-
-        const hasThumbnail = event.thumbnail && event.thumbnail !== 'null';
-        const ratioClass = event.aspectRatio ? `ratio-${event.aspectRatio.replace('/', '-')}` : '';
-        const thumbnailHTML = hasThumbnail
-            ? `<div class="card-thumbnail ${ratioClass}" style="background-image: url('${event.thumbnail}');"></div>`
-            : `<div class="card-thumbnail no-image">🖼️ No Image</div>`;
-
-        const severityInfo = event.severityConfig || { label: '🟡 Medium', color: '#facc15', stakes: 50, icon: '🔥' };
-        const showMarks = event.category !== 'Personal';
-
+    let total = 0;
+    modules.forEach(m => {
+        const mark = m.currentMark || 0;
+        total += mark;
+        const pct = Math.min(100, mark);
+        const circumference = 2 * Math.PI * 36;
+        const offset = circumference - (pct/100) * circumference;
+        let color = '#4ade80';
+        if (mark < 50) color = '#f87171';
+        else if (mark < 60) color = '#fb923c';
+        else if (mark < 75) color = '#facc15';
+        
+        let badgeClass = 'eligible', badgeText = '✅ Eligible';
+        if (mark < 50) { badgeClass = 'atrisk'; badgeText = '⚠️ At Risk'; }
+        else if (mark < 60) { badgeClass = 'warning'; badgeText = '🟡 Warning'; }
+        
         html += `
-            <div class="card" style="border-left-color: ${event.color || '#ff8c00'};">
-                ${thumbnailHTML}
-                <h2>${event.title}</h2>
-                <p><strong>📚 Module:</strong> ${event.module || 'None'}</p>
-                <p><strong>📂 Category:</strong> ${event.category}</p>
-                <p><strong>📝 Type:</strong> ${event.assessmentType}</p>
-                ${showMarks ? `
-                    <p><strong>🎯 Weight:</strong> ${event.weight || 0}%</p>
-                    <p><strong>📊 Current:</strong> ${event.currentMark || 0}%</p>
-                    <p><strong>🏆 Target:</strong> ${event.targetMark || 0}%</p>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: ${Math.min(event.currentMark || 0, 100)}%; background: ${event.color};"></div>
-                    </div>
-                ` : ''}
-
-                <div class="consequence-box severity-${event.severity}">
-                    <span class="label">⚠️ CONSEQUENCE</span>
-                    <div class="text">${event.consequence || 'No consequence specified'}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:8px;">
-                        <span class="severity-badge">${severityInfo.icon} ${severityInfo.label}</span>
-                        <div class="stakes-meter" style="flex:1; min-width:100px;">
-                            <span style="font-size:0.6rem; color:#666;">Stakes</span>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width:${severityInfo.stakes}%; background:${severityInfo.color};"></div>
-                            </div>
-                            <span class="stakes-label">${severityInfo.stakes}%</span>
-                        </div>
+            <div class="module-card">
+                <div class="module-header">
+                    <div>
+                        <span class="module-name">${m.name || 'Module'}</span>
+                        <span class="module-full">${m.fullName || ''}</span>
                     </div>
                 </div>
-
-                <div class="countdown-wrapper">
-                    <svg class="pie-timer ${pieClass}" viewBox="0 0 80 80" width="80" height="80">
-                        <circle class="bg" cx="40" cy="40" r="34"/>
-                        <circle class="progress" cx="40" cy="40" r="34"
-                                stroke="${pieColor}"
+                <div class="module-ring">
+                    <svg viewBox="0 0 90 90">
+                        <circle class="ring-bg" cx="45" cy="45" r="36"/>
+                        <circle class="ring-progress" cx="45" cy="45" r="36"
+                                stroke="${color}"
                                 stroke-dasharray="${circumference}"
                                 stroke-dashoffset="${offset}"/>
-                        <text class="center-text" x="40" y="36">${remaining.isOverdue ? '0' : remaining.days}</text>
-                        <text class="center-label" x="40" y="50">${remaining.isOverdue ? 'OVERDUE' : 'DAYS'}</text>
                     </svg>
-
-                    <div class="countdown-numbers">
-                        <div class="unit"><span class="number">${d}</span><span class="label">Days</span></div>
-                        <div class="unit"><span class="number">${h}</span><span class="label">Hrs</span></div>
-                        <div class="unit"><span class="number">${m}</span><span class="label">Min</span></div>
-                        <div class="unit"><span class="number">${s}</span><span class="label">Sec</span></div>
+                    <div class="center">
+                        <div class="pct">${mark}%</div>
+                        <div class="pct-label">CURRENT</div>
                     </div>
                 </div>
+                <div class="module-mark">${mark} / 100</div>
+                <div class="module-badge ${badgeClass}">${badgeText}</div>
+            </div>
+        `;
+    });
+    
+    const avg = Math.round(total / modules.length);
+    let avgTagline = 'Good Progress!';
+    if (avg < 50) avgTagline = 'Needs Focus!';
+    else if (avg < 60) avgTagline = 'Keep Pushing!';
+    else if (avg >= 75) avgTagline = 'Excellent!';
+    
+    html += `
+        <div class="overall-card">
+            <div class="trophy">🏆</div>
+            <div class="overall-pct">${avg}%</div>
+            <div class="overall-label">Overall Average</div>
+            <div class="overall-tagline">${avgTagline}</div>
+        </div>
+    `;
+    
+    row.innerHTML = html;
+}
 
-                <div class="card-footer">
-                    <span class="status-badge ${status.class}">${status.label}</span>
-                    <span style="color:#666; font-size:0.75rem;">${dateStr} · ${timeStr}</span>
-                    <button class="delete-btn" onclick="deleteEvent(${event.id})">✕ Delete</button>
+function renderUpcoming() {
+    const container = document.getElementById('upcomingCountdowns');
+    const now = Date.now();
+    const upcoming = events
+        .filter(e => new Date(e.deadline).getTime() > now)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+        .slice(0, 4);
+    
+    if (!upcoming.length) {
+        container.innerHTML = '<p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p>';
+        return;
+    }
+    
+    let html = '';
+    upcoming.forEach(e => {
+        const r = getTimeRemaining(e.deadline);
+        const dateObj = new Date(e.deadline);
+        const dateStr = dateObj.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' });
+        const timeStr = dateObj.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+        const color = e.color || '#ff8c00';
+        
+        html += `
+            <div class="countdown-mini" style="border-left-color:${color};">
+                <div class="cm-header">
+                    <span class="cm-title">${e.title || 'Deadline'}</span>
+                    <span class="cm-date">${dateStr} · ${timeStr}</span>
+                </div>
+                <div class="cm-grid">
+                    <div class="cm-item">
+                        <span class="cm-num">${String(r.days).padStart(2,'0')}</span>
+                        <span class="cm-lbl">DAYS</span>
+                    </div>
+                    <div class="cm-item">
+                        <span class="cm-num">${String(r.hours).padStart(2,'0')}</span>
+                        <span class="cm-lbl">HRS</span>
+                    </div>
+                    <div class="cm-item">
+                        <span class="cm-num">${String(r.minutes).padStart(2,'0')}</span>
+                        <span class="cm-lbl">MIN</span>
+                    </div>
+                    <div class="cm-item">
+                        <span class="cm-num">${String(r.seconds).padStart(2,'0')}</span>
+                        <span class="cm-lbl">SEC</span>
+                    </div>
                 </div>
             </div>
         `;
     });
-
-    eventsContainer.innerHTML = html;
+    container.innerHTML = html;
 }
 
-window.deleteEvent = async function(id) {
-    if (confirm('Delete this deadline?')) {
-        events = events.filter(event => event.id !== id);
-        await saveEvents();
-        displayEvents();
-        updateDashboard();
-    }
-};
-
-function updateDashboard() {
-    totalAssessments.textContent = events.length;
-    let currentTotal = 0, targetTotal = 0, upcoming = 0, academicCount = 0;
-    const now = new Date().getTime();
-
-    events.forEach(event => {
-        if (event.category !== 'Personal') {
-            currentTotal += event.currentMark || 0;
-            targetTotal += event.targetMark || 0;
-            academicCount++;
-        }
-        if (new Date(event.deadline).getTime() > now) upcoming++;
-    });
-
-    if (academicCount > 0) {
-        averageMark.textContent = (currentTotal / academicCount).toFixed(1) + '%';
-        targetAverage.textContent = (targetTotal / academicCount).toFixed(1) + '%';
-    } else {
-        averageMark.textContent = '0%';
-        targetAverage.textContent = '0%';
-    }
-    upcomingCount.textContent = upcoming;
-}
-
-async function addEvent() {
-    const title = eventTitle.value.trim();
-    const date = eventDate.value;
-    const time = eventTime.value;
-
-    if (title === '' || date === '' || time === '') {
-        alert('⚠️ Please fill in Event Name, Date, and Time.');
+function renderAssessTable() {
+    const body = document.getElementById('assessBody');
+    const recent = [...events].sort((a, b) => new Date(b.deadline) - new Date(a.deadline)).slice(0, 5);
+    
+    if (!recent.length) {
+        body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>';
         return;
     }
-
-    const severityConfigMap = {
-        low: { label: '🟢 Low', color: '#4ade80', stakes: 20, icon: '⚡' },
-        medium: { label: '🟡 Medium', color: '#facc15', stakes: 50, icon: '🔥' },
-        high: { label: '🟠 High', color: '#fb923c', stakes: 80, icon: '💀' },
-        critical: { label: '🔴 CRITICAL', color: '#ef4444', stakes: 100, icon: '☠️' }
-    }[severity.value];
-
-    const newEvent = {
-        id: Date.now(),
-        title: title,
-        category: category.value,
-        module: moduleSelect.value === 'None' ? '' : moduleSelect.value,
-        assessmentType: assessmentType.value,
-        weight: category.value === 'Personal' ? 0 : Number(weight.value) || 0,
-        currentMark: category.value === 'Personal' ? 0 : Number(currentMark.value) || 0,
-        targetMark: category.value === 'Personal' ? 0 : Number(targetMark.value) || 0,
-        color: eventColor.value,
-        deadline: date + 'T' + time,
-        consequence: consequence.value.trim() || 'No consequence specified',
-        severity: severity.value,
-        severityConfig: severityConfigMap,
-        aspectRatio: aspectRatio.value,
-        thumbnail: null
-    };
-
-    const finalize = async () => {
-        events.push(newEvent);
-        await saveEvents();
-        displayEvents();
-        updateDashboard();
-        clearForm();
-        alert('✅ Deadline added and synced to cloud!');
-    };
-
-    if (thumbnail.files && thumbnail.files[0]) {
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            newEvent.thumbnail = e.target.result;
-            await finalize();
-        };
-        reader.readAsDataURL(thumbnail.files[0]);
-    } else {
-        await finalize();
-    }
+    
+    let html = '';
+    recent.forEach(e => {
+        const dateObj = new Date(e.deadline);
+        const dateStr = dateObj.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' });
+        const isPast = dateObj.getTime() < Date.now();
+        const statusClass = isPast ? 'status-ok' : 'status-pending';
+        const statusText = isPast ? '✅ Completed' : '⏳ Upcoming';
+        
+        html += `
+            <tr>
+                <td>
+                    <div class="assess-name">${e.title || 'Assessment'}</div>
+                    <div class="assess-module">${e.module || 'No module'}</div>
+                </td>
+                <td>${e.weight || 0}%</td>
+                <td>${dateStr}</td>
+                <td>${e.currentMark || '-'} / 100</td>
+                <td class="${statusClass}">${statusText}</td>
+            </tr>
+        `;
+    });
+    body.innerHTML = html;
 }
 
-function clearForm() {
-    eventTitle.value = '';
-    category.value = 'Academic';
-    moduleSelect.value = 'None';
-    assessmentType.value = 'Assignment';
-    weight.value = '';
-    currentMark.value = '';
-    targetMark.value = '';
-    eventDate.value = '';
-    eventTime.value = '';
-    consequence.value = '';
-    severity.value = 'medium';
-    eventColor.value = '#ff8c00';
-    thumbnail.value = '';
-    aspectRatio.value = '16/10';
-    schoolFields.style.display = 'block';
-    document.getElementById('previewContainer').style.display = 'none';
-    document.getElementById('imagePreview').style.backgroundImage = 'none';
-    document.getElementById('imagePreview').innerHTML = 'No image selected';
-}
-
-function setDefaultDate() {
-    const now = new Date();
-    now.setDate(now.getDate() + 7);
-    now.setHours(23, 59, 0, 0);
-    eventDate.value = now.toISOString().split('T')[0];
-    eventTime.value = '23:59';
-}
-
-// Image preview
-thumbnail.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    const previewContainer = document.getElementById('previewContainer');
-    const imagePreview = document.getElementById('imagePreview');
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            imagePreview.style.backgroundImage = `url('${event.target.result}')`;
-            imagePreview.innerHTML = '';
-            previewContainer.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        imagePreview.style.backgroundImage = 'none';
-        imagePreview.innerHTML = 'No image selected';
-        previewContainer.style.display = 'none';
-    }
-});
-
-addButton.addEventListener('click', addEvent);
-
-function initApp() {
-    toggleSchoolFields();
-    setDefaultDate();
-    displayEvents();
-    updateDashboard();
-}
-
-// Auto-refresh every second
-setInterval(function() {
-    if (currentUser) {
-        displayEvents();
-        updateDashboard();
-    }
+// ================= LIVE UPDATE =================
+setInterval(() => {
+    if (currentUser) renderUpcoming();
 }, 1000);
 
-console.log('✅ Chronos System with Google Auth + Cloud Sync loaded!');
+console.log('👑 Golden Plan loaded!');
 </script>
 
 </body>
