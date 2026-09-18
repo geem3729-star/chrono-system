@@ -1,0 +1,14 @@
+[33m9021c6e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add preset modules dropdown and slider
+[33m0bdc0d8[m Bold edition styling + navigation working
+[33m1e1cd4f[m Separate JS into script.js file
+[33m299afc8[m Separate CSS into style.css
+[33m2023316[m Sync changes
+[33m1c7747a[m Update index.html New pie timer design + improved form
+[33m5b9513b[m Update index.html ADDING MODULE CODE
+[33md20e505[m Update index.html Add Google Sign-In and Firebase cloud sync
+[33mba90b51[m Update print statement from 'Hello' to 'Goodbye'
+[33m713fe75[m Fix HTML encoding issues in index.html
+[33mcae4322[m background-size: contain;
+[33mb54db43[m Update priUpdate style.css - Made thumbnails bigger for better visibilitynt statement from 'Hello' to 'Goodbye'
+[33m05f87b2[m Add files via upload
+[33m91ece3c[m Initial commit

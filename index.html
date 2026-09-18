@@ -4,23 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golden Plan</title>
-
-    <!-- Link to external CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ============================================================
-         LOADING SCREEN - shows while checking auth
-         ============================================================ -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
         <p>Loading Golden Plan...</p>
     </div>
 
-    <!-- ============================================================
-         AUTH SCREEN - shows when NOT signed in
-         ============================================================ -->
     <div id="authScreen" style="display:none;">
         <div class="auth-box">
             <div class="auth-logo">
@@ -35,12 +27,7 @@
         </div>
     </div>
 
-    <!-- ============================================================
-         MAIN APP - shows when signed in
-         ============================================================ -->
     <div id="app" class="app" style="display:none;">
-
-        <!-- ========== SIDEBAR ========== -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <span class="crown">👑</span>
@@ -52,64 +39,36 @@
 
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
-                <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
-                    <span class="nav-icon">🏠</span> Dashboard
-                </button>
+                <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)"><span class="nav-icon">🏠</span> Dashboard</button>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Academics</div>
-                <button class="nav-item" data-view="modules" onclick="switchView('modules', this)">
-                    <span class="nav-icon">📚</span> Modules
-                </button>
-                <button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)">
-                    <span class="nav-icon">📝</span> Assessments
-                </button>
-                <button class="nav-item" data-view="marks" onclick="switchView('marks', this)">
-                    <span class="nav-icon">📊</span> Marks
-                </button>
-                <button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)">
-                    <span class="nav-icon">🧮</span> Grade Calculator
-                </button>
-                <button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)">
-                    <span class="nav-icon">✅</span> Exam Eligibility
-                </button>
+                <button class="nav-item" data-view="modules" onclick="switchView('modules', this)"><span class="nav-icon">📚</span> Modules</button>
+                <button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)"><span class="nav-icon">📝</span> Assessments</button>
+                <button class="nav-item" data-view="marks" onclick="switchView('marks', this)"><span class="nav-icon">📊</span> Marks</button>
+                <button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)"><span class="nav-icon">🧮</span> Grade Calculator</button>
+                <button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)"><span class="nav-icon">✅</span> Exam Eligibility</button>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Planner</div>
-                <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)">
-                    <span class="nav-icon">📅</span> Calendar
-                </button>
-                <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)">
-                    <span class="nav-icon">⏳</span> Countdowns
-                </button>
-                <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)">
-                    <span class="nav-icon">📖</span> Study Plan
-                </button>
+                <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)"><span class="nav-icon">📅</span> Calendar</button>
+                <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)"><span class="nav-icon">⏳</span> Countdowns</button>
+                <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)"><span class="nav-icon">📖</span> Study Plan</button>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Personal</div>
-                <button class="nav-item" data-view="goals" onclick="switchView('goals', this)">
-                    <span class="nav-icon">🎯</span> Goals
-                </button>
-                <button class="nav-item" data-view="projects" onclick="switchView('projects', this)">
-                    <span class="nav-icon">💻</span> Projects
-                </button>
-                <button class="nav-item" data-view="habits" onclick="switchView('habits', this)">
-                    <span class="nav-icon">🔁</span> Habits
-                </button>
+                <button class="nav-item" data-view="goals" onclick="switchView('goals', this)"><span class="nav-icon">🎯</span> Goals</button>
+                <button class="nav-item" data-view="projects" onclick="switchView('projects', this)"><span class="nav-icon">💻</span> Projects</button>
+                <button class="nav-item" data-view="habits" onclick="switchView('habits', this)"><span class="nav-icon">🔁</span> Habits</button>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Tools</div>
-                <button class="nav-item" data-view="notes" onclick="switchView('notes', this)">
-                    <span class="nav-icon">📝</span> Notes
-                </button>
-                <button class="nav-item" data-view="resources" onclick="switchView('resources', this)">
-                    <span class="nav-icon">📚</span> Resources
-                </button>
+                <button class="nav-item" data-view="notes" onclick="switchView('notes', this)"><span class="nav-icon">📝</span> Notes</button>
+                <button class="nav-item" data-view="resources" onclick="switchView('resources', this)"><span class="nav-icon">📚</span> Resources</button>
             </div>
 
             <div class="sidebar-footer">
@@ -121,10 +80,7 @@
             </div>
         </aside>
 
-        <!-- ========== MAIN AREA ========== -->
         <div class="main-area">
-
-            <!-- TOP BAR -->
             <div class="topbar">
                 <div class="topbar-left">
                     <h1 id="greeting">Good evening! 👋</h1>
@@ -142,67 +98,39 @@
                 </div>
             </div>
 
-            <!-- CONTENT - views switch here -->
             <div class="content">
 
-                <!-- DASHBOARD VIEW -->
+                <!-- ============ DASHBOARD ============ -->
                 <div class="view active" id="view-dashboard">
                     <div class="dashboard-grid">
-
-                        <!-- LEFT COLUMN -->
                         <div class="left-col">
-
                             <div class="panel">
                                 <div class="panel-title">📊 Academic Overview</div>
                                 <div class="modules-row" id="modulesRow">
-                                    <div class="module-card" style="grid-column: 1/-1;">
-                                        <p style="color:#666;font-size:0.8rem;padding:20px;">Loading modules...</p>
-                                    </div>
+                                    <p style="color:#666;padding:20px;">Loading...</p>
                                 </div>
                             </div>
 
                             <div class="panel">
                                 <div class="panel-title">📝 Assessments Overview</div>
-                                <div style="overflow-x:auto;">
-                                    <table class="assessments-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Assessment</th>
-                                                <th>Weight</th>
-                                                <th>Due Date</th>
-                                                <th>My Mark</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="assessBody">
-                                            <tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-                                <div class="panel">
-                                    <div class="panel-title">🧮 Grade Calculator</div>
-                                    <div id="calcScenarios" class="calc-scenarios">
-                                        <div class="calc-scenario">
-                                            <span class="score">Add modules to see scenarios</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="panel">
-                                    <div class="panel-title">✅ Exam Eligibility</div>
-                                    <div id="examEligList">
-                                        <p style="color:#666;font-size:0.8rem;">Add modules to check eligibility</p>
-                                    </div>
-                                </div>
+                                <table class="assessments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Assessment</th>
+                                            <th>Weight</th>
+                                            <th>Due Date</th>
+                                            <th>My Mark</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assessBody">
+                                        <tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- RIGHT COLUMN -->
                         <div class="right-col">
-
                             <div class="panel">
                                 <div class="panel-title">⏳ Upcoming Countdowns</div>
                                 <div id="upcomingCountdowns">
@@ -213,11 +141,11 @@
                             <div class="panel">
                                 <div class="panel-title">⚡ Quick Actions</div>
                                 <div class="quick-actions">
-                                    <div class="quick-action" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
-                                        <span class="qa-icon">➕</span>Add<br>Assessment
-                                    </div>
                                     <div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))">
                                         <span class="qa-icon">⏳</span>Add<br>Countdown
+                                    </div>
+                                    <div class="quick-action" onclick="switchView('modules', document.querySelector('[data-view=modules]'))">
+                                        <span class="qa-icon">📚</span>Add<br>Module
                                     </div>
                                     <div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))">
                                         <span class="qa-icon">🎯</span>Add<br>Goal
@@ -231,222 +159,161 @@
                     </div>
                 </div>
 
-                <!-- PLACEHOLDER VIEWS -->
-        <div class="view" id="view-modules">
-    <div class="panel" style="margin-bottom: 20px;">
-        <div class="panel-title">➕ Add New Module</div>
-        
-        <!-- PRESET DROPDOWN -->
-        <div style="margin-bottom: 16px;">
-            <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">📚 Pick From Your Course</label>
-            <select id="presetModule" 
-                    style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none; cursor:pointer;">
-                <option value="">-- Select a module (or type custom below) --</option>
-                <option value="CMPG172|Computer Programming 2">CMPG172 — Computer Programming 2</option>
-                <option value="CMPG122|Computer Programming 1">CMPG122 — Computer Programming 1</option>
-                <option value="MTHS171|Mathematics 1A">MTHS171 — Mathematics 1A</option>
-                <option value="MTHS172|Calculus for Informatics">MTHS172 — Calculus for Informatics</option>
-                <option value="APPM172|Applied Mathematics">APPM172 — Applied Mathematics</option>
-                <option value="STTN111|Statistics for Science">STTN111 — Statistics for Science</option>
-                <option value="NPHY172|Physics for Informatics">NPHY172 — Physics for Informatics</option>
-                <option value="CUSTOM">✏️ Custom module (type below)</option>
-            </select>
-        </div>
+                <!-- ============ MODULES ============ -->
+                <div class="view" id="view-modules">
+                    <div class="panel" style="margin-bottom:20px;">
+                        <div class="panel-title">➕ Add New Module</div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">📚 Pick From Your Course</label>
+                            <select id="presetModule" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;font-size:0.9rem;outline:none;">
+                                <option value="">-- Select a module --</option>
+                                <option value="CMPG172|Computer Programming 2">CMPG172 — Computer Programming 2</option>
+                                <option value="CMPG122|Computer Programming 1">CMPG122 — Computer Programming 1</option>
+                                <option value="MTHS171|Mathematics 1A">MTHS171 — Mathematics 1A</option>
+                                <option value="MTHS172|Calculus for Informatics">MTHS172 — Calculus for Informatics</option>
+                                <option value="APPM172|Applied Mathematics">APPM172 — Applied Mathematics</option>
+                                <option value="STTN111|Statistics for Science">STTN111 — Statistics for Science</option>
+                                <option value="NPHY172|Physics for Informatics">NPHY172 — Physics for Informatics</option>
+                                <option value="CUSTOM">✏️ Custom module</option>
+                            </select>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Module Code</label>
+                                <input type="text" id="moduleCode" placeholder="e.g., CMPG172" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Full Name</label>
+                                <input type="text" id="moduleName" placeholder="e.g., Computer Programming 2" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Current Mark (%): <span id="markDisplay" style="color:#ff8c00;font-weight:700;">50</span>%</label>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <input type="range" id="moduleMarkSlider" min="0" max="100" value="50" style="flex:1;height:6px;cursor:pointer;">
+                                    <input type="number" id="moduleMark" min="0" max="100" value="50" style="width:70px;padding:8px;background:#1a1a1a;border:1px solid #262626;border-radius:8px;color:#fff;text-align:center;outline:none;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Module Color</label>
+                                <input type="color" id="moduleColor" value="#ff8c00" style="width:100%;padding:6px;height:48px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;cursor:pointer;">
+                            </div>
+                        </div>
+                        <button id="addModuleBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Module</button>
+                    </div>
 
-        <!-- CODE + NAME -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-            <div>
-                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Module Code</label>
-                <input type="text" id="moduleCode" placeholder="e.g., CMPG172" 
-                       style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none;">
-            </div>
-            <div>
-                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Full Name</label>
-                <input type="text" id="moduleName" placeholder="e.g., Computer Programming 2" 
-                       style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none;">
-            </div>
-        </div>
-
-        <!-- MARK SLIDER + COLOR -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-            <div>
-                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">
-                    Current Mark (%): <span id="markDisplay" style="color:#ff8c00; font-weight:700;">50</span>%
-                </label>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="range" id="moduleMarkSlider" min="0" max="100" value="50" 
-                           style="flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#1a1a1a; border-radius:10px; outline:none; cursor:pointer;">
-                    <input type="number" id="moduleMark" min="0" max="100" value="50"
-                           style="width:70px; padding:8px 10px; background:#1a1a1a; border:1px solid #262626; border-radius:8px; color:#fff; font-size:0.9rem; font-weight:600; outline:none; text-align:center;">
-                </div>
-            </div>
-            <div>
-                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Module Color</label>
-                <input type="color" id="moduleColor" value="#ff8c00"
-                       style="width:100%; padding:6px; height:48px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; cursor:pointer;">
-            </div>
-        </div>
-
-        <button id="addModuleBtn" 
-                style="padding:14px 32px; background:#ff8c00; border:none; border-radius:10px; color:#fff; font-weight:600; font-size:0.875rem; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s;">
-            ➕ Add Module
-        </button>
-    </div>
-
-    <div class="panel">
-        <div class="panel-title">📚 My Modules</div>
-        <div class="modules-row" id="modulesList">
-            <p style="color:#888; font-size:0.9rem; grid-column:1/-1; padding:20px;">No modules yet. Add one above.</p>
-        </div>
-    </div>
-</div>
-
-        <button id="addModuleBtn" 
-                style="padding:14px 32px; background:#ff8c00; border:none; border-radius:10px; color:#fff; font-weight:600; font-size:0.875rem; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s;">
-            ➕ Add Module
-        </button>
-    </div>
-
-    <div class="panel">
-        <div class="panel-title">📚 My Modules</div>
-        <div class="modules-row" id="modulesList">
-            <p style="color:#888; font-size:0.9rem; grid-column:1/-1; padding:20px;">No modules yet. Add one above.</p>
-        </div>
-    </div>
-</div>
-
-                <div class="view" id="view-assessments">
-                    <div class="coming-soon">
-                        <div class="icon">📝</div>
-                        <h2>Assessments</h2>
-                        <p>Coming soon - Full assessment management</p>
+                    <div class="panel">
+                        <div class="panel-title">📚 My Modules</div>
+                        <div class="modules-row" id="modulesList">
+                            <p style="color:#888;padding:20px;grid-column:1/-1;">No modules yet. Add one above.</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="view" id="view-marks">
-                    <div class="coming-soon">
-                        <div class="icon">📊</div>
-                        <h2>Marks</h2>
-                        <p>Coming soon - Track all your marks</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-gradecalc">
-                    <div class="coming-soon">
-                        <div class="icon">🧮</div>
-                        <h2>Grade Calculator</h2>
-                        <p>Coming soon - Calculate what you need</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-examelig">
-                    <div class="coming-soon">
-                        <div class="icon">✅</div>
-                        <h2>Exam Eligibility</h2>
-                        <p>Coming soon - Check exam qualification</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-calendar">
-                    <div class="coming-soon">
-                        <div class="icon">📅</div>
-                        <h2>Calendar</h2>
-                        <p>Coming soon - Monthly view</p>
-                    </div>
-                </div>
-
+                <!-- ============ COUNTDOWNS ============ -->
                 <div class="view" id="view-countdowns">
-                    <div class="coming-soon">
-                        <div class="icon">⏳</div>
-                        <h2>Countdowns</h2>
-                        <p>Coming soon - All your deadlines with live countdown</p>
+                    <div class="panel" style="margin-bottom:20px;">
+                        <div class="panel-title">➕ Add New Countdown</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Title *</label>
+                                <input type="text" id="cdTitle" placeholder="e.g., Semester Test" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Module</label>
+                                <select id="cdModule" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                                    <option value="">-- Select --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Date *</label>
+                                <input type="date" id="cdDate" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Time *</label>
+                                <input type="time" id="cdTime" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Weight %</label>
+                                <input type="number" id="cdWeight" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Mark %</label>
+                                <input type="number" id="cdMark" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                            </div>
+                            <div>
+                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Color</label>
+                                <input type="color" id="cdColor" value="#ff8c00" style="width:100%;padding:6px;height:48px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;cursor:pointer;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Consequence</label>
+                            <input type="text" id="cdConsequence" placeholder="e.g., Fail the module" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                        </div>
+                        <button id="addCountdownBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Countdown</button>
+                    </div>
+
+                    <div class="panel" style="margin-bottom:20px;">
+                        <div class="panel-title">⏳ Active Countdowns</div>
+                        <div id="fullCountdownsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;">
+                            <p style="color:#888;padding:20px;">No active countdowns.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-title" style="cursor:pointer;" onclick="toggleHistory()">
+                            📜 History (Past Deadlines) <span id="historyArrow">▼</span>
+                        </div>
+                        <div id="historyList" style="display:none;flex-direction:column;gap:10px;margin-top:16px;">
+                            <p style="color:#888;padding:20px;">No past deadlines yet.</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="view" id="view-studyplan">
-                    <div class="coming-soon">
-                        <div class="icon">📖</div>
-                        <h2>Study Plan</h2>
-                        <p>Coming soon</p>
+                <!-- ============ EXAM ELIGIBILITY ============ -->
+                <div class="view" id="view-examelig">
+                    <div class="panel">
+                        <div class="panel-title">✅ Exam Eligibility</div>
+                        <div id="examEligListFull">
+                            <p style="color:#888;padding:20px;">Add modules first.</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="view" id="view-goals">
-                    <div class="coming-soon">
-                        <div class="icon">🎯</div>
-                        <h2>Goals</h2>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-projects">
-                    <div class="coming-soon">
-                        <div class="icon">💻</div>
-                        <h2>Projects</h2>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-habits">
-                    <div class="coming-soon">
-                        <div class="icon">🔁</div>
-                        <h2>Habits</h2>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-notes">
-                    <div class="coming-soon">
-                        <div class="icon">📝</div>
-                        <h2>Notes</h2>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
-
-                <div class="view" id="view-resources">
-                    <div class="coming-soon">
-                        <div class="icon">📚</div>
-                        <h2>Resources</h2>
-                        <p>Coming soon</p>
-                    </div>
-                </div>
+                <!-- ============ PLACEHOLDERS ============ -->
+                <div class="view" id="view-assessments"><div class="coming-soon"><div class="icon">📝</div><h2>Assessments</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-marks"><div class="coming-soon"><div class="icon">📊</div><h2>Marks</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-gradecalc"><div class="coming-soon"><div class="icon">🧮</div><h2>Grade Calculator</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-calendar"><div class="coming-soon"><div class="icon">📅</div><h2>Calendar</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-studyplan"><div class="coming-soon"><div class="icon">📖</div><h2>Study Plan</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-goals"><div class="coming-soon"><div class="icon">🎯</div><h2>Goals</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-projects"><div class="coming-soon"><div class="icon">💻</div><h2>Projects</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-habits"><div class="coming-soon"><div class="icon">🔁</div><h2>Habits</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-notes"><div class="coming-soon"><div class="icon">📝</div><h2>Notes</h2><p>Coming soon</p></div></div>
+                <div class="view" id="view-resources"><div class="coming-soon"><div class="icon">📚</div><h2>Resources</h2><p>Coming soon</p></div></div>
 
             </div>
 
-            <!-- BOTTOM BAR -->
             <div class="bottom-bar">
                 <div class="bottom-steps">
-                    <div class="bottom-step">
-                        <span class="bs-icon">📝</span>
-                        <div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div>
-                    </div>
+                    <div class="bottom-step"><span class="bs-icon">📝</span><div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div></div>
                     <span style="color:#333;">→</span>
-                    <div class="bottom-step">
-                        <span class="bs-icon">🎯</span>
-                        <div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div>
-                    </div>
+                    <div class="bottom-step"><span class="bs-icon">🎯</span><div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div></div>
                     <span style="color:#333;">→</span>
-                    <div class="bottom-step">
-                        <span class="bs-icon">📊</span>
-                        <div class="bs-label"><strong>Track</strong><span>Measure progress</span></div>
-                    </div>
+                    <div class="bottom-step"><span class="bs-icon">📊</span><div class="bs-label"><strong>Track</strong><span>Measure progress</span></div></div>
                     <span style="color:#333;">→</span>
-                    <div class="bottom-step">
-                        <span class="bs-icon">🏆</span>
-                        <div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div>
-                    </div>
+                    <div class="bottom-step"><span class="bs-icon">🏆</span><div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div></div>
                 </div>
-                <div class="bottom-quote">
-                    "The more you sweat in peace, the less you bleed in war."
-                </div>
+                <div class="bottom-quote">"The more you sweat in peace, the less you bleed in war."</div>
             </div>
         </div>
     </div>
 
-    <!-- ============================================================
-         JAVASCRIPT - loaded from external file
-         ============================================================ -->
     <script type="module" src="script.js"></script>
-
 </body>
 </html>
