@@ -232,13 +232,88 @@
                 </div>
 
                 <!-- PLACEHOLDER VIEWS -->
-                <div class="view" id="view-modules">
-                    <div class="coming-soon">
-                        <div class="icon">📚</div>
-                        <h2>Modules</h2>
-                        <p>Coming soon - Add and manage your modules</p>
-                    </div>
+        <div class="view" id="view-modules">
+    <div class="panel" style="margin-bottom: 20px;">
+        <div class="panel-title">➕ Add New Module</div>
+        
+        <!-- PRESET DROPDOWN -->
+        <div style="margin-bottom: 16px;">
+            <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">📚 Pick From Your Course</label>
+            <select id="presetModule" 
+                    style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none; cursor:pointer;">
+                <option value="">-- Select a module (or type custom below) --</option>
+                <option value="CMPG172|Computer Programming 2">CMPG172 — Computer Programming 2</option>
+                <option value="CMPG122|Computer Programming 1">CMPG122 — Computer Programming 1</option>
+                <option value="MTHS171|Mathematics 1A">MTHS171 — Mathematics 1A</option>
+                <option value="MTHS172|Calculus for Informatics">MTHS172 — Calculus for Informatics</option>
+                <option value="APPM172|Applied Mathematics">APPM172 — Applied Mathematics</option>
+                <option value="STTN111|Statistics for Science">STTN111 — Statistics for Science</option>
+                <option value="NPHY172|Physics for Informatics">NPHY172 — Physics for Informatics</option>
+                <option value="CUSTOM">✏️ Custom module (type below)</option>
+            </select>
+        </div>
+
+        <!-- CODE + NAME -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Module Code</label>
+                <input type="text" id="moduleCode" placeholder="e.g., CMPG172" 
+                       style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none;">
+            </div>
+            <div>
+                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Full Name</label>
+                <input type="text" id="moduleName" placeholder="e.g., Computer Programming 2" 
+                       style="width:100%; padding:12px 16px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#fff; font-size:0.9rem; font-weight:500; outline:none;">
+            </div>
+        </div>
+
+        <!-- MARK SLIDER + COLOR -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div>
+                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">
+                    Current Mark (%): <span id="markDisplay" style="color:#ff8c00; font-weight:700;">50</span>%
+                </label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="range" id="moduleMarkSlider" min="0" max="100" value="50" 
+                           style="flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#1a1a1a; border-radius:10px; outline:none; cursor:pointer;">
+                    <input type="number" id="moduleMark" min="0" max="100" value="50"
+                           style="width:70px; padding:8px 10px; background:#1a1a1a; border:1px solid #262626; border-radius:8px; color:#fff; font-size:0.9rem; font-weight:600; outline:none; text-align:center;">
                 </div>
+            </div>
+            <div>
+                <label style="display:block; color:#c5c5c5; font-size:0.75rem; font-weight:600; letter-spacing:0.05em; margin-bottom:8px; text-transform:uppercase;">Module Color</label>
+                <input type="color" id="moduleColor" value="#ff8c00"
+                       style="width:100%; padding:6px; height:48px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; cursor:pointer;">
+            </div>
+        </div>
+
+        <button id="addModuleBtn" 
+                style="padding:14px 32px; background:#ff8c00; border:none; border-radius:10px; color:#fff; font-weight:600; font-size:0.875rem; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s;">
+            ➕ Add Module
+        </button>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">📚 My Modules</div>
+        <div class="modules-row" id="modulesList">
+            <p style="color:#888; font-size:0.9rem; grid-column:1/-1; padding:20px;">No modules yet. Add one above.</p>
+        </div>
+    </div>
+</div>
+
+        <button id="addModuleBtn" 
+                style="padding:14px 32px; background:#ff8c00; border:none; border-radius:10px; color:#fff; font-weight:600; font-size:0.875rem; cursor:pointer; letter-spacing:0.03em; transition:all 0.15s;">
+            ➕ Add Module
+        </button>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">📚 My Modules</div>
+        <div class="modules-row" id="modulesList">
+            <p style="color:#888; font-size:0.9rem; grid-column:1/-1; padding:20px;">No modules yet. Add one above.</p>
+        </div>
+    </div>
+</div>
 
                 <div class="view" id="view-assessments">
                     <div class="coming-soon">
