@@ -486,13 +486,14 @@ body {
 
 .countdown-mini {
     background: linear-gradient(135deg,
-        color-mix(in srgb, var(--card-color, #ff8c00) 8%, #1a1a1a) 0%,
-        #1a1a1a 100%);
+        color-mix(in srgb, var(--card-color, #ff8c00) 22%, #12121a) 0%,
+        color-mix(in srgb, var(--card-color, #ff8c00) 10%, #12121a) 100%);
     border: 2px solid var(--card-color, #ff8c00);
     border-radius: 12px;
     padding: 16px 18px;
     margin-bottom: 10px;
     transition: all 0.2s;
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--card-color, #ff8c00) 15%, transparent);
 }
 
 .countdown-mini:hover {
@@ -527,7 +528,8 @@ body {
 }
 
 .countdown-mini .cm-item {
-    background: #0a0a0a;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid color-mix(in srgb, var(--card-color, #ff8c00) 20%, transparent);
     border-radius: 8px;
     padding: 10px 4px;
     text-align: center;
