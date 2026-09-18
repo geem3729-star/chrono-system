@@ -73,16 +73,14 @@ header p {
     margin-bottom: 15px;
 }
 
-.form .input-group label {
-    display: block;
-    color: #999;
+.form   {
+   color: #670e0e;            
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 600;
+    font-weight: 800;           
     margin-bottom: 5px;
 }
-
 .form .input-group input,
 .form .input-group select {
     width: 100%;
