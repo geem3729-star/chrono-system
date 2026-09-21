@@ -20,6 +20,10 @@ const provider = new GoogleAuthProvider();
 let currentUser = null;
 let events = [];
 let modules = [];
+let allUsers = [];
+
+// ⚠️ CHANGE THIS TO YOUR EMAIL
+const ADMIN_EMAIL = "keketsokagiso25@gmail.com";
 
 // ===============================
 // VIEW SWITCHER
@@ -35,7 +39,9 @@ window.switchView = function(viewName, el) {
     if (viewName === 'dashboard') renderDashboard();
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
     if (viewName === 'examelig') renderExamEligFull();
+if (viewName === 'admin') renderAdminPanel();
 };
+
 
 // ===============================
 // AUTH
@@ -49,12 +55,44 @@ window.handleLogout = async function() {
     if (confirm('Logout?')) await signOut(auth);
 };
 
+
 onAuthStateChanged(auth, async (user) => {
     const ls = document.getElementById('loadingScreen');
     if (ls) ls.style.display = 'none';
     if (user) {
         currentUser = user;
         const name = user.displayName || user.email.split('@')[0];
+
+        // ============ LOG THIS LOGIN ============
+        try {
+            const userRef = ref(db, `allUsers/${user.uid}`);
+            const existing = await get(userRef);
+            const now = new Date().toISOString();
+            if (existing.exists()) {
+                const data = existing.val();
+                await set(userRef, {
+                    ...data,
+                    lastSeen: now,
+                    loginCount: (data.loginCount || 0) + 1
+                });
+            } else {
+                await set(userRef, {
+                    uid: user.uid,
+                    name: name,
+                    email: user.email,
+                    photo: user.photoURL || '',
+                    firstSeen: now,
+                    lastSeen: now,
+                    loginCount: 1
+                });
+            }
+        } catch (e) { console.error('Log user error:', e); }
+
+        // Show Admin link if this is YOU
+        if (user.email === ADMIN_EMAIL) {
+            const adminBtn = document.getElementById('adminNavBtn');
+            if (adminBtn) adminBtn.style.display = 'flex';
+        }
         document.getElementById('userName').textContent = name;
         document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
         document.getElementById('greeting').textContent = `Good evening, ${name}! 👋`;
@@ -80,6 +118,12 @@ async function loadData() {
         events = e.exists() ? (Array.isArray(e.val()) ? e.val().filter(x=>x) : Object.values(e.val()).filter(x=>x)) : [];
         const m = await get(child(dbRef, `users/${currentUser.uid}/modules`));
         modules = m.exists() ? (Array.isArray(m.val()) ? m.val().filter(x=>x) : Object.values(m.val()).filter(x=>x)) : [];
+
+        // Load all users (only if admin)
+        if (currentUser.email === ADMIN_EMAIL) {
+            const u = await get(child(dbRef, `allUsers`));
+            allUsers = u.exists() ? Object.values(u.val()).filter(x => x) : [];
+        }
     } catch (err) { console.error(err); }
 }
 
@@ -455,5 +499,98 @@ setInterval(() => {
     const cd = document.getElementById('view-countdowns');
     if (cd && cd.classList.contains('active')) renderFullCountdowns();
 }, 1000);
+ // ============================================================
+// ADMIN PANEL - See who uses your app
+// ============================================================
+async function renderAdminPanel() {
+    const list = document.getElementById('adminUserList');
+    const stats = document.getElementById('adminStats');
+    if (!list) return;
 
+    // Reload fresh data
+    if (currentUser && currentUser.email === ADMIN_EMAIL) {
+        try {
+            const u = await get(child(ref(db), `allUsers`));
+            allUsers = u.exists() ? Object.values(u.val()).filter(x => x) : [];
+        } catch (e) { console.error(e); }
+    }
+
+    if (!allUsers.length) {
+        list.innerHTML = '<p style="color:#888;padding:20px;">No users yet.</p>';
+        if (stats) stats.innerHTML = '';
+        return;
+    }
+
+    // Sort by lastSeen
+    const sorted = [...allUsers].sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+
+    // Stats
+    const totalUsers = allUsers.length;
+    const totalLogins = allUsers.reduce((sum, u) => sum + (u.loginCount || 0), 0);
+    const activeToday = allUsers.filter(u => {
+        const last = new Date(u.lastSeen);
+        const now = new Date();
+        return (now - last) < 24 * 60 * 60 * 1000;
+    }).length;
+
+    if (stats) {
+        stats.innerHTML = `
+            <div style="background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:1.8rem;font-weight:700;color:#ff8c00;">${totalUsers}</div>
+                <div style="font-size:0.75rem;color:#888;margin-top:4px;">Total Users</div>
+            </div>
+            <div style="background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:1.8rem;font-weight:700;color:#22c55e;">${activeToday}</div>
+                <div style="font-size:0.75rem;color:#888;margin-top:4px;">Active Today</div>
+            </div>
+            <div style="background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:16px;text-align:center;">
+                <div style="font-size:1.8rem;font-weight:700;color:#3b82f6;">${totalLogins}</div>
+                <div style="font-size:0.75rem;color:#888;margin-top:4px;">Total Logins</div>
+            </div>
+        `;
+    }
+
+    // User list
+    let html = '';
+    sorted.forEach(u => {
+        const first = new Date(u.firstSeen);
+        const last = new Date(u.lastSeen);
+        const firstStr = first.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        const lastStr = last.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' at ' + last.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        const isMe = u.email === ADMIN_EMAIL;
+
+        // Activity dot
+        const hoursAgo = (Date.now() - last.getTime()) / (1000 * 60 * 60);
+        let dot = '#888';
+        if (hoursAgo < 1) dot = '#22c55e';
+        else if (hoursAgo < 24) dot = '#facc15';
+        else if (hoursAgo < 168) dot = '#fb923c';
+
+        html += '<div style="background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">' +
+            '<div style="width:44px;height:44px;border-radius:50%;background:' + (isMe ? '#ff8c00' : '#3b82f6') + ';display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.1rem;flex-shrink:0;">' +
+                (u.name ? u.name.charAt(0).toUpperCase() : '?') +
+            '</div>' +
+            '<div style="flex:1;min-width:200px;">' +
+                '<div style="font-weight:600;color:#f5f5f5;font-size:0.95rem;display:flex;align-items:center;gap:8px;">' +
+                    u.name + (isMe ? '<span style="font-size:0.65rem;background:#ff8c00;color:#fff;padding:2px 8px;border-radius:50px;font-weight:700;">YOU</span>' : '') +
+                '</div>' +
+                '<div style="font-size:0.75rem;color:#888;margin-top:2px;">' + u.email + '</div>' +
+                '<div style="font-size:0.72rem;color:#666;margin-top:6px;">' +
+                    '📅 Joined: ' + firstStr + ' &nbsp;·&nbsp; 🔄 Logins: ' + (u.loginCount || 1) +
+                '</div>' +
+            '</div>' +
+            '<div style="text-align:right;min-width:180px;">' +
+                '<div style="font-size:0.7rem;color:#666;margin-bottom:4px;">LAST SEEN</div>' +
+                '<div style="font-size:0.8rem;color:#ccc;font-weight:500;">' + lastStr + '</div>' +
+                '<div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:6px;">' +
+                    '<span style="width:8px;height:8px;border-radius:50%;background:' + dot + ';box-shadow:0 0 8px ' + dot + ';"></span>' +
+                    '<span style="font-size:0.7rem;color:#888;">' + (hoursAgo < 1 ? 'Just now' : hoursAgo < 24 ? 'Today' : hoursAgo < 168 ? 'This week' : 'Long ago') + '</span>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    });
+
+    list.innerHTML = html;
+}
 console.log('👑 Golden Plan loaded!');
