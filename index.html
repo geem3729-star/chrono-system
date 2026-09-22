@@ -85,28 +85,21 @@
         </aside>
 
         <div class="main-area">
-            <div class="topbar">
-                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
-                <div class="topbar-left">
-                    <h1 id="greeting">Good evening! 👋</h1>
-                    <p>Stay focused. Stay consistent. Achieve greatness.</p>
-                </div>
-                <div class="topbar-right">
-                    <button class="icon-btn" title="Search">🔍</button>
-                    <button class="icon-btn" title="Notifications">🔔</button>
-                    <button class="icon-btn" title="Calendar">📅</button>
-                    <div class="user-pill">
-                        <div class="user-avatar" id="userAvatar">?</div>
-                        <span class="user-name" id="userName">Guest</span>
-                    </div>
-                    <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
-                </div>
-            </div>
-
+<div class="topbar">
+    <div class="topbar-left-group">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="user-pill">
+            <div class="user-avatar" id="userAvatar">?</div>
+        </div>
+        <span id="userName" style="display:none;">Guest</span>
+        <h1 id="greeting" style="display:none;">Good evening! 👋</h1>
+    </div>
+    <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
+</div>
             <div class="content">
 
                 <!-- ============ DASHBOARD ============ -->

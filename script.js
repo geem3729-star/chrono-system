@@ -224,7 +224,7 @@ function renderModules() {
         let bc = 'eligible', bt = '✅ Eligible';
         if (mark < 50) { bc='atrisk'; bt='⚠️ At Risk'; }
         else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
-        html += `<div class="module-card"><div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
+      html += `<div class="module-card" style="--module-color:${color};"><div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
             <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
             <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
@@ -385,13 +385,11 @@ function buildCard(e, isPast) {
     const dayNum = r.isOverdue ? '✓' : days;
     const liveDot = isPast ? '' : '<div class="cc-live-dot"></div>';
     const opacity = isPast ? 0.5 : 1;
-
     return '<div class="countdown-card ' + blinkClass + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
         '<button class="cc-delete" data-id="' + e.id + '">✕</button>' +
         '<div class="cc-header">' +
             '<div style="padding-right:40px;">' +
                 '<div class="cc-title">' + title + '</div>' +
-                '<div class="cc-subtitle">' + module + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
             '</div>' +
             liveDot +
         '</div>' +
@@ -412,6 +410,7 @@ function buildCard(e, isPast) {
                 '<div class="cc-num-item"><div class="cc-num">' + secs + '</div><div class="cc-num-lbl">SEC</div></div>' +
             '</div>' +
         '</div>' +
+        '<div class="cc-footer">' + module + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
     '</div>';
 }
 
