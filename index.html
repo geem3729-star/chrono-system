@@ -290,7 +290,127 @@
                 </div>
 
                 <!-- ============ PLACEHOLDERS ============ -->
-                <div class="view" id="view-assessments"><div class="coming-soon"><div class="icon">📝</div><h2>Assessments</h2><p>Coming soon</p></div></div>
+                <!-- ============ ASSESSMENTS ============ -->
+                <div class="view" id="view-assessments">
+                    <div class="assessment-header">
+                        <div>
+                            <h2 class="assess-page-title">📝 Assessments</h2>
+                            <p class="assess-page-subtitle">Track your assessments, upload study materials and stay on top of your modules.</p>
+                        </div>
+                    </div>
+
+                    <div class="assess-stats-grid">
+                        <div class="assess-stat-card" style="--stat-color:#ff8c00;">
+                            <div class="stat-icon-wrap">📋</div>
+                            <div>
+                                <div class="stat-label">Total Assessments</div>
+                                <div class="stat-number" id="statTotal">0</div>
+                                <div class="stat-sub">Across all modules</div>
+                            </div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="statTotalBar" style="width:0%;background:#ff8c00;"></div></div>
+                        </div>
+
+                        <div class="assess-stat-card" style="--stat-color:#22c55e;">
+                            <div class="stat-icon-wrap">✅</div>
+                            <div>
+                                <div class="stat-label">Completed</div>
+                                <div class="stat-number" id="statCompleted">0</div>
+                                <div class="stat-sub">On track</div>
+                            </div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="statCompletedBar" style="width:0%;background:#22c55e;"></div></div>
+                        </div>
+
+                        <div class="assess-stat-card" style="--stat-color:#3b82f6;">
+                            <div class="stat-icon-wrap">⏰</div>
+                            <div>
+                                <div class="stat-label">Upcoming</div>
+                                <div class="stat-number" id="statUpcoming">0</div>
+                                <div class="stat-sub">Coming soon</div>
+                            </div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="statUpcomingBar" style="width:0%;background:#3b82f6;"></div></div>
+                        </div>
+
+                        <div class="assess-stat-card" style="--stat-color:#ef4444;">
+                            <div class="stat-icon-wrap">⚠️</div>
+                            <div>
+                                <div class="stat-label">Overdue</div>
+                                <div class="stat-number" id="statOverdue">0</div>
+                                <div class="stat-sub">Needs attention</div>
+                            </div>
+                            <div class="stat-bar"><div class="stat-bar-fill" id="statOverdueBar" style="width:0%;background:#ef4444;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="assess-main-grid">
+                        <div class="assess-left">
+                            <h3 class="assess-section-title">My Modules & Assessments</h3>
+                            <div id="modulesAssessList" class="modules-assess-grid">
+                                <p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>
+                            </div>
+                        </div>
+
+                        <div class="assess-right">
+                            <div class="panel">
+                                <div class="panel-title">📊 Module Overview</div>
+                                <p style="font-size:0.75rem;color:#888;margin-bottom:16px;">Quick summary of your academic progress</p>
+                                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                                    <div class="overview-donut">
+                                        <svg viewBox="0 0 80 80" width="100" height="100">
+                                            <circle cx="40" cy="40" r="30" fill="none" stroke="#262626" stroke-width="8"/>
+                                            <circle id="overviewRing" cx="40" cy="40" r="30" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 40 40)"/>
+                                        </svg>
+                                        <div class="overview-donut-center">
+                                            <div id="overviewCount" style="font-size:1.3rem;font-weight:700;color:#f5f5f5;">0/0</div>
+                                            <div style="font-size:0.6rem;color:#888;letter-spacing:1px;">MODULES</div>
+                                        </div>
+                                    </div>
+                                    <div class="overview-legend">
+                                        <div><span class="legend-dot" style="background:#22c55e;"></span> On Track <strong id="legendOnTrack">0</strong></div>
+                                        <div><span class="legend-dot" style="background:#facc15;"></span> In Progress <strong id="legendInProgress">0</strong></div>
+                                        <div><span class="legend-dot" style="background:#3b82f6;"></span> Upcoming <strong id="legendUpcoming">0</strong></div>
+                                        <div><span class="legend-dot" style="background:#ef4444;"></span> Overdue <strong id="legendOverdue">0</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-title">📤 Upload Study Material (PDF)</div>
+                                <p style="font-size:0.75rem;color:#888;margin-bottom:16px;">Upload slides, notes or resources for a module.</p>
+
+                                <div style="margin-bottom:12px;">
+                                    <label style="display:block;font-size:0.7rem;color:#888;margin-bottom:6px;text-transform:uppercase;font-weight:600;">For Which Module?</label>
+                                    <select id="pdfModuleSelect" style="width:100%;padding:10px 14px;background:#0a0a0a;border:1px solid #262626;border-radius:8px;color:#fff;font-size:0.85rem;outline:none;">
+                                        <option value="">-- Select Module --</option>
+                                    </select>
+                                </div>
+
+                                <div id="pdfDropZone" class="pdf-drop-zone">
+                                    <div style="font-size:2.5rem;color:#888;margin-bottom:8px;">📄</div>
+                                    <div style="font-size:0.85rem;color:#ccc;font-weight:600;margin-bottom:4px;">Drag & drop your PDF here</div>
+                                    <div style="font-size:0.75rem;color:#666;margin-bottom:12px;">or</div>
+                                    <label for="pdfFileInput" class="pdf-choose-btn">Choose File</label>
+                                    <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none;">
+                                    <div style="font-size:0.65rem;color:#555;margin-top:12px;">Supported format: PDF (Max 2MB)</div>
+                                </div>
+
+                                <div id="uploadedFilesList" style="margin-top:16px;"></div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-title">⚡ Quick Actions</div>
+                                <button onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#c5c5c5;font-size:0.8rem;font-weight:600;cursor:pointer;text-align:left;margin-bottom:8px;">📅 View All Assessments</button>
+                                <button onclick="switchView('gradecalc', document.querySelector('[data-view=gradecalc]'))" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#c5c5c5;font-size:0.8rem;font-weight:600;cursor:pointer;text-align:left;">🧮 Open Grade Calculator</button>
+                            </div>
+
+                            <div class="panel" style="text-align:center;">
+                                <div style="font-size:2rem;margin-bottom:8px;">⛰️</div>
+                                <p style="color:#ccc;font-size:0.85rem;line-height:1.5;font-style:italic;">"Small steps every day lead to big results."</p>
+                                <p style="color:#888;font-size:0.7rem;margin-top:8px;font-weight:600;">— Master Timing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="view" id="view-marks"><div class="coming-soon"><div class="icon">📊</div><h2>Marks</h2><p>Coming soon</p></div></div>
                 <div class="view" id="view-gradecalc"><div class="coming-soon"><div class="icon">🧮</div><h2>Grade Calculator</h2><p>Coming soon</p></div></div>
                 <div class="view" id="view-calendar"><div class="coming-soon"><div class="icon">📅</div><h2>Calendar</h2><p>Coming soon</p></div></div>

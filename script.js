@@ -593,4 +593,253 @@ async function renderAdminPanel() {
 
     list.innerHTML = html;
 }
+// ============================================================
+// ASSESSMENTS PAGE
+// ============================================================
+
+let pdfFiles = []; // Store uploaded PDFs
+
+async function loadPdfs() {
+    if (!currentUser) return;
+    try {
+        const snap = await get(child(ref(db), `users/${currentUser.uid}/pdfs`));
+        pdfFiles = snap.exists() ? Object.values(snap.val()).filter(x => x) : [];
+    } catch (e) { console.error(e); }
+}
+
+async function savePdfs() {
+    if (!currentUser) return;
+    try { await set(ref(db, `users/${currentUser.uid}/pdfs`), pdfFiles); }
+    catch (e) { alert('Could not save PDF.'); }
+}
+
+function renderAssessmentsPage() {
+    // Stats
+    const now = Date.now();
+    const total = events.length;
+    const completed = events.filter(e => new Date(e.deadline).getTime() <= now).length;
+    const upcoming = events.filter(e => new Date(e.deadline).getTime() > now).length;
+    const overdue = 0; // Since we treat past as "completed", overdue = 0 for now
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statCompleted').textContent = completed;
+    document.getElementById('statUpcoming').textContent = upcoming;
+    document.getElementById('statOverdue').textContent = overdue;
+
+    const maxVal = Math.max(total, 1);
+    document.getElementById('statTotalBar').style.width = '100%';
+    document.getElementById('statCompletedBar').style.width = (completed / maxVal * 100) + '%';
+    document.getElementById('statUpcomingBar').style.width = (upcoming / maxVal * 100) + '%';
+    document.getElementById('statOverdueBar').style.width = (overdue / maxVal * 100) + '%';
+
+    // Modules & assessments grid
+    const grid = document.getElementById('modulesAssessList');
+    if (!modules.length) {
+        grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
+    } else {
+        let html = '';
+        modules.forEach(m => {
+            const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+            const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
+            const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
+
+            // Determine badge
+            let badgeClass = 'ontrack', badgeText = 'On Track';
+            if (progress === 0 && modEvents.length > 0) { badgeClass = 'upcoming'; badgeText = 'Upcoming'; }
+            else if (progress < 100) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
+            else if (progress === 100) { badgeClass = 'ontrack'; badgeText = 'Complete'; }
+            if (modEvents.length === 0) { badgeClass = 'upcoming'; badgeText = 'No Tasks'; }
+
+            // Icon - use first letter
+            const iconChar = (m.code || '?').charAt(0);
+            const color = m.color || '#ff8c00';
+
+            let assessListHtml = '';
+            if (modEvents.length === 0) {
+                assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
+            } else {
+                modEvents.forEach(e => {
+                    const isPast = new Date(e.deadline).getTime() <= now;
+                    const statusIcon = isPast ? '✅' : '⏳';
+                    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                    assessListHtml += '<li>' +
+                        '<span class="assess-status">' + statusIcon + '</span>' +
+                        '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
+                        '<span class="assess-date">📅 ' + dateStr + '</span>' +
+                    '</li>';
+                });
+            }
+
+            html += '<div class="module-assess-card" style="--module-color:' + color + ';">' +
+                '<div class="module-assess-header">' +
+                    '<div class="module-assess-title">' +
+                        '<div class="module-assess-icon">' + iconChar + '</div>' +
+                        '<div>' +
+                            '<div class="module-assess-name">' + (m.name || m.code) + '</div>' +
+                            '<div class="module-assess-code">' + m.code + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<span class="module-assess-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                '</div>' +
+                '<ul class="module-assess-list">' + assessListHtml + '</ul>' +
+                '<div class="module-assess-footer">' +
+                    '<div class="module-assess-progress">' +
+                        '<div class="module-assess-progress-label">' + progress + '% Complete</div>' +
+                        '<div class="module-assess-progress-bar">' +
+                            '<div class="module-assess-progress-fill" style="width:' + progress + '%;"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button class="view-module-btn" onclick="viewModuleAssessments(\'' + m.code + '\')">View module →</button>' +
+                '</div>' +
+            '</div>';
+        });
+        grid.innerHTML = html;
+    }
+
+    // Overview donut
+    const modOnTrack = modules.filter(m => {
+        const modEvs = events.filter(e => e.module === m.code);
+        const done = modEvs.filter(e => new Date(e.deadline).getTime() <= now).length;
+        return modEvs.length > 0 && done === modEvs.length;
+    }).length;
+    const modInProgress = modules.filter(m => {
+        const modEvs = events.filter(e => e.module === m.code);
+        const done = modEvs.filter(e => new Date(e.deadline).getTime() <= now).length;
+        return modEvs.length > 0 && done > 0 && done < modEvs.length;
+    }).length;
+    const modUpcoming = modules.filter(m => {
+        const modEvs = events.filter(e => e.module === m.code);
+        const done = modEvs.filter(e => new Date(e.deadline).getTime() <= now).length;
+        return modEvs.length > 0 && done === 0;
+    }).length;
+    const modNoTask = modules.filter(m => events.filter(e => e.module === m.code).length === 0).length;
+
+    document.getElementById('overviewCount').textContent = modOnTrack + '/' + modules.length;
+    document.getElementById('legendOnTrack').textContent = modOnTrack;
+    document.getElementById('legendInProgress').textContent = modInProgress;
+    document.getElementById('legendUpcoming').textContent = modUpcoming + modNoTask;
+    document.getElementById('legendOverdue').textContent = 0;
+
+    // Donut ring
+    const pct = modules.length > 0 ? (modOnTrack / modules.length) : 0;
+    const circ = 2 * Math.PI * 30;
+    document.getElementById('overviewRing').setAttribute('stroke-dasharray', circ);
+    document.getElementById('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
+
+    // Populate PDF module select
+    const pdfSel = document.getElementById('pdfModuleSelect');
+    if (pdfSel) {
+        pdfSel.innerHTML = '<option value="">-- Select Module --</option>';
+        modules.forEach(m => {
+            const o = document.createElement('option');
+            o.value = m.code;
+            o.textContent = m.code + ' — ' + m.name;
+            pdfSel.appendChild(o);
+        });
+    }
+
+    // Render uploaded PDFs
+    renderPdfList();
+}
+
+function renderPdfList() {
+    const list = document.getElementById('uploadedFilesList');
+    if (!list) return;
+    if (!pdfFiles.length) {
+        list.innerHTML = '';
+        return;
+    }
+    let html = '';
+    pdfFiles.forEach((f, idx) => {
+        html += '<div class="pdf-file-item">' +
+            '<span class="pdf-icon">📄</span>' +
+            '<span class="pdf-name">' + f.name + ' <span style="color:#666;font-size:0.7rem;">(' + f.module + ')</span></span>' +
+            '<a href="' + f.data + '" download="' + f.name + '">Download</a>' +
+            '<button class="pdf-delete" onclick="deletePdf(' + idx + ')">✕</button>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+}
+
+window.deletePdf = async function(idx) {
+    if (!confirm('Delete this file?')) return;
+    pdfFiles.splice(idx, 1);
+    await savePdfs();
+    renderPdfList();
+};
+
+window.viewModuleAssessments = function(moduleCode) {
+    // Filter to just this module - for now just alert
+    alert('Showing assessments for ' + moduleCode + '\n\n' + events.filter(e => e.module === moduleCode).map(e => '• ' + e.title).join('\n'));
+};
+
+// PDF upload handling
+function setupPdfUpload() {
+    const dropZone = document.getElementById('pdfDropZone');
+    const fileInput = document.getElementById('pdfFileInput');
+    if (!dropZone || !fileInput) return;
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+        if (file) handlePdfFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handlePdfFile(file);
+    });
+}
+
+async function handlePdfFile(file) {
+    if (file.type !== 'application/pdf') return alert('⚠️ Only PDF files allowed');
+    if (file.size > 2 * 1024 * 1024) return alert('⚠️ File too big (max 2MB)');
+
+    const module = document.getElementById('pdfModuleSelect').value;
+    if (!module) return alert('⚠️ Please select which module this file is for');
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        pdfFiles.push({
+            id: Date.now(),
+            name: file.name,
+            module: module,
+            size: file.size,
+            data: e.target.result,
+            uploadedAt: new Date().toISOString()
+        });
+        await savePdfs();
+        renderPdfList();
+        alert('✅ File uploaded!');
+    };
+    reader.readAsDataURL(file);
+}
+
+// Hook into switchView
+const _origSwitchView = window.switchView;
+window.switchView = function(viewName, el) {
+    _origSwitchView(viewName, el);
+    if (viewName === 'assessments') {
+        loadPdfs().then(() => renderAssessmentsPage());
+    }
+};
+
+// Init on load
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        setupPdfUpload();
+    }, 500);
+});
 console.log('👑 Golden Plan loaded!');
