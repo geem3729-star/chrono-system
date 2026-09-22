@@ -959,4 +959,39 @@ window.closeFileViewer = function() {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeFileViewer();
 });
+
+// ============================================================
+// MOBILE SIDEBAR TOGGLE
+// ============================================================
+window.toggleMobileSidebar = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+
+    const isOpen = sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active', isOpen);
+};
+
+// Close sidebar when clicking a nav item (on mobile)
+document.addEventListener('click', function(e) {
+    const navItem = e.target.closest('.nav-item');
+    if (navItem && window.innerWidth <= 900) {
+        setTimeout(() => {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+        }, 200);
+    }
+});
+
+// Close on resize to desktop
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar) sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+    }
+});
 console.log('👑 Golden Plan loaded!');

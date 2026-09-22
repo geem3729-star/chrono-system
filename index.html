@@ -86,6 +86,11 @@
 
         <div class="main-area">
             <div class="topbar">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
                 <div class="topbar-left">
                     <h1 id="greeting">Good evening! 👋</h1>
                     <p>Stay focused. Stay consistent. Achieve greatness.</p>
@@ -435,6 +440,8 @@
 </div>
 
             </div>
+            <!-- MOBILE SIDEBAR OVERLAY -->
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
             <!-- FILE VIEWER MODAL -->
 <div id="fileViewerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); z-index:9999; padding:24px;">
