@@ -1451,3 +1451,112 @@ select {
     padding: 2px 6px;
 }
 .pdf-file-item .pdf-delete:hover { color: #f87171; }
+/* ============================================================
+   MODULE FILES - UPLOAD + THUMBNAILS
+   ============================================================ */
+
+.upload-module-btn {
+    padding: 8px 14px;
+    background: rgba(255, 140, 0, 0.1);
+    border: 1px solid rgba(255, 140, 0, 0.4);
+    color: #ff8c00;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.upload-module-btn:hover {
+    background: #ff8c00;
+    color: #fff;
+}
+
+.module-files-section {
+    margin-top: 14px;
+    padding: 12px 12px 8px 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px dashed #262626;
+    border-radius: 10px;
+}
+
+.module-files-title {
+    font-size: 0.7rem;
+    color: #888;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.module-files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+.module-file-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 1px solid #262626;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.module-file-thumb:hover {
+    border-color: #ff8c00;
+    transform: scale(1.03);
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+}
+
+.module-file-thumb .file-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.module-file-thumb .file-name-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 4px 4px 4px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    color: #fff;
+    font-size: 0.6rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.module-file-thumb .file-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 700;
+}
+.module-file-thumb:hover .file-delete-btn {
+    opacity: 1;
+}
+
+#fileViewerModal embed {
+    min-height: 600px;
+}

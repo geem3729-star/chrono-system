@@ -614,12 +614,11 @@ async function savePdfs() {
 }
 
 function renderAssessmentsPage() {
-    // Stats
     const now = Date.now();
     const total = events.length;
     const completed = events.filter(e => new Date(e.deadline).getTime() <= now).length;
     const upcoming = events.filter(e => new Date(e.deadline).getTime() > now).length;
-    const overdue = 0; // Since we treat past as "completed", overdue = 0 for now
+    const overdue = 0;
 
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statCompleted').textContent = completed;
@@ -632,7 +631,7 @@ function renderAssessmentsPage() {
     document.getElementById('statUpcomingBar').style.width = (upcoming / maxVal * 100) + '%';
     document.getElementById('statOverdueBar').style.width = (overdue / maxVal * 100) + '%';
 
-    // Modules & assessments grid
+    // Modules grid
     const grid = document.getElementById('modulesAssessList');
     if (!modules.length) {
         grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
@@ -643,14 +642,12 @@ function renderAssessmentsPage() {
             const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
             const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
 
-            // Determine badge
             let badgeClass = 'ontrack', badgeText = 'On Track';
             if (progress === 0 && modEvents.length > 0) { badgeClass = 'upcoming'; badgeText = 'Upcoming'; }
             else if (progress < 100) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
             else if (progress === 100) { badgeClass = 'ontrack'; badgeText = 'Complete'; }
             if (modEvents.length === 0) { badgeClass = 'upcoming'; badgeText = 'No Tasks'; }
 
-            // Icon - use first letter
             const iconChar = (m.code || '?').charAt(0);
             const color = m.color || '#ff8c00';
 
@@ -670,6 +667,28 @@ function renderAssessmentsPage() {
                 });
             }
 
+            // ═══ Files for this module ═══
+            const moduleFiles = pdfFiles.filter(f => f.module === m.code);
+            let filesHTML = '';
+            if (moduleFiles.length) {
+                filesHTML = '<div class="module-files-section">' +
+                    '<div class="module-files-title">📎 Study Material (' + moduleFiles.length + ')</div>' +
+                    '<div class="module-files-grid">';
+                moduleFiles.forEach(f => {
+                    const isImage = f.type && f.type.startsWith('image/');
+                    const thumbStyle = isImage
+                        ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
+                        : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
+                    const iconOverlay = isImage ? '' : '<span class="file-icon">📄</span>';
+                    filesHTML += '<div class="module-file-thumb" onclick="openFileViewer(' + f.id + ')" style="' + thumbStyle + '">' +
+                        iconOverlay +
+                        '<div class="file-name-overlay">' + f.name + '</div>' +
+                        '<button class="file-delete-btn" onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" title="Delete">✕</button>' +
+                    '</div>';
+                });
+                filesHTML += '</div></div>';
+            }
+
             html += '<div class="module-assess-card" style="--module-color:' + color + ';">' +
                 '<div class="module-assess-header">' +
                     '<div class="module-assess-title">' +
@@ -681,7 +700,11 @@ function renderAssessmentsPage() {
                     '</div>' +
                     '<span class="module-assess-badge ' + badgeClass + '">' + badgeText + '</span>' +
                 '</div>' +
+
                 '<ul class="module-assess-list">' + assessListHtml + '</ul>' +
+
+                filesHTML +
+
                 '<div class="module-assess-footer">' +
                     '<div class="module-assess-progress">' +
                         '<div class="module-assess-progress-label">' + progress + '% Complete</div>' +
@@ -689,7 +712,10 @@ function renderAssessmentsPage() {
                             '<div class="module-assess-progress-fill" style="width:' + progress + '%;"></div>' +
                         '</div>' +
                     '</div>' +
-                    '<button class="view-module-btn" onclick="viewModuleAssessments(\'' + m.code + '\')">View module →</button>' +
+                    '<div style="display:flex; gap:8px;">' +
+                        '<button class="upload-module-btn" onclick="uploadModuleFile(\'' + m.code + '\')">📤 Upload</button>' +
+                        '<button class="view-module-btn" onclick="viewModuleAssessments(\'' + m.code + '\')">View →</button>' +
+                    '</div>' +
                 '</div>' +
             '</div>';
         });
@@ -720,7 +746,6 @@ function renderAssessmentsPage() {
     document.getElementById('legendUpcoming').textContent = modUpcoming + modNoTask;
     document.getElementById('legendOverdue').textContent = 0;
 
-    // Donut ring
     const pct = modules.length > 0 ? (modOnTrack / modules.length) : 0;
     const circ = 2 * Math.PI * 30;
     document.getElementById('overviewRing').setAttribute('stroke-dasharray', circ);
@@ -738,7 +763,6 @@ function renderAssessmentsPage() {
         });
     }
 
-    // Render uploaded PDFs
     renderPdfList();
 }
 
@@ -841,5 +865,98 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         setupPdfUpload();
     }, 500);
+});
+// ============================================================
+// MODULE FILE UPLOAD + VIEWER
+// ============================================================
+
+window.uploadModuleFile = function(moduleCode) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf,image/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) handleModuleFile(file, moduleCode);
+    };
+    input.click();
+};
+
+async function handleModuleFile(file, moduleCode) {
+    const isPdf = file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/');
+    if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
+    if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        pdfFiles.push({
+            id: Date.now(),
+            name: file.name,
+            module: moduleCode,
+            type: file.type,
+            size: file.size,
+            data: e.target.result,
+            uploadedAt: new Date().toISOString()
+        });
+        await savePdfs();
+        renderAssessmentsPage();
+        alert('✅ File uploaded to ' + moduleCode);
+    };
+    reader.readAsDataURL(file);
+}
+
+window.deleteModuleFile = async function(fileId) {
+    if (!confirm('Delete this file?')) return;
+    pdfFiles = pdfFiles.filter(f => f.id !== fileId);
+    await savePdfs();
+    renderAssessmentsPage();
+};
+
+window.openFileViewer = function(fileId) {
+    const file = pdfFiles.find(f => f.id === fileId);
+    if (!file) return;
+
+    document.getElementById('viewerFileName').textContent = file.name;
+    document.getElementById('viewerFileModule').textContent = file.module + ' · ' + (file.type.includes('pdf') ? 'PDF Document' : 'Image');
+    document.getElementById('viewerDownloadBtn').href = file.data;
+    document.getElementById('viewerDownloadBtn').download = file.name;
+
+    const content = document.getElementById('viewerContent');
+
+    if (file.type.startsWith('image/')) {
+        // Image - show directly
+        content.innerHTML = '<img src="' + file.data + '" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;">';
+    } else {
+        // PDF - convert data URL to blob URL (Chrome blocks data URLs in embed)
+        const base64 = file.data.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        content.innerHTML = '<iframe src="' + blobUrl + '" style="width:100%; height:100%; border:none; border-radius:8px; min-height:600px;"></iframe>';
+    }
+
+    document.getElementById('fileViewerModal').style.display = 'block';
+};
+
+window.closeFileViewer = function() {
+    const content = document.getElementById('viewerContent');
+    // Revoke any blob URLs to free memory
+    const iframe = content.querySelector('iframe');
+    if (iframe && iframe.src.startsWith('blob:')) {
+        URL.revokeObjectURL(iframe.src);
+    }
+    document.getElementById('fileViewerModal').style.display = 'none';
+    content.innerHTML = '';
+};
+
+
+// ESC key closes viewer
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeFileViewer();
 });
 console.log('👑 Golden Plan loaded!');
