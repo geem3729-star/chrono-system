@@ -660,21 +660,43 @@ function renderAssessmentsPage() {
             const iconChar = (m.code || '?').charAt(0);
             const color = m.color || '#ff8c00';
 
-            let assessListHtml = '';
-            if (modEvents.length === 0) {
-                assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
-            } else {
-                modEvents.forEach(e => {
-                    const isPast = new Date(e.deadline).getTime() <= now;
-                    const statusIcon = isPast ? '✅' : '⏳';
-                    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-                    assessListHtml += '<li>' +
-                        '<span class="assess-status">' + statusIcon + '</span>' +
-                        '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
-                        '<span class="assess-date">📅 ' + dateStr + '</span>' +
-                    '</li>';
-                });
-            }
+          // Split events into active + completed
+const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
+const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
+
+let assessListHtml = '';
+
+// ACTIVE assessments first
+if (activeEvents.length === 0 && completedEvents.length === 0) {
+    assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
+} else {
+    if (activeEvents.length > 0) {
+        activeEvents.forEach(e => {
+            const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            assessListHtml += '<li>' +
+                '<span class="assess-status">⏳</span>' +
+                '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
+                '<span class="assess-date">📅 ' + dateStr + '</span>' +
+            '</li>';
+        });
+    }
+
+    // COMPLETED section
+    if (completedEvents.length > 0) {
+        assessListHtml += '<li class="completed-divider">' +
+            '<span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span>' +
+        '</li>';
+
+        completedEvents.forEach(e => {
+            const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
+                '<span class="assess-status" style="color:' + color + ';">✅</span>' +
+                '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
+                '<span class="assess-date">📅 ' + dateStr + '</span>' +
+            '</li>';
+        });
+    }
+}
 
             // ═══ Files for this module ═══
             const moduleFiles = pdfFiles.filter(f => f.module === m.code);
@@ -1100,4 +1122,100 @@ window.toggleCountdownForm = function() {
         console.log('❌ Form closed');
     }
 };
+// ============================================================
+// COMPLETED DEADLINES MODAL
+// ============================================================
+window.openCompletedModal = function() {
+    const modal = document.getElementById('completedModal');
+    const list = document.getElementById('completedModalList');
+    if (!modal || !list) return;
+
+    const now = Date.now();
+    const completed = events.filter(e => new Date(e.deadline).getTime() <= now)
+        .sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+
+    if (!completed.length) {
+        list.innerHTML = '<p style="color:#888; text-align:center; padding:40px;">🎉 No completed deadlines yet. Keep going!</p>';
+    } else {
+        let html = '';
+        completed.forEach(e => {
+            const color = e.color || '#ff8c00';
+            const d = new Date(e.deadline);
+            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
+                '<div style="flex:1; min-width:180px;">' +
+                    '<div style="color:#fff; font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:8px;">' +
+                        '<span style="color:' + color + ';">✓</span> ' + (e.title || 'Deadline') +
+                    '</div>' +
+                    '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' +
+                        '📚 ' + (e.module || 'General') + ' · 📅 ' + dateStr + ' at ' + timeStr +
+                    '</div>' +
+                '</div>' +
+                '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; white-space:nowrap; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' +
+                    'COMPLETED' +
+                '</div>' +
+                '<button onclick="deleteEvent(' + e.id + '); openCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
+            '</div>';
+        });
+
+        // Add summary at top
+        const moduleCount = new Set(completed.map(e => e.module)).size;
+        html = '<div style="background:#1a1a1a; border:1px solid #262626; border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:12px;">' +
+                '<div style="text-align:center;">' +
+                    '<div style="font-size:1.5rem; font-weight:700; color:#22c55e;">' + completed.length + '</div>' +
+                    '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Completed</div>' +
+                '</div>' +
+                '<div style="text-align:center;">' +
+                    '<div style="font-size:1.5rem; font-weight:700; color:#ff8c00;">' + moduleCount + '</div>' +
+                    '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Modules</div>' +
+                '</div>' +
+            '</div>' + html;
+    }
+
+    list.innerHTML = html;
+    modal.style.display = 'block';
+};
+window.openCompletedModal = function() {
+    console.log('Modal opened!');
+    const modal = document.getElementById('completedModal');
+    if (!modal) {
+        alert('Modal HTML missing from index.html!');
+        return;
+    }
+    const list = document.getElementById('completedModalList');
+    const now = Date.now();
+    const completed = events.filter(e => new Date(e.deadline).getTime() <= now)
+        .sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+    if (!completed.length) {
+        list.innerHTML = '<p style="color:#888;text-align:center;padding:40px;">🎉 No completed deadlines yet.</p>';
+    } else {
+        let html = '';
+        completed.forEach(e => {
+            const color = e.color || '#ff8c00';
+            const d = new Date(e.deadline);
+            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
+                '<div style="flex:1;">' +
+                    '<div style="color:#fff; font-weight:700;">✓ ' + (e.title || 'Deadline') + '</div>' +
+                    '<div style="color:#888; font-size:0.72rem; margin-top:4px;">📚 ' + (e.module || 'General') + ' · 📅 ' + dateStr + '</div>' +
+                '</div>' +
+                '<div style="font-size:0.7rem; font-weight:700; color:' + color + ';">COMPLETED</div>' +
+            '</div>';
+        });
+        list.innerHTML = html;
+    }
+    modal.style.display = 'block';
+};
+
+window.closeCompletedModal = function() {
+    const modal = document.getElementById('completedModal');
+    if (modal) modal.style.display = 'none';
+};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeCompletedModal();
+});
+
 console.log('👑 Golden Plan loaded!');

@@ -314,16 +314,16 @@
                             </div>
                             <div class="stat-bar"><div class="stat-bar-fill" id="statTotalBar" style="width:0%;background:#ff8c00;"></div></div>
                         </div>
-
-                        <div class="assess-stat-card" style="--stat-color:#22c55e;">
-                            <div class="stat-icon-wrap">✅</div>
-                            <div>
-                                <div class="stat-label">Completed</div>
-                                <div class="stat-number" id="statCompleted">0</div>
-                                <div class="stat-sub">On track</div>
-                            </div>
-                            <div class="stat-bar"><div class="stat-bar-fill" id="statCompletedBar" style="width:0%;background:#22c55e;"></div></div>
-                        </div>
+                          <!-- ============ Add the "Completed" card with a click event to open the modal============ --> 
+                      <div class="assess-stat-card clickable" style="--stat-color:#22c55e;" onclick="openCompletedModal()">
+    <div class="stat-icon-wrap">✅</div>
+    <div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-number" id="statCompleted">0</div>
+        <div class="stat-sub">Tap to view</div>
+    </div>
+    <div class="stat-bar"><div class="stat-bar-fill" id="statCompletedBar" style="width:0%;background:#22c55e;"></div></div>
+</div>
 
                         <div class="assess-stat-card" style="--stat-color:#3b82f6;">
                             <div class="stat-icon-wrap">⏰</div>
@@ -491,7 +491,21 @@
             </div>
         </div>
     </div>
-
+<!-- ============ COMPLETED DEADLINES MODAL ============ -->
+<div id="completedModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:9999; padding:24px; overflow-y:auto;">
+    <div style="max-width:700px; margin:0 auto; background:#141414; border:1px solid #1f1f1f; border-radius:20px; padding:28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1f1f1f;">
+            <div>
+                <div style="font-size:1.2rem; font-weight:700; color:#f5f5f5;">✅ Completed Deadlines</div>
+                <div style="font-size:0.75rem; color:#888; margin-top:4px;">All the assessments you've finished</div>
+            </div>
+            <button onclick="closeCompletedModal()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;">✕</button>
+        </div>
+        <div id="completedModalList">
+            <p style="color:#888; text-align:center; padding:20px;">Loading...</p>
+        </div>
+    </div>
+</div>
     <script type="module" src="script.js"></script>
 </body>
 </html>

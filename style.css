@@ -1798,10 +1798,6 @@ select {
         transform: translateX(0);
     }
 }
-
-
-    
-
     /* Topbar layout - hamburger + text + user pill */
    /* ============================================================
    TOPBAR - FINAL CLEAN
@@ -2179,4 +2175,22 @@ body .logout-mini:hover {
     white-space: nowrap;
     flex: 1;
     min-width: 40px;
+}
+/* ============================================================
+   CLICKABLE STAT CARDS
+   ============================================================ */
+.assess-stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.assess-stat-card.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.15);
+    border-color: var(--stat-color, #22c55e);
+}
+
+.assess-stat-card.clickable:hover .stat-number {
+    color: var(--stat-color, #22c55e);
+    text-shadow: 0 0 15px color-mix(in srgb, var(--stat-color, #22c55e) 40%, transparent);
 }
