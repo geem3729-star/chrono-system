@@ -993,4 +993,80 @@ window.addEventListener('resize', () => {
         if (overlay) overlay.classList.remove('active');
     }
 });
+    // Render chart
+    renderUserActivityChart();
+    // ============================================================
+// USER ACTIVITY CHART
+// ============================================================
+let chartRange = 'days';
+
+window.setChartRange = function(range) {
+    chartRange = range;
+    document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('chartBtn' + range.charAt(0).toUpperCase() + range.slice(1))?.classList.add('active');
+    renderUserActivityChart();
+};
+
+function renderUserActivityChart() {
+    const chartEl = document.getElementById('userActivityChart');
+    const labelsEl = document.getElementById('userActivityLabels');
+    if (!chartEl || !allUsers.length) return;
+
+    const now = new Date();
+    let buckets = [];
+    let labels = [];
+
+    if (chartRange === 'days') {
+        // Last 7 days
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            buckets.push({ start: d.getTime(), end: d.getTime() + 86400000, count: 0 });
+            labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+        }
+    } else if (chartRange === 'weeks') {
+        // Last 8 weeks
+        for (let i = 7; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - (i * 7));
+            d.setHours(0, 0, 0, 0);
+            buckets.push({ start: d.getTime(), end: d.getTime() + (7 * 86400000), count: 0 });
+            labels.push('W' + (8 - i));
+        }
+    } else {
+        // Last 6 months
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+            buckets.push({ start: d.getTime(), end: next.getTime(), count: 0 });
+            labels.push(d.toLocaleDateString('en-US', { month: 'short' }));
+        }
+    }
+
+    // Count users per bucket (using firstSeen)
+    allUsers.forEach(u => {
+        const t = new Date(u.firstSeen).getTime();
+        buckets.forEach(b => {
+            if (t >= b.start && t < b.end) b.count++;
+        });
+    });
+
+    const maxCount = Math.max(...buckets.map(b => b.count), 1);
+
+    // Build bars
+    let chartHTML = '';
+    let labelsHTML = '';
+    buckets.forEach((b, i) => {
+        const heightPct = (b.count / maxCount) * 100;
+        chartHTML += '<div class="chart-bar-wrap">' +
+            '<div class="chart-bar-count">' + b.count + '</div>' +
+            '<div class="chart-bar" style="height:' + Math.max(heightPct, 2) + '%;" title="' + b.count + ' users"></div>' +
+        '</div>';
+        labelsHTML += '<div class="chart-label">' + labels[i] + '</div>';
+    });
+
+    chartEl.innerHTML = chartHTML;
+    labelsEl.innerHTML = labelsHTML;
+}
 console.log('👑 Golden Plan loaded!');

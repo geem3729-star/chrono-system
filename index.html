@@ -96,7 +96,7 @@
             <div class="user-avatar" id="userAvatar">?</div>
         </div>
         <span id="userName" style="display:none;">Guest</span>
-        <h1 id="greeting" style="display:none;">Good evening! 👋</h1>
+        <h1 id="greeting" style="display:none;">Good evening! </h1>
     </div>
     <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
 </div>
@@ -213,7 +213,7 @@
                     </div>
                 </div>
 
-                <!-- ============ COUNTDOWNS ============ -->
+                         <!-- ============ COUNTDOWNS ============ -->
                 <div class="view" id="view-countdowns">
                     <div class="panel" style="margin-bottom:20px;">
                         <div class="panel-title">➕ Add New Countdown</div>
@@ -276,6 +276,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <!-- ============ EXAM ELIGIBILITY ============ -->
                 <div class="view" id="view-examelig">
@@ -423,6 +424,23 @@
         <div id="adminStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
         </div>
     </div>
+     <!-- ============ USER ACTIVITY GRAPH ============ -->
+<div class="panel" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div class="panel-title" style="margin:0;">📊 User Activity Over Time</div>
+        <div style="display:flex;gap:8px;">
+            <button id="chartBtnDays" onclick="setChartRange('days')" class="chart-tab active">Days</button>
+            <button id="chartBtnWeeks" onclick="setChartRange('weeks')" class="chart-tab">Weeks</button>
+            <button id="chartBtnMonths" onclick="setChartRange('months')" class="chart-tab">Months</button>
+            <button id="chartBtnYears" onclick="setChartRange('Years')" class="chart-tab">Years</button>
+        </div>
+    </div>
+    <div id="userActivityChart" style="display:flex;align-items:flex-end;gap:8px;height:220px;padding:16px 0;border-bottom:1px solid #262626;overflow-x:auto;">
+        <p style="color:#888;">Loading chart...</p>
+    </div>
+    <div id="userActivityLabels" style="display:flex;gap:8px;padding:8px 0;overflow-x:auto;">
+    </div>
+</div>
 
     <div class="panel">
         <div class="panel-title">📋 All Users Who Signed In</div>

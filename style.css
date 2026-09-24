@@ -490,8 +490,8 @@ body {
 }
 
 .module-card {
-    background: #1a1a1a;
-    border: 1px solid #262626;
+    background: #ed0303;
+    border: 1px solid #22e300;
     border-radius: 14px;
     padding: 24px 16px;
     text-align: center;
@@ -500,8 +500,8 @@ body {
 }
 
 .module-card:hover {
-    border-color: #333;
-    background: #1f1f1f;
+    border-color: #f30101;
+    background: #ea0101;
 }
 
 .module-header { margin-bottom: 16px; }
@@ -1797,7 +1797,8 @@ select {
     .sidebar.mobile-open {
         transform: translateX(0);
     }
-}                                          ← YOU JUST ADDED THIS
+}
+
 
     
 
@@ -2114,4 +2115,68 @@ body .logout-mini:hover {
 }
 .topbar {
     flex-direction: row !important;
+}
+/* ============================================================
+   USER ACTIVITY BAR GRAPH
+   ============================================================ */
+.chart-tab {
+    background: transparent;
+    border: 1px solid #262626;
+    padding: 6px 14px;
+    border-radius: 6px;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.chart-tab:hover {
+    color: #fff;
+    border-color: #444;
+}
+.chart-tab.active {
+    background: #ff8c00;
+    border-color: #ff8c00;
+    color: #fff;
+}
+
+.chart-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 40px;
+}
+
+.chart-bar {
+    width: 100%;
+    min-height: 4px;
+    background: linear-gradient(180deg, #ff8c00, #e67600);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 0, 0.3);
+}
+
+.chart-bar:hover {
+    background: linear-gradient(180deg, #ffb347, #ff8c00);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+}
+
+.chart-bar-count {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #ff8c00;
+    margin-bottom: 4px;
+}
+
+.chart-label {
+    font-size: 0.65rem;
+    color: #888;
+    text-align: center;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 40px;
 }
