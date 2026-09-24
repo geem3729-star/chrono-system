@@ -342,14 +342,24 @@ function renderFullCountdowns() {
     if (!up.length) { list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No active countdowns.</p>'; }
     else { list.innerHTML = up.map(e => buildCard(e, false)).join(''); }
 
-    if (!hist) return;
-    if (!past.length) { hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>'; }
-    else {
+       if (!hist) return;
+    if (!past.length) {
+        hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>';
+    } else {
         hist.innerHTML = past.map(e => {
             const d = new Date(e.deadline);
-            return `<div style="background:#1a1a1a;border:1px solid #262626;border-left:3px solid ${e.color||'#888'};border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;opacity:0.7;">
-                <div><div style="color:#ccc;font-weight:600;">✅ ${e.title}</div><div style="color:#666;font-size:0.72rem;">${e.module||'General'} · ${d.toLocaleDateString()}</div></div>
-                <button onclick="deleteEvent(${e.id})" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;">✕</button></div>`;
+         return `<div style="background:linear-gradient(90deg, color-mix(in srgb, ${e.color || '#ff8c00'} 25%, #0a0a0a) 0%, #0a0a0a 100%); border:1px solid color-mix(in srgb, ${e.color || '#ff8c00'} 40%, #262626); border-left:5px solid ${e.color || '#ff8c00'}; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;">
+    <div style="flex:1; text-align:center; min-width:0;">
+        <div style="color:#fff;font-weight:600;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <span style="color:${e.color || '#ff8c00'};font-weight:700;">✓</span> ${e.title || 'Deadline'}
+        </div>
+        <div style="color:#888;font-size:0.75rem;margin-top:4px;">
+            ${e.module || 'General'} · ${d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'})}
+        </div>
+    </div>
+    <div style="font-size:0.7rem;font-weight:700;color:${e.color || '#ff8c00'};background:color-mix(in srgb, ${e.color || '#ff8c00'} 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>
+    <button onclick="deleteEvent(${e.id})" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>
+</div>`;   
         }).join('');
     }
 }
