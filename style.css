@@ -2194,3 +2194,26 @@ body .logout-mini:hover {
     color: var(--stat-color, #22c55e);
     text-shadow: 0 0 15px color-mix(in srgb, var(--stat-color, #22c55e) 40%, transparent);
 }
+/* ============================================================
+   COMPLETED MODAL - MOBILE FIX
+   ============================================================ */
+#completedModal {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+@media (max-width: 600px) {
+    #completedModal {
+        padding: 12px !important;
+    }
+    #completedModal > div {
+        padding: 20px !important;
+        border-radius: 16px !important;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+    #completedModal > div > div:first-child {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
