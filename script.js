@@ -1069,4 +1069,25 @@ function renderUserActivityChart() {
     chartEl.innerHTML = chartHTML;
     labelsEl.innerHTML = labelsHTML;
 }
+// ============================================================
+// COLLAPSIBLE ADD COUNTDOWN FORM
+// ============================================================
+window.toggleCountdownForm = function() {
+    const body = document.getElementById('countdownFormBody');
+    const arrow = document.getElementById('cdFormArrow');
+    if (!body) {
+        console.error('countdownFormBody not found!');
+        return;
+    }
+    
+    if (body.style.display === 'none' || body.style.display === '') {
+        body.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        console.log('✅ Form opened');
+    } else {
+        body.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+        console.log('❌ Form closed');
+    }
+};
 console.log('👑 Golden Plan loaded!');

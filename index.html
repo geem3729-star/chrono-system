@@ -215,50 +215,56 @@
 
                          <!-- ============ COUNTDOWNS ============ -->
                 <div class="view" id="view-countdowns">
-                    <div class="panel" style="margin-bottom:20px;">
-                        <div class="panel-title">➕ Add New Countdown</div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Title *</label>
-                                <input type="text" id="cdTitle" placeholder="e.g., Semester Test" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                            </div>
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Module</label>
-                                <select id="cdModule" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                                    <option value="">-- Select --</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Date *</label>
-                                <input type="date" id="cdDate" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                            </div>
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Time *</label>
-                                <input type="time" id="cdTime" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                            </div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Weight %</label>
-                                <input type="number" id="cdWeight" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                            </div>
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Mark %</label>
-                                <input type="number" id="cdMark" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                            </div>
-                            <div>
-                                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Color</label>
-                                <input type="color" id="cdColor" value="#ff8c00" style="width:100%;padding:6px;height:48px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;cursor:pointer;">
-                            </div>
-                        </div>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Consequence</label>
-                            <input type="text" id="cdConsequence" placeholder="e.g., Fail the module" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
-                        </div>
-                        <button id="addCountdownBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Countdown</button>
-                    </div>
+               <div class="panel" style="margin-bottom:20px;">
+    <button type="button" onclick="toggleCountdownForm()" style="width:100%;background:transparent;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;margin-bottom:0;text-align:left;">
+        <span class="panel-title" style="margin:0;color:#999;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">➕ Add New Countdown</span>
+        <span id="cdFormArrow" style="color:#ff8c00;font-size:1rem;transition:transform 0.3s;display:inline-block;">▼</span>
+    </button>
+
+    <div id="countdownFormBody" style="display:none;margin-top:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Title *</label>
+                <input type="text" id="cdTitle" placeholder="e.g., Semester Test" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+            </div>
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Module</label>
+                <select id="cdModule" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+                    <option value="">-- Select --</option>
+                </select>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Date *</label>
+                <input type="date" id="cdDate" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+            </div>
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Time *</label>
+                <input type="time" id="cdTime" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Weight %</label>
+                <input type="number" id="cdWeight" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+            </div>
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Mark %</label>
+                <input type="number" id="cdMark" min="0" max="100" value="0" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+            </div>
+            <div>
+                <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Color</label>
+                <input type="color" id="cdColor" value="#ff8c00" style="width:100%;padding:6px;height:48px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;cursor:pointer;">
+            </div>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Consequence</label>
+            <input type="text" id="cdConsequence" placeholder="e.g., Fail the module" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
+        </div>
+        <button id="addCountdownBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Countdown</button>
+    </div>
+</div>
 
                     <div class="panel" style="margin-bottom:20px;">
                         <div class="panel-title">⏳ Active Countdowns</div>
