@@ -671,14 +671,13 @@ if (activeEvents.length === 0 && completedEvents.length === 0) {
     assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
 } else {
     if (activeEvents.length > 0) {
-        activeEvents.forEach(e => {
-            const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            assessListHtml += '<li>' +
-                '<span class="assess-status">⏳</span>' +
-                '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
-                '<span class="assess-date">📅 ' + dateStr + '</span>' +
-            '</li>';
-        });
+       activeEvents.forEach(e => {
+    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    assessListHtml += '<li>' +
+        '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
+        '<span class="assess-date">' + dateStr + '</span>' +
+    '</li>';
+});
     }
 
     // COMPLETED section
@@ -687,14 +686,13 @@ if (activeEvents.length === 0 && completedEvents.length === 0) {
             '<span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span>' +
         '</li>';
 
-        completedEvents.forEach(e => {
-            const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
-                '<span class="assess-status" style="color:' + color + ';">✅</span>' +
-                '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
-                '<span class="assess-date">📅 ' + dateStr + '</span>' +
-            '</li>';
-        });
+     completedEvents.forEach(e => {
+    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
+        '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
+        '<span class="assess-date">' + dateStr + '</span>' +
+    '</li>';
+});
     }
 }
 
@@ -703,7 +701,7 @@ if (activeEvents.length === 0 && completedEvents.length === 0) {
             let filesHTML = '';
             if (moduleFiles.length) {
                 filesHTML = '<div class="module-files-section">' +
-                    '<div class="module-files-title">📎 Study Material (' + moduleFiles.length + ')</div>' +
+                    '<div class="module-files-title">Study Material (' + moduleFiles.length + ')</div>'
                     '<div class="module-files-grid">';
                 moduleFiles.forEach(f => {
                     const isImage = f.type && f.type.startsWith('image/');
@@ -744,7 +742,7 @@ if (activeEvents.length === 0 && completedEvents.length === 0) {
                         '</div>' +
                     '</div>' +
                     '<div style="display:flex; gap:8px;">' +
-                        '<button class="upload-module-btn" onclick="uploadModuleFile(\'' + m.code + '\')">📤 Upload</button>' +
+                        '<button class="upload-module-btn" onclick="uploadModuleFile(\'' + m.code + '\')">Upload</button>' +
                         '<button class="view-module-btn" onclick="viewModuleAssessments(\'' + m.code + '\')">View →</button>' +
                     '</div>' +
                 '</div>' +
@@ -1123,89 +1121,57 @@ window.toggleCountdownForm = function() {
     }
 };
 // ============================================================
-// COMPLETED DEADLINES MODAL
+// MODAL — Total + Completed
 // ============================================================
-window.openCompletedModal = function() {
+function renderModalList(list, emptyMessage) {
+    if (!list || !list.length) {
+        return '<p style="color:#888; text-align:center; padding:40px;">' + emptyMessage + '</p>';
+    }
+    let html = '';
+    list.forEach(function(e) {
+        const color = e.color || '#ff8c00';
+        const d = new Date(e.deadline);
+        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const isPast = d.getTime() <= Date.now();
+        const tag = isPast ? 'COMPLETED' : 'UPCOMING';
+        html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
+            '<div style="flex:1; min-width:180px;">' +
+                '<div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
+                '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
+            '</div>' +
+            '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' + tag + '</div>' +
+            '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
+        '</div>';
+    });
+    return html;
+}
+
+window.openTotalModal = function() {
     const modal = document.getElementById('completedModal');
     const list = document.getElementById('completedModalList');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-
-    const now = Date.now();
-    const completed = events.filter(e => new Date(e.deadline).getTime() <= now)
-        .sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
-
-    if (!completed.length) {
-        list.innerHTML = '<p style="color:#888; text-align:center; padding:40px;">🎉 No completed deadlines yet. Keep going!</p>';
-    } else {
-        let html = '';
-        completed.forEach(e => {
-            const color = e.color || '#ff8c00';
-            const d = new Date(e.deadline);
-            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-            html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
-                '<div style="flex:1; min-width:180px;">' +
-                    '<div style="color:#fff; font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:8px;">' +
-                        '<span style="color:' + color + ';">✓</span> ' + (e.title || 'Deadline') +
-                    '</div>' +
-                    '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' +
-                        '📚 ' + (e.module || 'General') + ' · 📅 ' + dateStr + ' at ' + timeStr +
-                    '</div>' +
-                '</div>' +
-                '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; white-space:nowrap; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' +
-                    'COMPLETED' +
-                '</div>' +
-                '<button onclick="deleteEvent(' + e.id + '); openCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
-            '</div>';
-        });
-
-        // Add summary at top
-        const moduleCount = new Set(completed.map(e => e.module)).size;
-        html = '<div style="background:#1a1a1a; border:1px solid #262626; border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:12px;">' +
-                '<div style="text-align:center;">' +
-                    '<div style="font-size:1.5rem; font-weight:700; color:#22c55e;">' + completed.length + '</div>' +
-                    '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Completed</div>' +
-                '</div>' +
-                '<div style="text-align:center;">' +
-                    '<div style="font-size:1.5rem; font-weight:700; color:#ff8c00;">' + moduleCount + '</div>' +
-                    '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Modules</div>' +
-                '</div>' +
-            '</div>' + html;
-    }
-
-    list.innerHTML = html;
+    if (title) title.textContent = '📝 All Assessments';
+    if (sub) sub.textContent = 'Every assessment across all your modules';
+    const all = [].concat(events).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+    list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
     modal.style.display = 'block';
 };
+
 window.openCompletedModal = function() {
-    console.log('Modal opened!');
     const modal = document.getElementById('completedModal');
-    if (!modal) {
-        alert('Modal HTML missing from index.html!');
-        return;
-    }
     const list = document.getElementById('completedModalList');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSubtitle');
+    if (!modal || !list) return;
+    if (title) title.textContent = '✅ Completed Deadlines';
+    if (sub) sub.textContent = 'All the assessments you have finished';
     const now = Date.now();
-    const completed = events.filter(e => new Date(e.deadline).getTime() <= now)
-        .sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
-    if (!completed.length) {
-        list.innerHTML = '<p style="color:#888;text-align:center;padding:40px;">🎉 No completed deadlines yet.</p>';
-    } else {
-        let html = '';
-        completed.forEach(e => {
-            const color = e.color || '#ff8c00';
-            const d = new Date(e.deadline);
-            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
-                '<div style="flex:1;">' +
-                    '<div style="color:#fff; font-weight:700;">✓ ' + (e.title || 'Deadline') + '</div>' +
-                    '<div style="color:#888; font-size:0.72rem; margin-top:4px;">📚 ' + (e.module || 'General') + ' · 📅 ' + dateStr + '</div>' +
-                '</div>' +
-                '<div style="font-size:0.7rem; font-weight:700; color:' + color + ';">COMPLETED</div>' +
-            '</div>';
-        });
-        list.innerHTML = html;
-    }
+    const completed = events.filter(function(e) { return new Date(e.deadline).getTime() <= now; })
+                            .sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+    list.innerHTML = renderModalList(completed, '🎉 No completed deadlines yet.');
     modal.style.display = 'block';
 };
 
@@ -1214,8 +1180,33 @@ window.closeCompletedModal = function() {
     if (modal) modal.style.display = 'none';
 };
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeCompletedModal();
+// ============================================================
+// TAP HANDLERS — Total + Completed cards (mobile + PC)
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const totalCard = document.getElementById('totalCardBtn');
+    const completedCard = document.getElementById('completedCardBtn');
+
+    function bindTap(el, fn) {
+        if (!el) return;
+        const handler = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fn();
+        };
+        el.addEventListener('click', handler);
+        el.addEventListener('touchend', handler);
+    }
+
+    bindTap(totalCard, function() { window.openTotalModal(); });
+    bindTap(completedCard, function() { window.openCompletedModal(); });
 });
 
-console.log('👑 Golden Plan loaded!');
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (typeof closeCompletedModal === 'function') closeCompletedModal();
+        if (typeof closeFileViewer === 'function') closeFileViewer();
+    }
+});
+
+console.log('👑 Golden Plan loaded!');S
