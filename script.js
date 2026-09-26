@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
@@ -98,7 +98,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('greeting').textContent = `Good evening, ${name}! 👋`;
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('app').style.display = 'grid';
-        await loadData();
+        loadData();
         renderDashboard();
         setupModuleForm();
     } else {
@@ -110,35 +110,53 @@ onAuthStateChanged(auth, async (user) => {
 // ===============================
 // LOAD / SAVE DATA
 // ===============================
-async function loadData() {
+function loadData() {
     if (!currentUser) return;
-    try {
-        const dbRef = ref(db);
-        const e = await get(child(dbRef, `users/${currentUser.uid}/events`));
-        events = e.exists() ? (Array.isArray(e.val()) ? e.val().filter(x=>x) : Object.values(e.val()).filter(x=>x)) : [];
-        const m = await get(child(dbRef, `users/${currentUser.uid}/modules`));
-        modules = m.exists() ? (Array.isArray(m.val()) ? m.val().filter(x=>x) : Object.values(m.val()).filter(x=>x)) : [];
+    const dbRef = ref(db);
 
-        // Load all users (only if admin)
-        if (currentUser.email === ADMIN_EMAIL) {
-            const u = await get(child(dbRef, `allUsers`));
-            allUsers = u.exists() ? Object.values(u.val()).filter(x => x) : [];
+    // ---- Real-time listener: EVENTS ----
+    onValue(ref(db, `users/${currentUser.uid}/events`), (snapshot) => {
+        const val = snapshot.val();
+        events = val
+            ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x))
+            : [];
+
+        // Re-render everything that shows events
+        renderDashboard();
+        renderAssessTable();
+        renderUpcoming();
+        if (document.getElementById('view-countdowns')?.classList.contains('active')) {
+            renderFullCountdowns();
         }
-    } catch (err) { console.error(err); }
-}
+        if (document.getElementById('view-assessments')?.classList.contains('active')) {
+            renderAssessmentsPage();
+        }
+    });
 
-async function saveModules() {
-    if (!currentUser) return;
-    try { await set(ref(db, `users/${currentUser.uid}/modules`), modules); }
-    catch (e) { alert('Could not save module.'); }
-}
+    // ---- Real-time listener: MODULES ----
+    onValue(ref(db, `users/${currentUser.uid}/modules`), (snapshot) => {
+        const val = snapshot.val();
+        modules = val
+            ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x))
+            : [];
 
-async function saveEvents() {
-    if (!currentUser) return;
-    try { await set(ref(db, `users/${currentUser.uid}/events`), events); }
-    catch (e) { alert('Could not save.'); }
-}
+        renderDashboard();
+        renderModulesList();
+        if (document.getElementById('view-assessments')?.classList.contains('active')) {
+            renderAssessmentsPage();
+        }
+    });
 
+    // ---- Real-time listener: ADMIN USERS ----
+    if (currentUser.email === ADMIN_EMAIL) {
+        onValue(ref(db, `allUsers`), (snapshot) => {
+            allUsers = snapshot.exists() ? Object.values(snapshot.val()).filter(x => x) : [];
+            if (document.getElementById('view-admin')?.classList.contains('active')) {
+                renderAdminPanel();
+            }
+        });
+    }
+}
 // ===============================
 // MODULE FORM
 // ===============================
