@@ -1149,6 +1149,22 @@ window.toggleCountdownForm = function() {
     }
 };
 // ============================================================
+// COLLAPSIBLE ADD MODULE FORM
+// ============================================================
+window.toggleModuleForm = function() {
+    const body = document.getElementById('moduleFormBody');
+    const arrow = document.getElementById('moduleFormArrow');
+    if (!body) return;
+
+    if (body.style.display === 'none' || body.style.display === '') {
+        body.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        body.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+};
+// ============================================================
 // MODAL — Total + Completed
 // ============================================================
 function renderModalList(list, emptyMessage) {
