@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
     authDomain: "chronos-system-e3d4c.firebaseapp.com",
@@ -47,10 +47,20 @@ if (viewName === 'admin') renderAdminPanel();
 // AUTH
 // ===============================
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-    try { await signInWithPopup(auth, provider); }
-    catch (e) { alert('Sign-in failed: ' + e.message); }
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    try {
+        if (isMobile) {
+            await signInWithRedirect(auth, provider);
+        } else {
+            await signInWithPopup(auth, provider);
+        }
+    } catch (e) { alert('Sign-in failed: ' + e.message); }
 });
 
+// Catch the return from Google redirect
+getRedirectResult(auth).catch((e) => {
+    console.error('Redirect result error:', e);
+});
 window.handleLogout = async function() {
     if (confirm('Logout?')) await signOut(auth);
 };
