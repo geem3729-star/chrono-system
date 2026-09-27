@@ -1197,10 +1197,54 @@ window.openTotalModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
+
     if (title) title.textContent = '📝 All Assessments';
     if (sub) sub.textContent = 'Every assessment across all your modules';
-    const all = [].concat(events).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+
+    const all = events
+        .filter(e => e.module && e.module !== 'General')
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
     list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
+    modal.style.display = 'block';
+};
+
+window.openUpcomingModal = function() {
+    const modal = document.getElementById('completedModal');
+    const list = document.getElementById('completedModalList');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSubtitle');
+    if (!modal || !list) return;
+
+    if (title) title.textContent = '⏰ Upcoming Assessments';
+    if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
+
+    const now = Date.now();
+    const upcoming = events
+        .filter(e => e.module && e.module !== 'General')
+        .filter(e => new Date(e.deadline).getTime() > now)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines.');
+    modal.style.display = 'block';
+};
+window.openUpcomingModal = function() {
+    const modal = document.getElementById('completedModal');
+    const list = document.getElementById('completedModalList');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSubtitle');
+    if (!modal || !list) return;
+
+    if (title) title.textContent = '⏰ Upcoming Assessments';
+    if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
+
+    const now = Date.now();
+    const upcoming = events
+        .filter(e => e.module && e.module !== 'General')
+        .filter(e => new Date(e.deadline).getTime() > now)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines. You are caught up!');
     modal.style.display = 'block';
 };
 
@@ -1230,6 +1274,7 @@ window.closeCompletedModal = function() {
 document.addEventListener('DOMContentLoaded', function() {
     const totalCard = document.getElementById('totalCardBtn');
     const completedCard = document.getElementById('completedCardBtn');
+    const upcomingCard = document.getElementById('upcomingCardBtn');
 
     function bindTap(el, fn) {
         if (!el) return;
@@ -1244,6 +1289,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     bindTap(totalCard, function() { window.openTotalModal(); });
     bindTap(completedCard, function() { window.openCompletedModal(); });
+    bindTap(upcomingCard, function() { window.openUpcomingModal(); });
 });
 
 document.addEventListener('keydown', function(e) {

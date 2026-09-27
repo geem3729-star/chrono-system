@@ -2262,3 +2262,52 @@ body .logout-mini:hover {
         gap: 10px;
     }
 }
+/* ============================================================
+   FIX: Bottom bar stays at the bottom of the viewport
+   ============================================================ */
+.main-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+}
+
+.bottom-bar {
+    margin-top: auto;
+}
+/* Bottom bar sticks to the bottom of every page */
+.main-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.content {
+    flex: 1;
+}
+.bottom-bar {
+    margin-top: auto;
+}
+/* Prevent bottom bar from covering content */
+.content {
+    padding-bottom: 120px;
+}
+/* ============================================================
+   FIX: Main area fills viewport, bottom bar sticks to bottom
+   ============================================================ */
+.main-area {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+}
+
+.content {
+    flex: 1 !important;
+    padding-bottom: 140px;
+}
+
+.bottom-bar {
+    margin-top: auto !important;
+}
