@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Plan</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -236,7 +236,6 @@ Sign In with Google
 <div id="examEligListFull"><p style="color:#888;padding:20px;">Add modules first.</p></div>
 </div>
 </div>
-
 <!-- ASSESSMENTS -->
 <div class="view" id="view-assessments">
 <div class="assessment-header">
@@ -247,7 +246,6 @@ Sign In with Google
 </div>
 <div class="assess-stats-grid">
 
-    <!-- Total Assessments (clickable) -->
     <div class="assess-stat-card clickable" id="totalCardBtn" style="--stat-color:#ff8c00;">
         <div class="stat-icon-wrap">📋</div>
         <div>
@@ -258,7 +256,6 @@ Sign In with Google
         <div class="stat-bar"><div class="stat-bar-fill" id="statTotalBar" style="width:0%;background:#ff8c00;"></div></div>
     </div>
 
-    <!-- Upcoming -->
     <div class="assess-stat-card clickable" id="upcomingCardBtn" style="--stat-color:#3b82f6;">
         <div class="stat-icon-wrap">⏰</div>
         <div>
@@ -268,9 +265,7 @@ Sign In with Google
         </div>
         <div class="stat-bar"><div class="stat-bar-fill" id="statUpcomingBar" style="width:0%;background:#3b82f6;"></div></div>
     </div>
-   
 
-    <!-- Overdue -->
     <div class="assess-stat-card" style="--stat-color:#ef4444;">
         <div class="stat-icon-wrap">⚠️</div>
         <div>
@@ -281,7 +276,6 @@ Sign In with Google
         <div class="stat-bar"><div class="stat-bar-fill" id="statOverdueBar" style="width:0%;background:#ef4444;"></div></div>
     </div>
 
-    <!-- Completed (clickable, now at far right) -->
     <div class="assess-stat-card clickable" id="completedCardBtn" style="--stat-color:#22c55e;">
         <div class="stat-icon-wrap">✅</div>
         <div>
@@ -293,6 +287,7 @@ Sign In with Google
     </div>
 
 </div>
+
 <div class="assess-main-grid">
 <div class="assess-left">
 <h3 class="assess-section-title">My Modules & Assessments</h3>
@@ -321,7 +316,7 @@ Sign In with Google
 </div>
 </div>
 </div>
-
+</div>
 </div>
 </div>
 
@@ -401,7 +396,7 @@ Sign In with Google
             <div>
                 <div id="modalTitle" style="font-size:1.2rem; font-weight:700; color:#f5f5f5;">✅ Completed Deadlines</div>
                 <div id="modalSubtitle" style="font-size:0.75rem; color:#888; margin-top:4px;">All the assessments you've finished</div>
-            </div>
+  </div>
             <button onclick="closeCompletedModal()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;">✕</button>
         </div>
         <div id="completedModalList">
@@ -410,6 +405,6 @@ Sign In with Google
     </div>
 </div>
 
-<script type="module" src="script.js"></script>
+<script type="module" src="script.js?v=2"></script>
 </body>
 </html>
