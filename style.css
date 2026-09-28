@@ -2311,3 +2311,26 @@ body .logout-mini:hover {
 .bottom-bar {
     margin-top: auto;
 }
+/* Module Viewer Modal - Mobile */
+@media (max-width: 600px) {
+    #moduleViewerModal {
+        padding: 12px !important;
+    }
+    #moduleViewerModal > div {
+        padding: 20px !important;
+        border-radius: 16px !important;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+}
+@media (max-width: 600px) {
+    #moduleViewerModal {
+        padding: 12px !important;
+    }
+    #moduleViewerModal > div {
+        padding: 20px !important;
+        border-radius: 16px !important;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+}

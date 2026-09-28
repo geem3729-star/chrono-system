@@ -725,7 +725,7 @@ if (activeEvents.length === 0 && completedEvents.length === 0) {
 }
 
             // ═══ Files for this module ═══
-            const moduleFiles = pdfFiles.filter(f => f.module === m.code);
+   const moduleFiles = pdfFiles.filter(f => f.module === m.code && !f.eventId);
             let filesHTML = '';
             if (moduleFiles.length) {
                 filesHTML = '<div class="module-files-section">' +
@@ -849,10 +849,128 @@ window.deletePdf = async function(idx) {
     renderPdfList();
 };
 
+// ============================================================
+// MODULE VIEWER MODAL — see + upload scope per assessment
+// ============================================================
+let currentViewerModule = null;
 window.viewModuleAssessments = function(moduleCode) {
-    // Filter to just this module - for now just alert
-    alert('Showing assessments for ' + moduleCode + '\n\n' + events.filter(e => e.module === moduleCode).map(e => '• ' + e.title).join('\n'));
+    currentViewerModule = moduleCode;
+    renderModuleViewer();
+    const m = document.getElementById('moduleViewerModal');
+    if (m) m.style.display = 'block';
 };
+window.closeModuleViewer = function() {
+    const m = document.getElementById('moduleViewerModal');
+    if (m) m.style.display = 'none';
+    currentViewerModule = null;
+};
+
+function renderModuleViewer() {
+    if (!currentViewerModule) return;
+    const m = modules.find(mod => mod.code === currentViewerModule);
+    if (!m) return;
+
+    const now = Date.now();
+    const modEvents = events.filter(e => e.module === m.code)
+                            .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const color = m.color || '#ff8c00';
+
+    document.getElementById('moduleViewerTitle').textContent = (m.name || m.code);
+    document.getElementById('moduleViewerSubtitle').textContent = m.code + ' · ' + modEvents.length + ' assessments';
+
+    const body = document.getElementById('moduleViewerBody');
+    if (!modEvents.length) {
+        body.innerHTML = '<p style="color:#888; text-align:center; padding:40px;">No assessments for this module yet.</p>';
+        return;
+    }
+
+    let html = '';
+    modEvents.forEach(e => {
+        const d = new Date(e.deadline);
+        const isPast = d.getTime() <= now;
+        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const status = isPast ? 'COMPLETED' : 'UPCOMING';
+        const statusColor = isPast ? '#22c55e' : '#3b82f6';
+
+        // Files attached to THIS assessment
+        const eventFiles = pdfFiles.filter(f => f.eventId === e.id);
+
+        let filesHTML = '';
+        if (eventFiles.length) {
+            filesHTML = '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; margin-top:12px;">';
+            eventFiles.forEach(f => {
+                const isImg = f.type && f.type.startsWith('image/');
+                const thumbStyle = isImg
+                    ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
+                    : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
+                const iconOverlay = isImg ? '' : '<span style="font-size:1.8rem; opacity:0.8;">📄</span>';
+                filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; aspect-ratio:1; border-radius:8px; border:1px solid #262626; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; ' + thumbStyle + '">' +
+                    iconOverlay +
+                    '<div style="position:absolute; bottom:0; left:0; right:0; padding:16px 4px 4px 4px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); color:#fff; font-size:0.6rem; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;">' + f.name + '</div>' +
+                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border:none; border-radius:50%; color:#fff; font-size:0.7rem; cursor:pointer; font-weight:700;">✕</button>' +
+                '</div>';
+            });
+            filesHTML += '</div>';
+        } else {
+            filesHTML = '<p style="color:#555; font-size:0.72rem; margin-top:10px; font-style:italic;">No scope or materials uploaded yet.</p>';
+        }
+
+        html += '<div style="background:#1a1a1a; border:1px solid #262626; border-left:4px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:14px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">' +
+                '<div style="flex:1; min-width:180px;">' +
+                    '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
+                    '<div style="font-size:0.72rem; color:#888; margin-top:4px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
+                '</div>' +
+                '<div style="font-size:0.65rem; font-weight:700; color:' + statusColor + '; background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); padding:4px 12px; border-radius:50px; border:1px solid color-mix(in srgb, ' + statusColor + ' 30%, transparent);">' + status + '</div>' +
+            '</div>' +
+            '<div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">' +
+                '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">📎 Scope & Materials</div>' +
+                '<button onclick="uploadScopeFor(\'' + m.code + '\', ' + e.id + ')" style="padding:6px 14px; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.4); color:#ff8c00; border-radius:8px; font-size:0.7rem; font-weight:700; cursor:pointer;">+ Upload</button>' +
+            '</div>' +
+            filesHTML +
+        '</div>';
+    });
+
+    body.innerHTML = html;
+}
+
+window.uploadScopeFor = function(moduleCode, eventId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf,image/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) handleScopeFile(file, moduleCode, eventId);
+    };
+    input.click();
+};
+
+async function handleScopeFile(file, moduleCode, eventId) {
+    const isPdf = file.type === 'application/pdf';
+    const isImage = file.type.startsWith('image/');
+    if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
+    if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        pdfFiles.push({
+            id: Date.now(),
+            name: file.name,
+            module: moduleCode,
+            eventId: eventId,
+            type: file.type,
+            size: file.size,
+            data: e.target.result,
+            uploadedAt: new Date().toISOString()
+        });
+        await savePdfs();
+        renderModuleViewer();
+        renderAssessmentsPage();
+        alert('✅ Uploaded for this assessment!');
+    };
+    reader.readAsDataURL(file);
+}
 
 // PDF upload handling
 function setupPdfUpload() {
@@ -1294,6 +1412,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        if (typeof closeModuleViewer === 'function') closeModuleViewer();
         if (typeof closeCompletedModal === 'function') closeCompletedModal();
         if (typeof closeFileViewer === 'function') closeFileViewer();
     }
