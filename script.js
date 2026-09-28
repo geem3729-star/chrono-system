@@ -908,8 +908,8 @@ function renderModuleViewer() {
                 filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; aspect-ratio:1; border-radius:8px; border:1px solid #262626; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; ' + thumbStyle + '">' +
                     iconOverlay +
                     '<div style="position:absolute; bottom:0; left:0; right:0; padding:16px 4px 4px 4px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); color:#fff; font-size:0.6rem; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;">' + f.name + '</div>' +
-                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border:none; border-radius:50%; color:#fff; font-size:0.7rem; cursor:pointer; font-weight:700;">✕</button>' +
-                '</div>';
+                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:6px; right:6px; width:26px; height:26px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.8rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>' +
+                                '</div>';
             });
             filesHTML += '</div>';
         } else {
