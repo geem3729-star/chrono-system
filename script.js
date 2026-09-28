@@ -878,8 +878,10 @@ function renderModuleViewer() {
     const color = m.color || '#ff8c00';
     const iconChar = (m.code || '?').charAt(0);
 
-    // Header
-    let html = '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">' +
+    let html = '';
+
+    // ============ HEADER ============
+    html += '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">' +
         '<div style="display:flex; align-items:center; gap:16px;">' +
             '<div style="width:56px; height:56px; border-radius:14px; background:color-mix(in srgb, ' + color + ' 15%, #141414); display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:' + color + '; font-weight:800;">' + iconChar + '</div>' +
             '<div>' +
@@ -901,62 +903,63 @@ function renderModuleViewer() {
         '</div>' +
     '</div>';
 
-    // Tabs
+    // ============ QUICK ACTIONS — full-width 3-column row ============
+    html += '<div style="margin-bottom:22px;">' +
+        '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:12px; display:flex; align-items:center; gap:8px;">⚡ Quick Actions</div>' +
+        '<div class="mv-actions-grid">' +
+            '<button onclick="viewImagesFor(\'' + m.code + '\')" class="mv-action-btn">' +
+                '<span class="mv-action-icon" style="background:rgba(59,130,246,0.15);">🖼️</span>' +
+                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View Images</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all images</div></div>' +
+            '</button>' +
+            '<button onclick="viewPdfsFor(\'' + m.code + '\')" class="mv-action-btn">' +
+                '<span class="mv-action-icon" style="background:rgba(239,68,68,0.15);">📄</span>' +
+                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View PDFs</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all PDFs</div></div>' +
+            '</button>' +
+            '<button onclick="uploadModuleFile(\'' + m.code + '\')" class="mv-action-btn">' +
+                '<span class="mv-action-icon" style="background:rgba(139,92,246,0.15);">📤</span>' +
+                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">Upload Files</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Add study materials</div></div>' +
+            '</button>' +
+        '</div>' +
+    '</div>';
+
+    // ============ TABS ============
     html += '<div style="display:flex; gap:24px; border-bottom:1px solid #1f1f1f; margin-bottom:20px;">' +
         '<button onclick="setModuleTab(\'all\')" id="mvTabAll" class="mv-tab mv-tab-active" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:' + color + '; cursor:pointer; border-bottom:2px solid ' + color + '; margin-bottom:-1px;">All Assessments</button>' +
         '<button onclick="setModuleTab(\'completed\')" id="mvTabCompleted" class="mv-tab" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;">Completed (' + completed.length + ')</button>' +
     '</div>';
 
-    // Two-column layout
-    html += '<div class="mv-grid">';
-
-    // Left: assessment cards
-    html += '<div class="mv-left" id="mvAssessList"></div>';
-
-    // Right: sidebar
+    // ============ 2-COLUMN: Assessments + Progress ============
     const progressPct = allModEvents.length > 0 ? Math.round((completed.length / allModEvents.length) * 100) : 0;
     const circ = 2 * Math.PI * 40;
     const offset = circ - (progressPct / 100) * circ;
 
+    html += '<div class="mv-grid">';
+
+    // Left: assessment list
+    html += '<div class="mv-left" id="mvAssessList"></div>';
+
+    // Right: progress + tip
     html += '<div class="mv-right">' +
-        // Quick Actions
         '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
-            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:14px; display:flex; align-items:center; gap:8px;">⚡ Quick Actions</div>' +
-            '<button onclick="viewImagesFor(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;">' +
-                '<span style="width:28px; height:28px; background:rgba(59,130,246,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">🖼️</span>' +
-                '<div><div style="color:#f5f5f5;">View Images</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Open all images</div></div>' +
-            '</button>' +
-            '<button onclick="viewPdfsFor(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;">' +
-                '<span style="width:28px; height:28px; background:rgba(239,68,68,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">📄</span>' +
-                '<div><div style="color:#f5f5f5;">View PDFs</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Open all PDFs</div></div>' +
-            '</button>' +
-            '<button onclick="uploadModuleFile(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:10px;">' +
-                '<span style="width:28px; height:28px; background:rgba(139,92,246,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">📤</span>' +
-                '<div><div style="color:#f5f5f5;">Upload Files</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Add study materials</div></div>' +
-            '</button>' +
-        '</div>' +
-        // Progress
-        '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
-            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:14px; display:flex; align-items:center; gap:8px;">📊 Progress Overview</div>' +
-            '<div style="display:flex; align-items:center; gap:16px;">' +
-                '<div style="position:relative; width:110px; height:110px; flex-shrink:0;">' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:16px; display:flex; align-items:center; gap:8px;">📊 Progress Overview</div>' +
+            '<div style="display:flex; align-items:center; justify-content:center; margin-bottom:18px;">' +
+                '<div style="position:relative; width:120px; height:120px;">' +
                     '<svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">' +
                         '<circle cx="50" cy="50" r="40" fill="none" stroke="#262626" stroke-width="8"/>' +
                         '<circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>' +
                     '</svg>' +
                     '<div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">' +
-                        '<div style="font-size:1.3rem; font-weight:700; color:#f5f5f5;">' + completed.length + '/' + allModEvents.length + '</div>' +
-                        '<div style="font-size:0.55rem; color:#888; letter-spacing:1px; text-transform:uppercase;">Completed</div>' +
+                        '<div style="font-size:1.5rem; font-weight:700; color:#f5f5f5;">' + completed.length + '/' + allModEvents.length + '</div>' +
+                        '<div style="font-size:0.6rem; color:#888; letter-spacing:1px; text-transform:uppercase;">Completed</div>' +
                     '</div>' +
                 '</div>' +
-                '<div style="flex:1; display:flex; flex-direction:column; gap:10px;">' +
-                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#22c55e;">● Completed</span><strong style="color:#f5f5f5;">' + completed.length + '</strong></div>' +
-                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#3b82f6;">● Upcoming</span><strong style="color:#f5f5f5;">' + upcoming.length + '</strong></div>' +
-                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#888;">● Total Assessments</span><strong style="color:#f5f5f5;">' + allModEvents.length + '</strong></div>' +
-                '</div>' +
+            '</div>' +
+            '<div style="display:flex; flex-direction:column; gap:10px;">' +
+                '<div style="display:flex; justify-content:space-between; font-size:0.78rem;"><span style="color:#22c55e;">● Completed</span><strong style="color:#f5f5f5;">' + completed.length + '</strong></div>' +
+                '<div style="display:flex; justify-content:space-between; font-size:0.78rem;"><span style="color:#3b82f6;">● Upcoming</span><strong style="color:#f5f5f5;">' + upcoming.length + '</strong></div>' +
+                '<div style="display:flex; justify-content:space-between; font-size:0.78rem;"><span style="color:#888;">● Total Assessments</span><strong style="color:#f5f5f5;">' + allModEvents.length + '</strong></div>' +
             '</div>' +
         '</div>' +
-        // Tip
         '<div style="background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02)); border:1px solid rgba(59,130,246,0.25); border-radius:14px; padding:16px;">' +
             '<div style="font-size:0.75rem; font-weight:700; color:#60a5fa; margin-bottom:6px; display:flex; align-items:center; gap:8px;">💡 Stay on track!</div>' +
             '<div style="font-size:0.72rem; color:#888; line-height:1.5;">Keep up with your assessments, view your resources, and make sure to upload your files where needed.</div>' +
@@ -967,7 +970,6 @@ function renderModuleViewer() {
 
     document.getElementById('moduleViewerBody').innerHTML = html;
 
-    // Now render assessment cards into the left column
     window.mvAllEvents = allModEvents;
     window.mvCompletedEvents = completed;
     window.mvCurrentTab = 'all';

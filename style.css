@@ -2334,16 +2334,58 @@ body .logout-mini:hover {
         overflow-y: auto;
     }
 }
-
 /* ============================================================
-   MODULE VIEWER — Two-column responsive grid
+   MODULE VIEWER — Quick Actions + Responsive Grid
    ============================================================ */
+.mv-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.mv-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #141414;
+    border: 1px solid #262626;
+    border-radius: 12px;
+    color: #c5c5c5;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.mv-action-btn:hover {
+    background: #1a1a1a;
+    border-color: #3a3a3a;
+    transform: translateY(-1px);
+}
+
+.mv-action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
 .mv-grid {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 390px;
     gap: 20px;
 }
+
 @media (max-width: 900px) {
+    .mv-actions-grid {
+        grid-template-columns: 1fr;
+    }
     .mv-grid {
         grid-template-columns: 1fr;
     }
@@ -2351,6 +2393,7 @@ body .logout-mini:hover {
         order: -1;
     }
 }
+
 @media (max-width: 600px) {
     #moduleViewerModal {
         padding: 12px !important;
@@ -2358,5 +2401,13 @@ body .logout-mini:hover {
     #moduleViewerModal > div {
         padding: 18px !important;
         border-radius: 14px !important;
+    }
+    .mv-action-btn {
+        padding: 12px 14px;
+    }
+}
+@media (min-width: 1600px) {
+    #moduleViewerModal > div {
+        max-width: 90% !important;
     }
 }
