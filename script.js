@@ -871,69 +871,213 @@ function renderModuleViewer() {
     if (!m) return;
 
     const now = Date.now();
-    const modEvents = events.filter(e => e.module === m.code)
-                            .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const allModEvents = events.filter(e => e.module === m.code)
+                               .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const completed = allModEvents.filter(e => new Date(e.deadline).getTime() <= now);
+    const upcoming  = allModEvents.filter(e => new Date(e.deadline).getTime() > now);
     const color = m.color || '#ff8c00';
+    const iconChar = (m.code || '?').charAt(0);
 
-    document.getElementById('moduleViewerTitle').textContent = (m.name || m.code);
-    document.getElementById('moduleViewerSubtitle').textContent = m.code + ' · ' + modEvents.length + ' assessments';
+    // Header
+    let html = '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">' +
+        '<div style="display:flex; align-items:center; gap:16px;">' +
+            '<div style="width:56px; height:56px; border-radius:14px; background:color-mix(in srgb, ' + color + ' 15%, #141414); display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:' + color + '; font-weight:800;">' + iconChar + '</div>' +
+            '<div>' +
+                '<div style="font-size:1.4rem; font-weight:700; color:#f5f5f5;">' + (m.name || m.code) + '</div>' +
+                '<div style="font-size:0.8rem; color:#888; margin-top:4px; display:flex; align-items:center; gap:8px;">' +
+                    '<span>' + m.code + '</span>' +
+                    '<span style="color:#333;">•</span>' +
+                    '<span>' + allModEvents.length + ' Assessments</span>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:12px;">' +
+            '<div style="background:#141414; border:1px solid #262626; border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:10px;">' +
+                '<div style="width:32px; height:32px; border-radius:8px; background:rgba(255,140,0,0.1); display:flex; align-items:center; justify-content:center; font-size:1rem;">📅</div>' +
+                '<div><div style="font-size:0.65rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Today</div>' +
+                '<div style="font-size:0.8rem; color:#f5f5f5; font-weight:600;">' + new Date().toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) + '</div></div>' +
+            '</div>' +
+            '<button onclick="closeModuleViewer()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:42px; height:42px; border-radius:50%; cursor:pointer; font-weight:700; font-size:1rem;">✕</button>' +
+        '</div>' +
+    '</div>';
 
-    const body = document.getElementById('moduleViewerBody');
-    if (!modEvents.length) {
-        body.innerHTML = '<p style="color:#888; text-align:center; padding:40px;">No assessments for this module yet.</p>';
+    // Tabs
+    html += '<div style="display:flex; gap:24px; border-bottom:1px solid #1f1f1f; margin-bottom:20px;">' +
+        '<button onclick="setModuleTab(\'all\')" id="mvTabAll" class="mv-tab mv-tab-active" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:' + color + '; cursor:pointer; border-bottom:2px solid ' + color + '; margin-bottom:-1px;">All Assessments</button>' +
+        '<button onclick="setModuleTab(\'completed\')" id="mvTabCompleted" class="mv-tab" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;">Completed (' + completed.length + ')</button>' +
+    '</div>';
+
+    // Two-column layout
+    html += '<div class="mv-grid">';
+
+    // Left: assessment cards
+    html += '<div class="mv-left" id="mvAssessList"></div>';
+
+    // Right: sidebar
+    const progressPct = allModEvents.length > 0 ? Math.round((completed.length / allModEvents.length) * 100) : 0;
+    const circ = 2 * Math.PI * 40;
+    const offset = circ - (progressPct / 100) * circ;
+
+    html += '<div class="mv-right">' +
+        // Quick Actions
+        '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:14px; display:flex; align-items:center; gap:8px;">⚡ Quick Actions</div>' +
+            '<button onclick="viewImagesFor(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;">' +
+                '<span style="width:28px; height:28px; background:rgba(59,130,246,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">🖼️</span>' +
+                '<div><div style="color:#f5f5f5;">View Images</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Open all images</div></div>' +
+            '</button>' +
+            '<button onclick="viewPdfsFor(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;">' +
+                '<span style="width:28px; height:28px; background:rgba(239,68,68,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">📄</span>' +
+                '<div><div style="color:#f5f5f5;">View PDFs</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Open all PDFs</div></div>' +
+            '</button>' +
+            '<button onclick="uploadModuleFile(\'' + m.code + '\')" style="width:100%; text-align:left; padding:12px 14px; background:#1a1a1a; border:1px solid #262626; border-radius:10px; color:#c5c5c5; font-size:0.78rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:10px;">' +
+                '<span style="width:28px; height:28px; background:rgba(139,92,246,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">📤</span>' +
+                '<div><div style="color:#f5f5f5;">Upload Files</div><div style="font-size:0.65rem; color:#888; font-weight:400;">Add study materials</div></div>' +
+            '</button>' +
+        '</div>' +
+        // Progress
+        '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:14px; display:flex; align-items:center; gap:8px;">📊 Progress Overview</div>' +
+            '<div style="display:flex; align-items:center; gap:16px;">' +
+                '<div style="position:relative; width:110px; height:110px; flex-shrink:0;">' +
+                    '<svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">' +
+                        '<circle cx="50" cy="50" r="40" fill="none" stroke="#262626" stroke-width="8"/>' +
+                        '<circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>' +
+                    '</svg>' +
+                    '<div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">' +
+                        '<div style="font-size:1.3rem; font-weight:700; color:#f5f5f5;">' + completed.length + '/' + allModEvents.length + '</div>' +
+                        '<div style="font-size:0.55rem; color:#888; letter-spacing:1px; text-transform:uppercase;">Completed</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="flex:1; display:flex; flex-direction:column; gap:10px;">' +
+                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#22c55e;">● Completed</span><strong style="color:#f5f5f5;">' + completed.length + '</strong></div>' +
+                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#3b82f6;">● Upcoming</span><strong style="color:#f5f5f5;">' + upcoming.length + '</strong></div>' +
+                    '<div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span style="color:#888;">● Total Assessments</span><strong style="color:#f5f5f5;">' + allModEvents.length + '</strong></div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        // Tip
+        '<div style="background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02)); border:1px solid rgba(59,130,246,0.25); border-radius:14px; padding:16px;">' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#60a5fa; margin-bottom:6px; display:flex; align-items:center; gap:8px;">💡 Stay on track!</div>' +
+            '<div style="font-size:0.72rem; color:#888; line-height:1.5;">Keep up with your assessments, view your resources, and make sure to upload your files where needed.</div>' +
+        '</div>' +
+    '</div>';
+
+    html += '</div>'; // end mv-grid
+
+    document.getElementById('moduleViewerBody').innerHTML = html;
+
+    // Now render assessment cards into the left column
+    window.mvAllEvents = allModEvents;
+    window.mvCompletedEvents = completed;
+    window.mvCurrentTab = 'all';
+    renderModuleAssessmentList();
+}
+
+function renderModuleAssessmentList() {
+    const list = document.getElementById('mvAssessList');
+    if (!list) return;
+    const color = (modules.find(x => x.code === currentViewerModule) || {}).color || '#ff8c00';
+    const now = Date.now();
+    const items = window.mvCurrentTab === 'completed' ? window.mvCompletedEvents : window.mvAllEvents;
+
+    if (!items.length) {
+        list.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#666;">🎉 Nothing here yet.</div>';
         return;
     }
 
     let html = '';
-    modEvents.forEach(e => {
+    items.forEach(e => {
         const d = new Date(e.deadline);
         const isPast = d.getTime() <= now;
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const status = isPast ? 'COMPLETED' : 'UPCOMING';
         const statusColor = isPast ? '#22c55e' : '#3b82f6';
+        const statusText  = isPast ? 'COMPLETED' : 'UPCOMING';
 
-        // Files attached to THIS assessment
-        const eventFiles = pdfFiles.filter(f => f.eventId === e.id);
-
+        const files = pdfFiles.filter(f => f.eventId === e.id);
         let filesHTML = '';
-        if (eventFiles.length) {
-            filesHTML = '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; margin-top:12px;">';
-            eventFiles.forEach(f => {
+        if (files.length) {
+            filesHTML = '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:12px;">';
+            files.forEach(f => {
                 const isImg = f.type && f.type.startsWith('image/');
+                const ext = isImg ? 'IMG' : 'PDF';
+                const sizeMB = (f.size / (1024*1024)).toFixed(1);
                 const thumbStyle = isImg
                     ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
                     : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
-                const iconOverlay = isImg ? '' : '<span style="font-size:1.8rem; opacity:0.8;">📄</span>';
-                filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; aspect-ratio:1; border-radius:8px; border:1px solid #262626; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; ' + thumbStyle + '">' +
-                    iconOverlay +
-                    '<div style="position:absolute; bottom:0; left:0; right:0; padding:16px 4px 4px 4px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); color:#fff; font-size:0.6rem; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;">' + f.name + '</div>' +
-                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:6px; right:6px; width:26px; height:26px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.8rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>' +
-                                '</div>';
+                filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:10px; overflow:hidden; cursor:pointer; border:1px solid #262626; height:90px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
+                    (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; opacity:0.6;">📄</div>') +
+                    '<div style="position:absolute; bottom:0; left:0; right:0; padding:6px 8px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:6px;">' +
+                        '<div style="width:18px; height:18px; border-radius:4px; background:' + (isImg ? '#3b82f6' : '#ef4444') + '; display:flex; align-items:center; justify-content:center; font-size:0.5rem; font-weight:800; color:#fff;">' + ext + '</div>' +
+                        '<div style="flex:1; min-width:0;">' +
+                            '<div style="font-size:0.65rem; color:#fff; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.name + '</div>' +
+                            '<div style="font-size:0.55rem; color:#888;">' + sizeMB + ' MB</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:5px; right:5px; width:22px; height:22px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.65rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>' +
+                '</div>';
             });
             filesHTML += '</div>';
         } else {
-            filesHTML = '<p style="color:#555; font-size:0.72rem; margin-top:10px; font-style:italic;">No scope or materials uploaded yet.</p>';
+            filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;">' +
+                '<span style="font-size:1.2rem; opacity:0.4;">☁️</span>' +
+                '<span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span>' +
+            '</div>';
         }
 
-        html += '<div style="background:#1a1a1a; border:1px solid #262626; border-left:4px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:14px;">' +
+        html += '<div style="background:#141414; border:1px solid #1f1f1f; border-left:3px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:12px;">' +
             '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">' +
-                '<div style="flex:1; min-width:180px;">' +
-                    '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
-                    '<div style="font-size:0.72rem; color:#888; margin-top:4px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
+                '<div style="display:flex; align-items:center; gap:12px; flex:1; min-width:200px;">' +
+                    '<div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:1rem;">📝</div>' +
+                    '<div>' +
+                        '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
+                        '<div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
+                    '</div>' +
                 '</div>' +
-                '<div style="font-size:0.65rem; font-weight:700; color:' + statusColor + '; background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); padding:4px 12px; border-radius:50px; border:1px solid color-mix(in srgb, ' + statusColor + ' 30%, transparent);">' + status + '</div>' +
+                '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
+                    '<div style="font-size:0.6rem; font-weight:700; color:' + statusColor + '; background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); padding:4px 12px; border-radius:50px; border:1px solid color-mix(in srgb, ' + statusColor + ' 30%, transparent);">' + statusText + '</div>' +
+                    '<button onclick="uploadScopeFor(\'' + currentViewerModule + '\', ' + e.id + ')" style="padding:7px 14px; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.4); color:#ff8c00; border-radius:8px; font-size:0.7rem; font-weight:700; cursor:pointer; white-space:nowrap;">+ Upload</button>' +
+                '</div>' +
             '</div>' +
-            '<div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">' +
-                '<div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">📎 Scope & Materials</div>' +
-                '<button onclick="uploadScopeFor(\'' + m.code + '\', ' + e.id + ')" style="padding:6px 14px; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.4); color:#ff8c00; border-radius:8px; font-size:0.7rem; font-weight:700; cursor:pointer;">+ Upload</button>' +
+            '<div style="display:flex; align-items:center; gap:8px; margin-top:16px;">' +
+                '<span style="font-size:1rem;">📎</span>' +
+                '<span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span>' +
             '</div>' +
             filesHTML +
         '</div>';
     });
 
-    body.innerHTML = html;
+    list.innerHTML = html;
 }
+
+window.setModuleTab = function(tab) {
+    window.mvCurrentTab = tab;
+    const allBtn = document.getElementById('mvTabAll');
+    const compBtn = document.getElementById('mvTabCompleted');
+    const color = (modules.find(x => x.code === currentViewerModule) || {}).color || '#ff8c00';
+    if (allBtn) {
+        allBtn.style.color = tab === 'all' ? color : '#888';
+        allBtn.style.borderBottom = tab === 'all' ? '2px solid ' + color : '2px solid transparent';
+    }
+    if (compBtn) {
+        compBtn.style.color = tab === 'completed' ? color : '#888';
+        compBtn.style.borderBottom = tab === 'completed' ? '2px solid ' + color : '2px solid transparent';
+    }
+    renderModuleAssessmentList();
+};
+
+// Sidebar helpers
+window.viewImagesFor = function(moduleCode) {
+    const imgs = pdfFiles.filter(f => f.module === moduleCode && f.type && f.type.startsWith('image/'));
+    if (!imgs.length) return alert('No images uploaded for this module yet.');
+    openFileViewer(imgs[0].id);
+};
+window.viewPdfsFor = function(moduleCode) {
+    const pdfs = pdfFiles.filter(f => f.module === moduleCode && f.type === 'application/pdf');
+    if (!pdfs.length) return alert('No PDFs uploaded for this module yet.');
+    openFileViewer(pdfs[0].id);
+};
 
 window.uploadScopeFor = function(moduleCode, eventId) {
     const input = document.createElement('input');

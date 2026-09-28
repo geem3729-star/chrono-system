@@ -2334,3 +2334,29 @@ body .logout-mini:hover {
         overflow-y: auto;
     }
 }
+
+/* ============================================================
+   MODULE VIEWER — Two-column responsive grid
+   ============================================================ */
+.mv-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+}
+@media (max-width: 900px) {
+    .mv-grid {
+        grid-template-columns: 1fr;
+    }
+    .mv-right {
+        order: -1;
+    }
+}
+@media (max-width: 600px) {
+    #moduleViewerModal {
+        padding: 12px !important;
+    }
+    #moduleViewerModal > div {
+        padding: 18px !important;
+        border-radius: 14px !important;
+    }
+}
