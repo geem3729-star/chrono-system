@@ -47,20 +47,24 @@ window.switchView = function(viewName, el) {
 // AUTH
 // ===============================
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     try {
-        if (isMobile) {
-            await signInWithRedirect(auth, provider);
+        await signInWithPopup(auth, provider);
+    } catch (e) {
+        // If popup is blocked on iOS, tell the user how to fix it
+        if (e.code === 'auth/popup-blocked') {
+            alert('Please allow popups for this site, then try again.\n\nSafari: Settings → Safari → Block Pop-ups → OFF');
+        } else if (e.code === 'auth/popup-closed-by-user') {
+            // User closed the popup - do nothing, no alert needed
         } else {
-            await signInWithPopup(auth, provider);
+            alert('Sign-in failed: ' + e.message);
         }
-    } catch (e) { alert('Sign-in failed: ' + e.message); }
+    }
 });
 
 // Catch the return from Google redirect
-getRedirectResult(auth).catch((e) => {
-    console.error('Redirect result error:', e);
-});
+
+
+
 window.handleLogout = async function() {
     if (confirm('Logout?')) await signOut(auth);
 };
