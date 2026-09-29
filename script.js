@@ -1576,5 +1576,14 @@ document.addEventListener('keydown', function(e) {
         if (typeof closeFileViewer === 'function') closeFileViewer();
     }
 });
+// Show Safari warning on iOS Safari only
+(function() {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isSafari && isIOS) {
+        const warning = document.getElementById('safariWarning');
+        if (warning) warning.style.display = 'block';
+    }
+})();
 
 console.log('👑 Golden Plan loaded!');
