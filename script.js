@@ -39,7 +39,7 @@ window.switchView = function(viewName, el) {
     if (viewName === 'dashboard') renderDashboard();
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
     if (viewName === 'examelig') renderExamEligFull();
-if (viewName === 'admin') renderAdminPanel();
+    if (viewName === 'admin') renderAdminPanel();
 };
 
 
@@ -122,7 +122,6 @@ onAuthStateChanged(auth, async (user) => {
 // ===============================
 function loadData() {
     if (!currentUser) return;
-    const dbRef = ref(db);
 
     // ---- Real-time listener: EVENTS ----
     onValue(ref(db, `users/${currentUser.uid}/events`), (snapshot) => {
@@ -167,6 +166,29 @@ function loadData() {
         });
     }
 }
+
+// ---- SAVE: EVENTS (countdowns) ----
+async function saveEvents() {
+    if (!currentUser) return;
+    try {
+        await set(ref(db, `users/${currentUser.uid}/events`), events);
+    } catch (e) {
+        console.error('Save events error:', e);
+        alert('Could not save countdowns: ' + e.message);
+    }
+}
+
+// ---- SAVE: MODULES ----
+async function saveModules() {
+    if (!currentUser) return;
+    try {
+        await set(ref(db, `users/${currentUser.uid}/modules`), modules);
+    } catch (e) {
+        console.error('Save modules error:', e);
+        alert('Could not save modules: ' + e.message);
+    }
+}
+
 // ===============================
 // MODULE FORM
 // ===============================
@@ -252,7 +274,7 @@ function renderModules() {
         let bc = 'eligible', bt = '✅ Eligible';
         if (mark < 50) { bc='atrisk'; bt='⚠️ At Risk'; }
         else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
-      html += `<div class="module-card" style="--module-color:${color};"><div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
+        html += `<div class="module-card" style="--module-color:${color};"><div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
             <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
             <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
@@ -273,7 +295,7 @@ function renderModulesList() {
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark)/100) * circ;
         const color = m.color || '#ff8c00';
-        html += `<div class="module-card" style="position:relative;">
+        html += `<div class="module-card" style="position:relative;--module-color:${color};">
             <button onclick="deleteModule(${m.id})" style="position:absolute;top:12px;right:12px;width:28px;height:28px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:50%;color:#f87171;cursor:pointer;">✕</button>
             <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
@@ -370,13 +392,13 @@ function renderFullCountdowns() {
     if (!up.length) { list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No active countdowns.</p>'; }
     else { list.innerHTML = up.map(e => buildCard(e, false)).join(''); }
 
-       if (!hist) return;
+    if (!hist) return;
     if (!past.length) {
         hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>';
     } else {
         hist.innerHTML = past.map(e => {
             const d = new Date(e.deadline);
-         return `<div style="background:linear-gradient(90deg, color-mix(in srgb, ${e.color || '#ff8c00'} 25%, #0a0a0a) 0%, #0a0a0a 100%); border:1px solid color-mix(in srgb, ${e.color || '#ff8c00'} 40%, #262626); border-left:5px solid ${e.color || '#ff8c00'}; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;">
+            return `<div style="background:linear-gradient(90deg, color-mix(in srgb, ${e.color || '#ff8c00'} 25%, #0a0a0a) 0%, #0a0a0a 100%); border:1px solid color-mix(in srgb, ${e.color || '#ff8c00'} 40%, #262626); border-left:5px solid ${e.color || '#ff8c00'}; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;">
     <div style="flex:1; text-align:center; min-width:0;">
         <div style="color:#fff;font-weight:600;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;">
             <span style="color:${e.color || '#ff8c00'};font-weight:700;">✓</span> ${e.title || 'Deadline'}
@@ -387,7 +409,7 @@ function renderFullCountdowns() {
     </div>
     <div style="font-size:0.7rem;font-weight:700;color:${e.color || '#ff8c00'};background:color-mix(in srgb, ${e.color || '#ff8c00'} 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>
     <button onclick="deleteEvent(${e.id})" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>
-</div>`;   
+</div>`;
         }).join('');
     }
 }
@@ -536,7 +558,8 @@ setInterval(() => {
     const cd = document.getElementById('view-countdowns');
     if (cd && cd.classList.contains('active')) renderFullCountdowns();
 }, 1000);
- // ============================================================
+
+// ============================================================
 // ADMIN PANEL - See who uses your app
 // ============================================================
 async function renderAdminPanel() {
@@ -629,7 +652,11 @@ async function renderAdminPanel() {
     });
 
     list.innerHTML = html;
+
+    // Draw the activity chart once the users are loaded
+    renderUserActivityChart();
 }
+
 // ============================================================
 // ASSESSMENTS PAGE
 // ============================================================
@@ -688,48 +715,48 @@ function renderAssessmentsPage() {
             const iconChar = (m.code || '?').charAt(0);
             const color = m.color || '#ff8c00';
 
-          // Split events into active + completed
-const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
-const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
+            // Split events into active + completed
+            const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
+            const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
 
-let assessListHtml = '';
+            let assessListHtml = '';
 
-// ACTIVE assessments first
-if (activeEvents.length === 0 && completedEvents.length === 0) {
-    assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
-} else {
-    if (activeEvents.length > 0) {
-       activeEvents.forEach(e => {
-    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-    assessListHtml += '<li>' +
-        '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
-        '<span class="assess-date">' + dateStr + '</span>' +
-    '</li>';
-});
-    }
+            // ACTIVE assessments first
+            if (activeEvents.length === 0 && completedEvents.length === 0) {
+                assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
+            } else {
+                if (activeEvents.length > 0) {
+                    activeEvents.forEach(e => {
+                        const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                        assessListHtml += '<li>' +
+                            '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
+                            '<span class="assess-date">' + dateStr + '</span>' +
+                        '</li>';
+                    });
+                }
 
-    // COMPLETED section
-    if (completedEvents.length > 0) {
-        assessListHtml += '<li class="completed-divider">' +
-            '<span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span>' +
-        '</li>';
+                // COMPLETED section
+                if (completedEvents.length > 0) {
+                    assessListHtml += '<li class="completed-divider">' +
+                        '<span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span>' +
+                    '</li>';
 
-     completedEvents.forEach(e => {
-    const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-    assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
-        '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
-        '<span class="assess-date">' + dateStr + '</span>' +
-    '</li>';
-});
-    }
-}
+                    completedEvents.forEach(e => {
+                        const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                        assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
+                            '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
+                            '<span class="assess-date">' + dateStr + '</span>' +
+                        '</li>';
+                    });
+                }
+            }
 
             // ═══ Files for this module ═══
-   const moduleFiles = pdfFiles.filter(f => f.module === m.code && !f.eventId);
+            const moduleFiles = pdfFiles.filter(f => f.module === m.code && !f.eventId);
             let filesHTML = '';
             if (moduleFiles.length) {
                 filesHTML = '<div class="module-files-section">' +
-                    '<div class="module-files-title">Study Material (' + moduleFiles.length + ')</div>'
+                    '<div class="module-files-title">Study Material (' + moduleFiles.length + ')</div>' +
                     '<div class="module-files-grid">';
                 moduleFiles.forEach(f => {
                     const isImage = f.type && f.type.startsWith('image/');
@@ -1187,6 +1214,7 @@ window.addEventListener('load', () => {
         setupPdfUpload();
     }, 500);
 });
+
 // ============================================================
 // MODULE FILE UPLOAD + VIEWER
 // ============================================================
@@ -1315,9 +1343,8 @@ window.addEventListener('resize', () => {
         if (overlay) overlay.classList.remove('active');
     }
 });
-    // Render chart
-    renderUserActivityChart();
-    // ============================================================
+
+// ============================================================
 // USER ACTIVITY CHART
 // ============================================================
 let chartRange = 'days';
@@ -1391,6 +1418,7 @@ function renderUserActivityChart() {
     chartEl.innerHTML = chartHTML;
     labelsEl.innerHTML = labelsHTML;
 }
+
 // ============================================================
 // COLLAPSIBLE ADD COUNTDOWN FORM
 // ============================================================
@@ -1401,17 +1429,16 @@ window.toggleCountdownForm = function() {
         console.error('countdownFormBody not found!');
         return;
     }
-    
+
     if (body.style.display === 'none' || body.style.display === '') {
         body.style.display = 'block';
         if (arrow) arrow.style.transform = 'rotate(180deg)';
-        console.log('✅ Form opened');
     } else {
         body.style.display = 'none';
         if (arrow) arrow.style.transform = 'rotate(0deg)';
-        console.log('❌ Form closed');
     }
 };
+
 // ============================================================
 // COLLAPSIBLE ADD MODULE FORM
 // ============================================================
@@ -1428,8 +1455,9 @@ window.toggleModuleForm = function() {
         if (arrow) arrow.style.transform = 'rotate(0deg)';
     }
 };
+
 // ============================================================
-// MODAL — Total + Completed
+// MODAL — Total + Upcoming + Completed
 // ============================================================
 function renderModalList(list, emptyMessage) {
     if (!list || !list.length) {
@@ -1489,25 +1517,6 @@ window.openUpcomingModal = function() {
         .filter(e => new Date(e.deadline).getTime() > now)
         .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
-    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines.');
-    modal.style.display = 'block';
-};
-window.openUpcomingModal = function() {
-    const modal = document.getElementById('completedModal');
-    const list = document.getElementById('completedModalList');
-    const title = document.getElementById('modalTitle');
-    const sub = document.getElementById('modalSubtitle');
-    if (!modal || !list) return;
-
-    if (title) title.textContent = '⏰ Upcoming Assessments';
-    if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
-
-    const now = Date.now();
-    const upcoming = events
-        .filter(e => e.module && e.module !== 'General')
-        .filter(e => new Date(e.deadline).getTime() > now)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
     list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines. You are caught up!');
     modal.style.display = 'block';
 };
@@ -1533,7 +1542,7 @@ window.closeCompletedModal = function() {
 };
 
 // ============================================================
-// TAP HANDLERS — Total + Completed cards (mobile + PC)
+// TAP HANDLERS — Total + Upcoming + Completed cards (mobile + PC)
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const totalCard = document.getElementById('totalCardBtn');
@@ -1564,4 +1573,4 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-console.log('👑 Golden Plan loaded!');S
+console.log('👑 Golden Plan loaded!');
