@@ -276,7 +276,7 @@ function renderModules() {
         const off = circ - (Math.min(100, mark)/100) * circ;
         const color = m.color || '#ff8c00';
         let bc = 'eligible', bt = '✅ Qualify';
-        if (mark < 50) { bc='atrisk'; bt='⚠️ Dont Qualify'; }
+        if (mark < 40) { bc='atrisk'; bt='⚠️ Dont Qualify'; }
         else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
           html += `<div class="module-card" style="--module-color:${color}; position:relative;">
             <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
@@ -286,7 +286,7 @@ function renderModules() {
             <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
     });
     const avg = Math.round(total / modules.length);
-    let tag = avg >= 75 ? 'Excellent!' : avg >= 60 ? 'Good Progress!' : avg >= 50 ? 'Keep Pushing!' : 'Needs Focus!';
+    let tag = avg >= 75 ? 'Excellent!' : avg >= 60 ? 'Good Progress!' : avg >= 40 ? 'Keep Pushing!' : 'Needs Focus!';
     html += `<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">${avg}%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">${tag}</div></div>`;
     row.innerHTML = html;
 }
@@ -294,23 +294,27 @@ function renderModules() {
 function renderModulesList() {
     const list = document.getElementById('modulesList');
     if (!list) return;
-    if (!modules.length) { list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No modules yet.</p>'; return; }
+    if (!modules.length) {
+        list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No modules yet. Add one above.</p>';
+        return;
+    }
     let html = '';
     modules.forEach(m => {
         const mark = m.currentMark || 0;
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark)/100) * circ;
         const color = m.color || '#ff8c00';
-             html += `<div class="module-card" style="--module-color:${color}; position:relative;">
+        html += `<div class="module-card" style="--module-color:${color}; position:relative;">
             <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
             <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
             <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
-            <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
+            <div class="module-mark">${mark} / 100</div>
+            <button onclick="viewModuleAssessments('${m.code}')" style="margin-top:14px; padding:8px 16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#ccc; border-radius:8px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; width:100%;">View →</button>
+        </div>`;
     });
     list.innerHTML = html;
 }
-
 function renderUpcoming() {
     const c = document.getElementById('upcomingCountdowns');
     if (!c) return;
@@ -364,9 +368,9 @@ function renderExamElig() {
     if (!modules.length) { list.innerHTML = '<p style="color:#888;font-size:0.9rem;">Add modules to check</p>'; return; }
     let html = '';
     modules.forEach(m => {
-        const ok = (m.currentMark||0) >= 40;
-        html += `<div class="eligibility-item"><div><div class="elig-name">${m.code}</div><div class="elig-note">${ok?'Qualifies to write exam':'Need 50% to qualify'}</div></div>
-            <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Eligible':'⚠️ Not Yet'}</div></div>`;
+   const ok = (m.currentMark||0) >= 40;
+html += `<div class="eligibility-item"><div><div class="elig-name">${m.code}</div><div class="elig-note">${ok?'Meets 40% requirement':'Below 40% requirement'}</div></div>
+    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`;
     });
     list.innerHTML = html;
 }
@@ -377,9 +381,9 @@ function renderExamEligFull() {
     if (!modules.length) { list.innerHTML = '<p style="color:#888;padding:20px;">Add modules first.</p>'; return; }
     let html = '';
     modules.forEach(m => {
-        const ok = (m.currentMark||0) >= 50;
+    const ok = (m.currentMark||0) >= 40;
 html += `<div class="eligibility-item"><div><div class="elig-name">${m.code} — ${m.name}</div><div class="elig-note">${ok?'Meets 40% requirement':'Below 40% requirement'} (${m.currentMark||0}%)</div></div>
-    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`;
+    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`; 
     });
     list.innerHTML = html;
 }
