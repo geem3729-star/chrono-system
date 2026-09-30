@@ -2082,16 +2082,17 @@ body .logout-mini:hover {
 /* Module cards - colored background */
 .module-card {
     background: linear-gradient(135deg,
-        color-mix(in srgb, var(--module-color, #ff8c00) 10%, #141414) 0%,
-        color-mix(in srgb, var(--module-color, #ff8c00) 3%, #141414) 100%);
-    border: 1px solid color-mix(in srgb, var(--module-color, #ff8c00) 50%, #262626);
+        color-mix(in srgb, var(--module-color, #ff8c00) 50%, #0f0f0f) 0%,
+        color-mix(in srgb, var(--module-color, #ff8c00) 20%, #0f0f0f) 100%);
+    border: 2px solid color-mix(in srgb, var(--module-color, #ff8c00) 80%, transparent);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--module-color, #ff8c00) 12%, transparent);
 }
-
 .module-card:hover {
     background: linear-gradient(135deg,
-        color-mix(in srgb, var(--module-color, #ff8c00) 30%, #141414) 0%,
-        color-mix(in srgb, var(--module-color, #ff8c00) 12%, #141414) 100%);
+        color-mix(in srgb, var(--module-color, #ff8c00) 50%, #0f0f0f) 0%,
+        color-mix(in srgb, var(--module-color, #ff8c00) 22%, #0f0f0f) 100%);
     border-color: var(--module-color, #ff8c00);
+    transform: translateY(-2px);
 }
 
 /* Module assess cards (Assessments page) - colored */
@@ -2405,9 +2406,10 @@ body .logout-mini:hover {
     .mv-action-btn {
         padding: 12px 14px;
     }
-}
+
 @media (min-width: 1600px) {
     #moduleViewerModal > div {
         max-width: 90% !important;
     }
+  }
 }

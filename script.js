@@ -278,7 +278,9 @@ function renderModules() {
         let bc = 'eligible', bt = '✅ Eligible';
         if (mark < 50) { bc='atrisk'; bt='⚠️ At Risk'; }
         else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
-        html += `<div class="module-card" style="--module-color:${color};"><div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
+          html += `<div class="module-card" style="--module-color:${color}; position:relative;">
+            <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
+            <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
             <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
             <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
@@ -299,12 +301,12 @@ function renderModulesList() {
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark)/100) * circ;
         const color = m.color || '#ff8c00';
-        html += `<div class="module-card" style="position:relative;--module-color:${color};">
-            <button onclick="deleteModule(${m.id})" style="position:absolute;top:12px;right:12px;width:28px;height:28px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:50%;color:#f87171;cursor:pointer;">✕</button>
+             html += `<div class="module-card" style="--module-color:${color}; position:relative;">
+            <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
             <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
             <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
             <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
-            <div class="module-mark">${mark} / 100</div></div>`;
+            <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
     });
     list.innerHTML = html;
 }
@@ -1587,3 +1589,17 @@ document.addEventListener('keydown', function(e) {
 })();
 
 console.log('👑 Golden Plan loaded!');
+window.openAddModule = function() {
+    // Switch to modules view
+    switchView('modules', document.querySelector('[data-view=modules]'));
+    // Then open the collapsible form
+    setTimeout(() => {
+        const body = document.getElementById('moduleFormBody');
+        const arrow = document.getElementById('moduleFormArrow');
+        if (body) body.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        // Scroll to form
+        const form = document.getElementById('moduleFormBody');
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+};
