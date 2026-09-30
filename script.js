@@ -275,8 +275,8 @@ function renderModules() {
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark)/100) * circ;
         const color = m.color || '#ff8c00';
-        let bc = 'eligible', bt = '✅ Eligible';
-        if (mark < 50) { bc='atrisk'; bt='⚠️ At Risk'; }
+        let bc = 'eligible', bt = '✅ Qualify';
+        if (mark < 50) { bc='atrisk'; bt='⚠️ Dont Qualify'; }
         else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
           html += `<div class="module-card" style="--module-color:${color}; position:relative;">
             <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
@@ -364,7 +364,7 @@ function renderExamElig() {
     if (!modules.length) { list.innerHTML = '<p style="color:#888;font-size:0.9rem;">Add modules to check</p>'; return; }
     let html = '';
     modules.forEach(m => {
-        const ok = (m.currentMark||0) >= 50;
+        const ok = (m.currentMark||0) >= 40;
         html += `<div class="eligibility-item"><div><div class="elig-name">${m.code}</div><div class="elig-note">${ok?'Qualifies to write exam':'Need 50% to qualify'}</div></div>
             <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Eligible':'⚠️ Not Yet'}</div></div>`;
     });
@@ -378,8 +378,8 @@ function renderExamEligFull() {
     let html = '';
     modules.forEach(m => {
         const ok = (m.currentMark||0) >= 50;
-        html += `<div class="eligibility-item"><div><div class="elig-name">${m.code} — ${m.name}</div><div class="elig-note">${ok?'Qualifies to write exam':'Need 50% to qualify'} (${m.currentMark||0}%)</div></div>
-            <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Eligible':'⚠️ Not Yet'}</div></div>`;
+html += `<div class="eligibility-item"><div><div class="elig-name">${m.code} — ${m.name}</div><div class="elig-note">${ok?'Meets 40% requirement':'Below 40% requirement'} (${m.currentMark||0}%)</div></div>
+    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`;
     });
     list.innerHTML = html;
 }
