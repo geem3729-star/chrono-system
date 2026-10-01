@@ -2413,3 +2413,293 @@ body .logout-mini:hover {
     }
   }
 }
+/* ============================================================
+   ASSESSMENT BOARD
+   ============================================================ */
+.ab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.ab-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.ab-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #1a1a1a;
+    border: 1px solid #262626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+.ab-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f5f5f5;
+}
+.ab-subtitle {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 4px;
+}
+.ab-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.ab-tabs {
+    display: flex;
+    gap: 4px;
+    background: #141414;
+    border: 1px solid #262626;
+    border-radius: 10px;
+    padding: 4px;
+}
+.ab-tab {
+    padding: 8px 18px;
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.ab-tab:hover { color: #ccc; }
+.ab-tab-active {
+    background: #ff8c00;
+    color: #fff;
+}
+.ab-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #141414;
+    border: 1px solid #262626;
+    border-radius: 10px;
+    padding: 8px 14px;
+    min-width: 220px;
+}
+.ab-search span { color: #666; font-size: 0.9rem; }
+.ab-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f5f5f5;
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+/* Module group */
+.ab-module-group {
+    background: #0f0f0f;
+    border: 1px solid #1f1f1f;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.ab-module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--mod-color, #ff8c00) 25%, #0f0f0f) 0%,
+        color-mix(in srgb, var(--mod-color, #ff8c00) 5%, #0f0f0f) 100%);
+    border-bottom: 1px solid color-mix(in srgb, var(--mod-color, #ff8c00) 20%, #1f1f1f);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.ab-module-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ab-module-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--mod-color, #ff8c00) 25%, #1a1a1a);
+    border: 1px solid color-mix(in srgb, var(--mod-color, #ff8c00) 50%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 1.1rem;
+}
+.ab-module-code {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #f5f5f5;
+}
+.ab-module-name {
+    font-size: 0.72rem;
+    color: #aaa;
+    margin-top: 2px;
+}
+.ab-module-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: #aaa;
+    font-weight: 600;
+}
+
+/* Assessment rows */
+.ab-module-body {
+    display: flex;
+    flex-direction: column;
+}
+.ab-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+.ab-row:last-child { border-bottom: none; }
+.ab-row:hover { background: rgba(255, 255, 255, 0.02); }
+
+.ab-row-main {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 14px;
+    align-items: center;
+}
+.ab-row-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.ab-row-info { min-width: 0; }
+.ab-row-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f5f5f5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ab-row-sub {
+    font-size: 0.68rem;
+    color: #666;
+    margin-top: 2px;
+}
+.ab-row-meta {
+    font-size: 0.75rem;
+    color: #aaa;
+    white-space: nowrap;
+}
+.ab-row-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 50px;
+    border: 1px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    justify-self: end;
+}
+.ab-row-progress {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 130px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    margin-top: 4px;
+}
+.ab-progress-label {
+    font-size: 0.7rem;
+    color: #888;
+    font-weight: 600;
+}
+.ab-progress-bar {
+    height: 5px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.ab-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+.ab-progress-pct {
+    font-size: 0.7rem;
+    color: #888;
+    text-align: right;
+    font-weight: 600;
+}
+.ab-row-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: #333;
+    pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+    .ab-header { flex-direction: column; align-items: stretch; }
+    .ab-controls { flex-direction: column; }
+    .ab-search { min-width: 100%; }
+    .ab-row-main {
+        grid-template-columns: 32px 1fr auto;
+        gap: 10px;
+    }
+    .ab-row-meta { display: none; }
+    .ab-row-main > .ab-row-meta:nth-child(3),
+    .ab-row-main > .ab-row-meta:nth-child(4),
+    .ab-row-main > .ab-row-meta:nth-child(5),
+    .ab-row-main > .ab-row-meta:nth-child(6) { display: none; }
+    .ab-row-progress {
+        grid-template-columns: 100px 1fr 45px;
+    }
+    .ab-row-chevron { display: none; }
+}
+/* ============================================================
+   ASSESSMENT BOARD — Column headers matching table style
+   ============================================================ */
+.ab-col-head {
+    display: grid;
+    grid-template-columns: 36px 1.6fr 0.7fr 1fr 0.8fr auto;
+    gap: 14px;
+    padding: 12px 18px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid #1f1f1f;
+    margin-bottom: 12px;
+}
+
+.ab-row-main {
+    display: grid !important;
+    grid-template-columns: 36px 1.6fr 0.7fr 1fr 0.8fr auto !important;
+    gap: 14px !important;
+    align-items: center;
+}

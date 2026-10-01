@@ -345,13 +345,19 @@ function renderUpcoming() {
 function renderAssessTable() {
     const b = document.getElementById('assessBody');
     if (!b) return;
-    const recent = [...events].sort((a,b)=>new Date(b.deadline)-new Date(a.deadline)).slice(0,5);
-    if (!recent.length) { b.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">No assessments yet</td></tr>'; return; }
+    const recent = [...events]
+        .filter(e => e.module && e.module !== 'General')
+        .sort((a,b)=>new Date(b.deadline)-new Date(a.deadline))
+        .slice(0,5);
+    if (!recent.length) {
+        b.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">No module assessments yet</td></tr>';
+        return;
+    }
     let html = '';
     recent.forEach(e => {
         const d = new Date(e.deadline);
         const isPast = d.getTime() < Date.now();
-        html += `<tr>
+        html += `<tr style="cursor:pointer;" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
             <td><div class="assess-name">${e.title||'Assessment'}</div><div class="assess-module">${e.module||'No module'}</div></td>
             <td>${e.weight||0}%</td>
             <td>${d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})}</td>
@@ -686,7 +692,20 @@ async function savePdfs() {
     try { await set(ref(db, `users/${currentUser.uid}/pdfs`), pdfFiles); }
     catch (e) { alert('Could not save PDF.'); }
 }
+// ============================================================
+// ASSESSMENT BOARD
+// ============================================================
+let abTab = 'all';
 
+window.setABTab = function(tab) {
+    abTab = tab;
+    document.querySelectorAll('.ab-tab').forEach(b => {
+        b.classList.toggle('ab-tab-active', b.dataset.abTab === tab);
+    });
+    renderABList();
+};
+
+// Called whenever data changes - keeps your current tab + search text
 function renderAssessmentsPage() {
     const now = Date.now();
     const total = events.length;
@@ -694,129 +713,80 @@ function renderAssessmentsPage() {
     const upcoming = events.filter(e => new Date(e.deadline).getTime() > now).length;
     const overdue = 0;
 
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statCompleted').textContent = completed;
-    document.getElementById('statUpcoming').textContent = upcoming;
-    document.getElementById('statOverdue').textContent = overdue;
+    const el = (id) => document.getElementById(id);
+    if (el('statTotal')) el('statTotal').textContent = total;
+    if (el('statCompleted')) el('statCompleted').textContent = completed;
+    if (el('statUpcoming')) el('statUpcoming').textContent = upcoming;
+    if (el('statOverdue')) el('statOverdue').textContent = overdue;
 
     const maxVal = Math.max(total, 1);
-    document.getElementById('statTotalBar').style.width = '100%';
-    document.getElementById('statCompletedBar').style.width = (completed / maxVal * 100) + '%';
-    document.getElementById('statUpcomingBar').style.width = (upcoming / maxVal * 100) + '%';
-    document.getElementById('statOverdueBar').style.width = (overdue / maxVal * 100) + '%';
+    if (el('statTotalBar')) el('statTotalBar').style.width = '100%';
+    if (el('statCompletedBar')) el('statCompletedBar').style.width = (completed / maxVal * 100) + '%';
+    if (el('statUpcomingBar')) el('statUpcomingBar').style.width = (upcoming / maxVal * 100) + '%';
+    if (el('statOverdueBar')) el('statOverdueBar').style.width = (overdue / maxVal * 100) + '%';
 
-    // Modules grid
-    const grid = document.getElementById('modulesAssessList');
-    if (!modules.length) {
-        grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
-    } else {
-        let html = '';
-        modules.forEach(m => {
-            const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-            const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
-            const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
+    const grid = el('modulesAssessList');
+    if (grid) {
+        if (!modules.length) {
+            grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
+        } else {
+            let html = '';
+            modules.forEach(m => {
+                const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+                const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
+                const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
 
-            let badgeClass = 'ontrack', badgeText = 'On Track';
-            if (progress === 0 && modEvents.length > 0) { badgeClass = 'upcoming'; badgeText = 'Upcoming'; }
-            else if (progress < 100) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
-            else if (progress === 100) { badgeClass = 'ontrack'; badgeText = 'Complete'; }
-            if (modEvents.length === 0) { badgeClass = 'upcoming'; badgeText = 'No Tasks'; }
+                let badgeClass = 'ontrack', badgeText = 'On Track';
+                if (progress === 0 && modEvents.length > 0) { badgeClass = 'upcoming'; badgeText = 'Upcoming'; }
+                else if (progress < 100) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
+                else if (progress === 100) { badgeClass = 'ontrack'; badgeText = 'Complete'; }
+                if (modEvents.length === 0) { badgeClass = 'upcoming'; badgeText = 'No Tasks'; }
 
-            const iconChar = (m.code || '?').charAt(0);
-            const color = m.color || '#ff8c00';
+                const iconChar = (m.code || '?').charAt(0);
+                const color = m.color || '#ff8c00';
 
-            // Split events into active + completed
-            const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
-            const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
+                const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
+                const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
 
-            let assessListHtml = '';
-
-            // ACTIVE assessments first
-            if (activeEvents.length === 0 && completedEvents.length === 0) {
-                assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
-            } else {
-                if (activeEvents.length > 0) {
+                let assessListHtml = '';
+                if (activeEvents.length === 0 && completedEvents.length === 0) {
+                    assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
+                } else {
                     activeEvents.forEach(e => {
                         const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-                        assessListHtml += '<li>' +
-                            '<span class="assess-name-inline">' + (e.title || 'Assessment') + '</span>' +
-                            '<span class="assess-date">' + dateStr + '</span>' +
-                        '</li>';
+                        assessListHtml += '<li><span class="assess-name-inline">' + (e.title || 'Assessment') + '</span><span class="assess-date">' + dateStr + '</span></li>';
                     });
+                    if (completedEvents.length > 0) {
+                        assessListHtml += '<li class="completed-divider"><span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span></li>';
+                        completedEvents.forEach(e => {
+                            const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                            assessListHtml += '<li class="completed-item" style="opacity:0.7;"><span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span><span class="assess-date">' + dateStr + '</span></li>';
+                        });
+                    }
                 }
 
-                // COMPLETED section
-                if (completedEvents.length > 0) {
-                    assessListHtml += '<li class="completed-divider">' +
-                        '<span style="font-size:0.6rem;letter-spacing:1px;color:' + color + ';font-weight:700;">✓ COMPLETED (' + completedEvents.length + ')</span>' +
-                    '</li>';
-
-                    completedEvents.forEach(e => {
-                        const dateStr = new Date(e.deadline).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-                        assessListHtml += '<li class="completed-item" style="opacity:0.7;">' +
-                            '<span class="assess-name-inline" style="text-decoration:line-through;color:#888;">' + (e.title || 'Assessment') + '</span>' +
-                            '<span class="assess-date">' + dateStr + '</span>' +
-                        '</li>';
-                    });
-                }
-            }
-
-            // ═══ Files for this module ═══
-            const moduleFiles = pdfFiles.filter(f => f.module === m.code && !f.eventId);
-            let filesHTML = '';
-            if (moduleFiles.length) {
-                filesHTML = '<div class="module-files-section">' +
-                    '<div class="module-files-title">Study Material (' + moduleFiles.length + ')</div>' +
-                    '<div class="module-files-grid">';
-                moduleFiles.forEach(f => {
-                    const isImage = f.type && f.type.startsWith('image/');
-                    const thumbStyle = isImage
-                        ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
-                        : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
-                    const iconOverlay = isImage ? '' : '<span class="file-icon">📄</span>';
-                    filesHTML += '<div class="module-file-thumb" onclick="openFileViewer(' + f.id + ')" style="' + thumbStyle + '">' +
-                        iconOverlay +
-                        '<div class="file-name-overlay">' + f.name + '</div>' +
-                        '<button class="file-delete-btn" onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" title="Delete">✕</button>' +
-                    '</div>';
-                });
-                filesHTML += '</div></div>';
-            }
-
-            html += '<div class="module-assess-card" style="--module-color:' + color + ';">' +
-                '<div class="module-assess-header">' +
-                    '<div class="module-assess-title">' +
-                        '<div class="module-assess-icon">' + iconChar + '</div>' +
-                        '<div>' +
-                            '<div class="module-assess-name">' + (m.name || m.code) + '</div>' +
-                            '<div class="module-assess-code">' + m.code + '</div>' +
+                html += '<div class="module-assess-card" style="--module-color:' + color + ';">' +
+                    '<div class="module-assess-header">' +
+                        '<div class="module-assess-title">' +
+                            '<div class="module-assess-icon">' + iconChar + '</div>' +
+                            '<div><div class="module-assess-name">' + (m.name || m.code) + '</div><div class="module-assess-code">' + m.code + '</div></div>' +
                         '</div>' +
+                        '<span class="module-assess-badge ' + badgeClass + '">' + badgeText + '</span>' +
                     '</div>' +
-                    '<span class="module-assess-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                '</div>' +
-
-                '<ul class="module-assess-list">' + assessListHtml + '</ul>' +
-
-                filesHTML +
-
-                '<div class="module-assess-footer">' +
-                    '<div class="module-assess-progress">' +
-                        '<div class="module-assess-progress-label">' + progress + '% Complete</div>' +
-                        '<div class="module-assess-progress-bar">' +
-                            '<div class="module-assess-progress-fill" style="width:' + progress + '%;"></div>' +
+                    '<ul class="module-assess-list">' + assessListHtml + '</ul>' +
+                    '<div class="module-assess-footer">' +
+                        '<div class="module-assess-progress">' +
+                            '<div class="module-assess-progress-label">' + progress + '% Complete</div>' +
+                            '<div class="module-assess-progress-bar"><div class="module-assess-progress-fill" style="width:' + progress + '%;"></div></div>' +
                         '</div>' +
-                    '</div>' +
-                    '<div style="display:flex; gap:8px;">' +
-                        '<button class="upload-module-btn" onclick="uploadModuleFile(\'' + m.code + '\')">Upload</button>' +
                         '<button class="view-module-btn" onclick="viewModuleAssessments(\'' + m.code + '\')">View →</button>' +
                     '</div>' +
-                '</div>' +
-            '</div>';
-        });
-        grid.innerHTML = html;
+                '</div>';
+            });
+            grid.innerHTML = html;
+        }
     }
 
-    // Overview donut
     const modOnTrack = modules.filter(m => {
         const modEvs = events.filter(e => e.module === m.code);
         const done = modEvs.filter(e => new Date(e.deadline).getTime() <= now).length;
@@ -834,31 +804,147 @@ function renderAssessmentsPage() {
     }).length;
     const modNoTask = modules.filter(m => events.filter(e => e.module === m.code).length === 0).length;
 
-    document.getElementById('overviewCount').textContent = modOnTrack + '/' + modules.length;
-    document.getElementById('legendOnTrack').textContent = modOnTrack;
-    document.getElementById('legendInProgress').textContent = modInProgress;
-    document.getElementById('legendUpcoming').textContent = modUpcoming + modNoTask;
-    document.getElementById('legendOverdue').textContent = 0;
+    if (el('overviewCount')) el('overviewCount').textContent = modOnTrack + '/' + modules.length;
+    if (el('legendOnTrack')) el('legendOnTrack').textContent = modOnTrack;
+    if (el('legendInProgress')) el('legendInProgress').textContent = modInProgress;
+    if (el('legendUpcoming')) el('legendUpcoming').textContent = modUpcoming + modNoTask;
+    if (el('legendOverdue')) el('legendOverdue').textContent = 0;
 
     const pct = modules.length > 0 ? (modOnTrack / modules.length) : 0;
     const circ = 2 * Math.PI * 30;
-    document.getElementById('overviewRing').setAttribute('stroke-dasharray', circ);
-    document.getElementById('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
+    if (el('overviewRing')) {
+        el('overviewRing').setAttribute('stroke-dasharray', circ);
+        el('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
+    }
+}
 
-    // Populate PDF module select
-    const pdfSel = document.getElementById('pdfModuleSelect');
-    if (pdfSel) {
-        pdfSel.innerHTML = '<option value="">-- Select Module --</option>';
-        modules.forEach(m => {
-            const o = document.createElement('option');
-            o.value = m.code;
-            o.textContent = m.code + ' — ' + m.name;
-            pdfSel.appendChild(o);
-        });
+
+function renderABList() {
+    const container = document.getElementById('abList');
+    if (!container) return;
+
+    const now = Date.now();
+    const searchVal = (document.getElementById('abSearchInput')?.value || '').toLowerCase().trim();
+
+    if (!modules.length) {
+        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">📚</div><div>Add modules first to see your assessment plan.</div></div>';
+        return;
     }
 
-    renderPdfList();
+        let html = '';
+    let totalShown = 0;
+
+    // Column header row
+    html += '<div class="ab-col-head">' +
+        '<div></div>' +
+        '<div>ASSESSMENT</div>' +
+        '<div>WEIGHT</div>' +
+        '<div>DUE DATE</div>' +
+        '<div>MY MARK</div>' +
+        '<div>STATUS</div>' +
+    '</div>';
+
+    modules.forEach(m => {
+        let modEvents = events.filter(e => e.module === m.code)
+                              .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+        // Tab filter
+        if (abTab === 'upcoming')  modEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
+        if (abTab === 'completed') modEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
+
+        // Search filter
+        if (searchVal) {
+            modEvents = modEvents.filter(e =>
+                (e.title || '').toLowerCase().includes(searchVal) ||
+                (e.module || '').toLowerCase().includes(searchVal) ||
+                (m.name || '').toLowerCase().includes(searchVal)
+            );
+        }
+
+        if (!modEvents.length) return;
+        totalShown += modEvents.length;
+
+        const color = m.color || '#ff8c00';
+        const iconChar = (m.code || '?').charAt(0);
+        const allMod = events.filter(e => e.module === m.code);
+
+        // Average only over assessments that actually have a mark
+        const marked = allMod.filter(e => Number(e.currentMark) > 0);
+        const avgText = marked.length
+            ? Math.round(marked.reduce((s, e) => s + Number(e.currentMark), 0) / marked.length) + '%'
+            : '–';
+
+              html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
+            '<div class="ab-module-header">' +
+                '<div class="ab-module-title">' +
+                    '<div class="ab-module-icon">' + iconChar + '</div>' +
+                    '<div>' +
+                        '<div class="ab-module-code">' + m.code + '</div>' +
+                        '<div class="ab-module-name">' + (m.name || m.code) + '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="ab-module-body">';
+
+        modEvents.forEach(e => {
+            const d = new Date(e.deadline);
+            const isPast = d.getTime() <= now;
+            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+            const daysLeft = Math.floor((d.getTime() - now) / 86400000);
+            const statusColor = isPast ? '#22c55e' : '#f59e0b';
+            const statusText  = isPast ? 'Completed' : 'Upcoming';
+            const hasMark = Number(e.currentMark) > 0;
+
+            let pct = 0;
+            let progressLabel = '';
+            if (isPast) {
+                pct = hasMark ? Math.min(100, Number(e.currentMark)) : 100;
+                progressLabel = hasMark ? '✓ ' + e.currentMark + '%' : '✓ Done';
+            } else {
+                pct = Math.max(2, Math.min(100, 100 - (daysLeft / 90) * 100));
+                progressLabel = '⏱ ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
+            }
+
+            const markDisplay = hasMark ? e.currentMark + ' / 100' : '- / 100';
+                   html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
+                '<div class="ab-row-main">' +
+                    '<div class="ab-row-icon">📄</div>' +
+                    '<div class="ab-row-info">' +
+                        '<div class="ab-row-name">' + (e.title || 'Assessment') + '</div>' +
+                        '<div class="ab-row-sub">' + (e.module || '') + '</div>' +
+                    '</div>' +
+                    '<div class="ab-row-meta">' + (e.weight || 0) + '%</div>' +
+                    '<div class="ab-row-meta">' + dateStr + '</div>' +
+                    '<div class="ab-row-meta">' + markDisplay + '</div>' +
+                    '<div class="ab-row-status" style="background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); color:' + statusColor + '; border-color:color-mix(in srgb, ' + statusColor + ' 35%, transparent);">' + statusText + '</div>' +
+                '</div>' +
+                '<div class="ab-row-progress">' +
+                    '<div class="ab-progress-label">' + progressLabel + '</div>' +
+                    '<div class="ab-progress-bar">' +
+                        '<div class="ab-progress-fill" style="width:' + pct + '%; background:' + (isPast ? '#22c55e' : color) + ';"></div>' +
+                    '</div>' +
+                    '<div class="ab-progress-pct">' + Math.round(pct) + '%</div>' +
+                '</div>' +
+            '</div>';
+        });
+
+        html += '</div></div>';
+    });
+
+    if (!totalShown) {
+        const hasAny = events.some(ev => modules.some(m => m.code === ev.module));
+        const msg = hasAny
+            ? 'Nothing matches your filter.'
+            : 'No assessments yet. Add one on the Countdowns page and pick a module (countdowns set to "General" don\'t show here).';
+        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">🎉</div><div>' + msg + '</div></div>';
+        return;
+    }
+
+    container.innerHTML = html;
 }
+
+// index.html calls this from oninput="renderABList()", so it must be global
+window.renderABList = renderABList;
 
 function renderPdfList() {
     const list = document.getElementById('uploadedFilesList');

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Plan</title>
-<link rel="stylesheet" href="style.css?v=100">
-<script type="module" src="script.js?v=100"></script>
+<link rel="stylesheet" href="style.css?v=102">
+<script type="module" src="script.js?v=102"></script>
 </head>
 <body>
 
@@ -117,16 +117,24 @@ Sign In with Google
 <div class="panel-title">📊 Academic Overview</div>
 <div class="modules-row" id="modulesRow"><p style="color:#666;padding:20px;">Loading...</p></div>
 </div>
+
 <div class="panel">
 <div class="panel-title">📝 Assessments Overview</div>
-<table class="assessments-table">
-<thead>
-<tr><th>Assessment</th><th>Weight</th><th>Due Date</th><th>My Mark</th><th>Status</th></tr>
-</thead>
-<tbody id="assessBody">
-<tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">No assessments yet</td></tr>
-</tbody>
-</table>
+
+<div class="ab-controls" style="margin-bottom:16px;">
+  <div class="ab-tabs">
+    <button class="ab-tab ab-tab-active" data-ab-tab="all" onclick="setABTab('all')">All</button>
+    <button class="ab-tab" data-ab-tab="upcoming" onclick="setABTab('upcoming')">Upcoming</button>
+    <button class="ab-tab" data-ab-tab="completed" onclick="setABTab('completed')">Completed</button>
+  </div>
+  <div class="ab-search" style="flex:1;">
+    <span>🔍</span>
+    <input type="text" id="abSearchInput" placeholder="Search..." oninput="renderABList()">
+  </div>
+</div>
+
+<div id="abList"></div>
+
 </div>
 </div>
 <div class="right-col">
@@ -249,16 +257,18 @@ Sign In with Google
 <div id="examEligListFull"><p style="color:#888;padding:20px;">Add modules first.</p></div>
 </div>
 </div>
+
 <!-- ASSESSMENTS -->
 <div class="view" id="view-assessments">
+
 <div class="assessment-header">
 <div>
 <h2 class="assess-page-title">📝 Assessments</h2>
 <p class="assess-page-subtitle">Track your assessments, upload study materials and stay on top of your modules.</p>
 </div>
 </div>
-<div class="assess-stats-grid">
 
+<div class="assess-stats-grid">
     <div class="assess-stat-card clickable" id="totalCardBtn" style="--stat-color:#ff8c00;">
         <div class="stat-icon-wrap">📋</div>
         <div>
@@ -268,7 +278,6 @@ Sign In with Google
         </div>
         <div class="stat-bar"><div class="stat-bar-fill" id="statTotalBar" style="width:0%;background:#ff8c00;"></div></div>
     </div>
-
     <div class="assess-stat-card clickable" id="upcomingCardBtn" style="--stat-color:#3b82f6;">
         <div class="stat-icon-wrap">⏰</div>
         <div>
@@ -278,7 +287,6 @@ Sign In with Google
         </div>
         <div class="stat-bar"><div class="stat-bar-fill" id="statUpcomingBar" style="width:0%;background:#3b82f6;"></div></div>
     </div>
-
     <div class="assess-stat-card" style="--stat-color:#ef4444;">
         <div class="stat-icon-wrap">⚠️</div>
         <div>
@@ -288,7 +296,6 @@ Sign In with Google
         </div>
         <div class="stat-bar"><div class="stat-bar-fill" id="statOverdueBar" style="width:0%;background:#ef4444;"></div></div>
     </div>
-
     <div class="assess-stat-card clickable" id="completedCardBtn" style="--stat-color:#22c55e;">
         <div class="stat-icon-wrap">✅</div>
         <div>
@@ -298,7 +305,6 @@ Sign In with Google
         </div>
         <div class="stat-bar"><div class="stat-bar-fill" id="statCompletedBar" style="width:0%;background:#22c55e;"></div></div>
     </div>
-
 </div>
 
 <div class="assess-main-grid">
@@ -331,6 +337,7 @@ Sign In with Google
 </div>
 </div>
 </div>
+
 </div>
 
 <!-- PLACEHOLDERS -->
@@ -425,6 +432,6 @@ Sign In with Google
 </div>
 
 <div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v99</div>
-<script type="module" src="script.js?v=99"></script>
+<script type="module" src="script.js?v=102"></script>
 </body>
 </html>
