@@ -2993,11 +2993,22 @@ body .logout-mini:hover {
 .module-card .module-header {
     padding-right: 100px !important;
 }
-.module-card .module-header .module-name,
-.module-card .module-header .module-full {
+/* Find this block in style.css and replace it */
+.module-card .module-header .module-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.module-card .module-header .module-full {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+    line-height: 1.3;
+    font-size: 0.68rem;
+    margin-top: 3px;
 }
 /* ============================================================
    FLIP COUNTDOWN — animated digit cards
@@ -3009,8 +3020,9 @@ body .logout-mini:hover {
     --radius: 22px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: clamp(8px, 2.5vw, 18px);
+    gap: clamp(10px, 2vw, 20px);
     width: 100%;
+    margin: 0 auto;
 }
 .flipcd[data-urgency="green"]  { --ink: #1f7a4d; }
 .flipcd[data-urgency="yellow"] { --ink: #8a6500; }
@@ -3019,20 +3031,22 @@ body .logout-mini:hover {
 
 .flipcd-unit { text-align: center; }
 .flipcd-label {
-    margin-top: 8px;
-    font: 700 clamp(12px, 2.6vw, 15px) system-ui, sans-serif;
+    margin-top: 10px;
+    font: 700 clamp(13px, 2.4vw, 17px) system-ui, sans-serif;
     color: #3d3d52;
+    letter-spacing: 0.05em;
 }
 
 .flip {
     position: relative;
     container-type: inline-size;
-    aspect-ratio: 1 / 1.15;
+    aspect-ratio: 1 / 1.35;
     perspective: 700px;
     font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
     font-weight: 800;
     color: var(--ink);
     transition: color .6s;
+    min-height: 110px;
 }
 .flip .half {
     position: absolute;
@@ -3051,9 +3065,9 @@ body .logout-mini:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 52cqw;
+    font-size: 70cqw;
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
 }
 .flip .half.top span    { top: 0; }
@@ -3078,4 +3092,24 @@ body .logout-mini:hover {
 
 @media (prefers-reduced-motion: reduce) {
     .flip.go .flap-top, .flip.go .flap-bottom { animation: none; visibility: hidden; }
+}
+/* ============================================================
+   SIDEBAR MINI FLIP COUNTDOWN — smaller version of main flip
+   ============================================================ */
+.countdown-mini .flipcd {
+    gap: 6px;
+    margin-top: 4px;
+}
+.countdown-mini .flip {
+    --radius: 10px;
+    min-height: 44px;
+}
+.countdown-mini .flipcd-label {
+    margin-top: 4px;
+    font-size: 0.55rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.12em;
+}
+.countdown-mini .flip .half span {
+    font-size: 42cqw;
 }
