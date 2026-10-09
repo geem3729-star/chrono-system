@@ -2999,3 +2999,83 @@ body .logout-mini:hover {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+/* ============================================================
+   FLIP COUNTDOWN — animated digit cards
+   ============================================================ */
+.flipcd {
+    --ink: #1a1a24;
+    --card: #ffffff;
+    --seam: rgba(0, 0, 0, .10);
+    --radius: 22px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(8px, 2.5vw, 18px);
+    width: 100%;
+}
+.flipcd[data-urgency="green"]  { --ink: #1f7a4d; }
+.flipcd[data-urgency="yellow"] { --ink: #8a6500; }
+.flipcd[data-urgency="orange"] { --ink: #d9650f; }
+.flipcd[data-urgency="red"]    { --ink: #d62828; }
+
+.flipcd-unit { text-align: center; }
+.flipcd-label {
+    margin-top: 8px;
+    font: 700 clamp(12px, 2.6vw, 15px) system-ui, sans-serif;
+    color: #3d3d52;
+}
+
+.flip {
+    position: relative;
+    container-type: inline-size;
+    aspect-ratio: 1 / 1.15;
+    perspective: 700px;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    font-weight: 800;
+    color: var(--ink);
+    transition: color .6s;
+}
+.flip .half {
+    position: absolute;
+    left: 0; right: 0;
+    height: 50%;
+    overflow: hidden;
+    background: var(--card);
+    backface-visibility: hidden;
+}
+.flip .half.top    { top: 0;    border-radius: var(--radius) var(--radius) 0 0; transform-origin: bottom; }
+.flip .half.bottom { bottom: 0; border-radius: 0 0 var(--radius) var(--radius); transform-origin: top; }
+.flip .half span {
+    position: absolute;
+    left: 0; right: 0;
+    height: 200%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52cqw;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+.flip .half.top span    { top: 0; }
+.flip .half.bottom span { bottom: 0; }
+
+.flip .seam {
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--seam);
+    z-index: 5;
+}
+.flip .half.bottom { box-shadow: inset 0 10px 14px -14px rgba(0,0,0,.25); }
+
+.flip .flap-top, .flip .flap-bottom { visibility: hidden; z-index: 3; }
+.flip.go .flap-top    { visibility: visible; animation: foldDown .3s ease-in forwards; }
+.flip.go .flap-bottom { visibility: visible; animation: foldUp .3s .3s ease-out both; }
+
+@keyframes foldDown { from { transform: rotateX(0); }     to { transform: rotateX(-90deg); } }
+@keyframes foldUp   { from { transform: rotateX(90deg); } to { transform: rotateX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .flip.go .flap-top, .flip.go .flap-bottom { animation: none; visibility: hidden; }
+}

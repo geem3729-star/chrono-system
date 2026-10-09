@@ -397,7 +397,7 @@ function renderFullCountdowns() {
     if (!up.length) { list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No active countdowns.</p>'; }
     else { list.innerHTML = up.map(e => buildCard(e, false)).join(''); }
 
-    if (!hist) return;
+     if (!hist) return;
     if (!past.length) {
         hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>';
     } else {
@@ -417,6 +417,16 @@ function renderFullCountdowns() {
 </div>`;
         }).join('');
     }
+
+    // Mount flip timers
+    if (window._flipStops) window._flipStops.forEach(fn => fn());
+    window._flipStops = [];
+    list.querySelectorAll('[data-cd-mount]').forEach(mount => {
+        const card = mount.closest('[data-cd-target]');
+        if (!card) return;
+        const stop = flipCountdown(mount, card.dataset.cdTarget);
+        window._flipStops.push(stop);
+    });
 }
 
 // ===============================
@@ -425,11 +435,8 @@ function renderFullCountdowns() {
 function buildCard(e, isPast) {
     const r = getTimeRemaining(e.deadline);
     const d = new Date(e.deadline);
-    const circ = 2 * Math.PI * 34;
-    const pct = r.isOverdue ? 0 : Math.min(100, ((d.getTime()-Date.now())/1000/(90*86400))*100);
-    const off = circ - (pct/100) * circ;
-
     const color = e.color || '#ff8c00';
+
     let blinkClass = '';
     if (!isPast) {
         if (r.days < 1) blinkClass = 'cc-urgent';
@@ -437,20 +444,14 @@ function buildCard(e, isPast) {
         else if (r.days < 7) blinkClass = 'cc-soon';
     }
 
-    const days = String(r.days).padStart(2, '0');
-    const hours = String(r.hours).padStart(2, '0');
-    const mins = String(r.minutes).padStart(2, '0');
-    const secs = String(r.seconds).padStart(2, '0');
     const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
     const title = e.title || 'Deadline';
     const module = e.module || 'General';
-    const dayLabel = r.isOverdue ? 'DONE' : 'DAYS';
-    const dayNum = r.isOverdue ? '✓' : days;
     const opacity = isPast ? 0.5 : 1;
 
-    return '<div class="countdown-card ' + blinkClass + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
+    return '<div class="countdown-card ' + blinkClass + '" data-cd-id="' + e.id + '" data-cd-target="' + e.deadline + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
         '<div class="cc-actions">' +
             '<button class="cc-action-btn" onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>' +
             '<button class="cc-action-btn" onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>' +
@@ -462,21 +463,7 @@ function buildCard(e, isPast) {
             '</div>' +
         '</div>' +
         '<div class="cc-body">' +
-            '<div class="cc-ring" style="filter:drop-shadow(0 0 8px ' + color + '40);">' +
-                '<svg viewBox="0 0 80 80">' +
-                    '<circle class="cc-ring-bg" cx="40" cy="40" r="34"/>' +
-                    '<circle class="cc-ring-progress" cx="40" cy="40" r="34" stroke="' + color + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"/>' +
-                '</svg>' +
-                '<div class="cc-ring-center">' +
-                    '<div class="cc-ring-num">' + dayNum + '</div>' +
-                    '<div class="cc-ring-lbl">' + dayLabel + '</div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="cc-numbers">' +
-                '<div class="cc-num-item"><div class="cc-num">' + hours + '</div><div class="cc-num-lbl">HRS</div></div>' +
-                '<div class="cc-num-item"><div class="cc-num">' + mins + '</div><div class="cc-num-lbl">MIN</div></div>' +
-                '<div class="cc-num-item"><div class="cc-num">' + secs + '</div><div class="cc-num-lbl">SEC</div></div>' +
-            '</div>' +
+            '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>' +
         '</div>' +
         '<div class="cc-footer">' + module + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
     '</div>';
@@ -1830,3 +1817,83 @@ window.saveModuleEdit = async function() {
     renderDashboard();
     alert('✅ Module updated');
 };
+// ============================================================
+// FLIP COUNTDOWN ENGINE
+// ============================================================
+function makeFlip() {
+    const el = document.createElement('div');
+    el.className = 'flip';
+    el.innerHTML =
+        '<div class="half top"><span></span></div>' +
+        '<div class="half bottom"><span></span></div>' +
+        '<div class="half top flap-top"><span></span></div>' +
+        '<div class="half bottom flap-bottom"><span></span></div>' +
+        '<div class="seam"></div>';
+
+    const spans = el.querySelectorAll('.half span');
+    const [top, bottom, flapTop, flapBottom] = spans;
+    let current = null, timer = null;
+
+    function set(value) {
+        if (value === current) return;
+        if (current === null) {
+            top.textContent = bottom.textContent = flapTop.textContent = flapBottom.textContent = value;
+            current = value;
+            return;
+        }
+        top.textContent = value;
+        bottom.textContent = current;
+        flapTop.textContent = current;
+        flapBottom.textContent = value;
+
+        el.classList.remove('go');
+        void el.offsetWidth;
+        el.classList.add('go');
+
+        current = value;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            bottom.textContent = value;
+            el.classList.remove('go');
+        }, 620);
+    }
+    return { el, set };
+}
+
+function flipCountdown(container, target) {
+    const end = new Date(target).getTime();
+    const root = document.createElement('div');
+    root.className = 'flipcd';
+
+    const units = ['DAYS', 'HRS', 'MIN', 'SEC'].map(label => {
+        const wrap = document.createElement('div');
+        wrap.className = 'flipcd-unit';
+        const flip = makeFlip();
+        const lab = document.createElement('div');
+        lab.className = 'flipcd-label';
+        lab.textContent = label;
+        wrap.append(flip.el, lab);
+        root.append(wrap);
+        return flip;
+    });
+    container.replaceChildren(root);
+
+    const pad = n => String(n).padStart(2, '0');
+
+    function tick() {
+        const ms = Math.max(0, end - Date.now());
+        const s = Math.floor(ms / 1000);
+        units[0].set(pad(Math.floor(s / 86400)));
+        units[1].set(pad(Math.floor(s % 86400 / 3600)));
+        units[2].set(pad(Math.floor(s % 3600 / 60)));
+        units[3].set(pad(s % 60));
+
+        const days = ms / 86400000;
+        root.dataset.urgency =
+            days < 1 ? 'red' : days < 3 ? 'orange' : days < 7 ? 'yellow' : 'green';
+    }
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+}
