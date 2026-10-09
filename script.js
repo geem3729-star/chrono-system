@@ -258,63 +258,102 @@ function getTimeRemaining(iso) {
 // RENDER DASHBOARD
 // ===============================
 function renderDashboard() {
-    renderModules(); renderUpcoming(); renderAssessTable(); renderExamElig();
+    renderModules();
+    renderUpcoming();
+    renderAssessTable();
+    renderExamElig();
 }
 
 function renderModules() {
     const row = document.getElementById('modulesRow');
     if (!row) return;
+
     if (!modules.length) {
-        row.innerHTML = `<div class="module-card" style="grid-column:1/-1;"><p style="color:#888;padding:24px;text-align:center;">No modules yet. Go to Modules to add them.</p></div>
-            <div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">0%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">Add modules to begin</div></div>`;
+        row.innerHTML = '<div class="module-card" style="grid-column:1/-1;"><p style="color:#888;padding:24px;text-align:center;">No modules yet. Go to Modules to add them.</p></div>' +
+            '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">0%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">Add modules to begin</div></div>';
         return;
     }
-    let html = ''; let total = 0;
-    modules.forEach(m => {
-        const mark = m.currentMark || 0; total += mark;
+
+    let html = '';
+    let total = 0;
+
+    modules.forEach(function(m) {
+        const mark = m.currentMark || 0;
+        total += mark;
         const circ = 2 * Math.PI * 36;
-        const off = circ - (Math.min(100, mark)/100) * circ;
+        const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-        let bc = 'eligible', bt = '✅ Qualify';
-        if (mark < 40) { bc='atrisk'; bt='⚠️ Dont Qualify'; }
-        else if (mark < 60) { bc='warning'; bt='🟡 Warning'; }
-          html += `<div class="module-card" style="--module-color:${color}; position:relative;">
-            <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
-            <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
-            <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
-            <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
-            <div class="module-mark">${mark} / 100</div><div class="module-badge ${bc}">${bt}</div></div>`;
+
+        let bc = 'eligible';
+        let bt = '✅ Qualify';
+        if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
+        else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
+
+        html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
+        html += '<div class="card-actions">';
+        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
+        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit">✎</button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete">✕</button>';
+        html += '</div>';
+        html += '<div class="module-header"><div><span class="module-name">' + m.code + '</span><span class="module-full">' + m.name + '</span></div></div>';
+        html += '<div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="' + color + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"/></svg>';
+        html += '<div class="center"><div class="pct">' + mark + '%</div><div class="pct-label">CURRENT</div></div></div>';
+        html += '<div class="module-mark">' + mark + ' / 100</div>';
+        html += '<div class="module-badge ' + bc + '">' + bt + '</div>';
+        html += '</div>';
     });
+
     const avg = Math.round(total / modules.length);
-    let tag = avg >= 75 ? 'Excellent!' : avg >= 60 ? 'Good Progress!' : avg >= 40 ? 'Keep Pushing!' : 'Needs Focus!';
-    html += `<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">${avg}%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">${tag}</div></div>`;
+    let tag = 'Needs Focus!';
+    if (avg >= 75) tag = 'Excellent!';
+    else if (avg >= 60) tag = 'Good Progress!';
+    else if (avg >= 40) tag = 'Keep Pushing!';
+
+    html += '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">' + avg + '%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">' + tag + '</div></div>';
+
     row.innerHTML = html;
 }
 
 function renderModulesList() {
     const list = document.getElementById('modulesList');
     if (!list) return;
+
     if (!modules.length) {
         list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No modules yet. Add one above.</p>';
         return;
     }
+
     let html = '';
-    modules.forEach(m => {
+    modules.forEach(function(m) {
         const mark = m.currentMark || 0;
         const circ = 2 * Math.PI * 36;
-        const off = circ - (Math.min(100, mark)/100) * circ;
+        const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-        html += `<div class="module-card" style="--module-color:${color}; position:relative;">
-            <button onclick="event.stopPropagation(); deleteModule(${m.id})" title="Delete module" style="position:absolute; top:12px; right:12px; width:28px; height:28px; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4); border-radius:50%; color:#f87171; cursor:pointer; font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:5;">✕</button>
-            <div class="module-header"><div><span class="module-name">${m.code}</span><span class="module-full">${m.name}</span></div></div>
-            <div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
-            <div class="center"><div class="pct">${mark}%</div><div class="pct-label">CURRENT</div></div></div>
-            <div class="module-mark">${mark} / 100</div>
-            <button onclick="viewModuleAssessments('${m.code}')" style="margin-top:14px; padding:8px 16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#ccc; border-radius:8px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; width:100%;">View →</button>
-        </div>`;
+
+        let bc = 'eligible';
+        let bt = '✅ Qualify';
+        if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
+        else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
+
+        html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
+        html += '<div class="card-actions">';
+        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
+        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit">✎</button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete">✕</button>';
+        html += '</div>';
+        html += '<div class="module-header"><div><span class="module-name">' + m.code + '</span><span class="module-full">' + m.name + '</span></div></div>';
+        html += '<div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="' + color + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"/></svg>';
+        html += '<div class="center"><div class="pct">' + mark + '%</div><div class="pct-label">CURRENT</div></div></div>';
+        html += '<div class="module-mark">' + mark + ' / 100</div>';
+        html += '<div class="module-badge ' + bc + '">' + bt + '</div>';
+        html += '</div>';
     });
+
     list.innerHTML = html;
 }
+// ===============================
+// FULL COUNTDOWNS PAGE
+// ===============================
 function renderUpcoming() {
     const c = document.getElementById('upcomingCountdowns');
     if (!c) return;
@@ -326,77 +365,27 @@ function renderUpcoming() {
         const r = getTimeRemaining(e.deadline);
         const d = new Date(e.deadline);
         const color = e.color || '#ff8c00';
-        html += `<div class="countdown-mini" style="--card-color:${color};">
-            <div class="cm-header">
-                <span class="cm-title">${e.title||'Deadline'}</span>
-                <span class="cm-date">${d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})} · ${d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false})}</span>
-            </div>
-            <div class="cm-grid">
-                <div class="cm-item"><span class="cm-num">${String(r.days).padStart(2,'0')}</span><span class="cm-lbl">DAYS</span></div>
-                <div class="cm-item"><span class="cm-num">${String(r.hours).padStart(2,'0')}</span><span class="cm-lbl">HRS</span></div>
-                <div class="cm-item"><span class="cm-num">${String(r.minutes).padStart(2,'0')}</span><span class="cm-lbl">MIN</span></div>
-                <div class="cm-item"><span class="cm-num">${String(r.seconds).padStart(2,'0')}</span><span class="cm-lbl">SEC</span></div>
-            </div>
-        </div>`;
+        html += '<div class="countdown-mini" style="--card-color:' + color + '; position:relative;">';
+        html += '<div class="card-actions">';
+        html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>';
+        html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete">✕</button>';
+        html += '</div>';
+        html += '<div class="cm-header" style="padding-right:100px;">';
+        html += '<span class="cm-title">' + (e.title||'Deadline') + '</span>';
+        html += '<span class="cm-date">' + d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}) + '</span>';
+        html += '</div>';
+        html += '<div class="cm-grid">';
+        html += '<div class="cm-item"><span class="cm-num">' + String(r.days).padStart(2,'0') + '</span><span class="cm-lbl">DAYS</span></div>';
+        html += '<div class="cm-item"><span class="cm-num">' + String(r.hours).padStart(2,'0') + '</span><span class="cm-lbl">HRS</span></div>';
+        html += '<div class="cm-item"><span class="cm-num">' + String(r.minutes).padStart(2,'0') + '</span><span class="cm-lbl">MIN</span></div>';
+        html += '<div class="cm-item"><span class="cm-num">' + String(r.seconds).padStart(2,'0') + '</span><span class="cm-lbl">SEC</span></div>';
+        html += '</div>';
+        html += '</div>';
     });
     c.innerHTML = html;
 }
 
-function renderAssessTable() {
-    const b = document.getElementById('assessBody');
-    if (!b) return;
-    const recent = [...events]
-        .filter(e => e.module && e.module !== 'General')
-        .sort((a,b)=>new Date(b.deadline)-new Date(a.deadline))
-        .slice(0,5);
-    if (!recent.length) {
-        b.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">No module assessments yet</td></tr>';
-        return;
-    }
-    let html = '';
-    recent.forEach(e => {
-        const d = new Date(e.deadline);
-        const isPast = d.getTime() < Date.now();
-        html += `<tr style="cursor:pointer;" onclick="switchView('assessments', document.querySelector('[data-view=assessments]'))">
-            <td><div class="assess-name">${e.title||'Assessment'}</div><div class="assess-module">${e.module||'No module'}</div></td>
-            <td>${e.weight||0}%</td>
-            <td>${d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})}</td>
-            <td>${e.currentMark||'-'} / 100</td>
-            <td class="${isPast?'status-ok':'status-pending'}">${isPast?'✅ Completed':'⏳ Upcoming'}</td>
-        </tr>`;
-    });
-    b.innerHTML = html;
-}
-
-function renderExamElig() {
-    const list = document.getElementById('examEligList');
-    if (!list) return;
-    if (!modules.length) { list.innerHTML = '<p style="color:#888;font-size:0.9rem;">Add modules to check</p>'; return; }
-    let html = '';
-    modules.forEach(m => {
-   const ok = (m.currentMark||0) >= 40;
-html += `<div class="eligibility-item"><div><div class="elig-name">${m.code}</div><div class="elig-note">${ok?'Meets 40% requirement':'Below 40% requirement'}</div></div>
-    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`;
-    });
-    list.innerHTML = html;
-}
-
-function renderExamEligFull() {
-    const list = document.getElementById('examEligListFull');
-    if (!list) return;
-    if (!modules.length) { list.innerHTML = '<p style="color:#888;padding:20px;">Add modules first.</p>'; return; }
-    let html = '';
-    modules.forEach(m => {
-    const ok = (m.currentMark||0) >= 40;
-html += `<div class="eligibility-item"><div><div class="elig-name">${m.code} — ${m.name}</div><div class="elig-note">${ok?'Meets 40% requirement':'Below 40% requirement'} (${m.currentMark||0}%)</div></div>
-    <div class="elig-status ${ok?'eligible':'notyet'}">${ok?'✅ Qualify':'⚠️ Dont Qualify'}</div></div>`; 
-    });
-    list.innerHTML = html;
-}
-
-// ===============================
-// FULL COUNTDOWNS PAGE
-// ===============================
 function renderFullCountdowns() {
     const list = document.getElementById('fullCountdownsList');
     const hist = document.getElementById('historyList');
@@ -1798,4 +1787,46 @@ window.saveCountdownEdit = async function() {
     renderAssessTable();
     renderDashboard();
     alert('✅ Countdown updated');
+};
+// ============================================================
+// EDIT MODULE — modal to fix a module
+// ============================================================
+window.editModule = function(id) {
+    const m = modules.find(mod => mod.id === id);
+    if (!m) return;
+
+    document.getElementById('editModId').value = m.id;
+    document.getElementById('editModCode').value = m.code || '';
+    document.getElementById('editModName').value = m.name || '';
+    document.getElementById('editModMark').value = m.currentMark || 0;
+    document.getElementById('editModColor').value = m.color || '#ff8c00';
+
+    const modal = document.getElementById('editModuleModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeEditModuleModal = function() {
+    const modal = document.getElementById('editModuleModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveModuleEdit = async function() {
+    const id = Number(document.getElementById('editModId').value);
+    const m = modules.find(mod => mod.id === id);
+    if (!m) return;
+
+    const code = document.getElementById('editModCode').value.trim().toUpperCase();
+    if (!code) return alert('Module code is required');
+
+    m.code = code;
+    m.name = document.getElementById('editModName').value.trim() || code;
+    m.currentMark = Number(document.getElementById('editModMark').value) || 0;
+    m.color = document.getElementById('editModColor').value;
+
+    await saveModules();
+    closeEditModuleModal();
+    renderModules();
+    renderModulesList();
+    renderDashboard();
+    alert('✅ Module updated');
 };

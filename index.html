@@ -471,6 +471,26 @@ Sign In with Google
         </div>
     </div>
 </div>
+<!-- ============ EDIT MODULE MODAL ============ -->
+<div id="editModuleModal" class="edit-modal" onclick="if(event.target===this)closeEditModuleModal()">
+    <div class="edit-inner">
+        <div class="edit-header">
+            <div class="edit-title">Edit Module</div>
+            <button class="edit-close" onclick="closeEditModuleModal()">✕</button>
+        </div>
+        <input type="hidden" id="editModId">
+        <div class="edit-grid">
+            <div class="edit-field"><label>Module Code</label><input type="text" id="editModCode" placeholder="e.g. CMPG172"></div>
+            <div class="edit-field"><label>Current Mark %</label><input type="number" id="editModMark" min="0" max="100"></div>
+            <div class="edit-field full"><label>Full Name</label><input type="text" id="editModName" placeholder="e.g. Computer Programming 2"></div>
+            <div class="edit-field full"><label>Color</label><input type="color" id="editModColor"></div>
+        </div>
+        <div class="edit-actions">
+            <button class="edit-cancel" onclick="closeEditModuleModal()">Cancel</button>
+            <button class="edit-save" onclick="saveModuleEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
 <div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v99</div>
 <script type="module" src="script.js?v=102"></script>
 </body>

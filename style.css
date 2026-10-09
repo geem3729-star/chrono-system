@@ -2731,12 +2731,12 @@ body .logout-mini:hover {
 
 /* Bigger bolder countdown numbers */
 .cc-num {
-    font-size: 2.2rem !important;
-    font-weight: 900 !important;
+    font-size: 1.9rem !important;
+    font-weight: 700 !important;
     color: #ffffff !important;
     line-height: 1 !important;
-    letter-spacing: 2px;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     font-variant-numeric: tabular-nums;
 }
 .cc-num-lbl {
@@ -2750,8 +2750,8 @@ body .logout-mini:hover {
     padding: 14px 6px !important;
 }
 .cc-ring-num {
-    font-size: 2rem !important;
-    font-weight: 900 !important;
+    font-size: 1.7rem !important;
+    font-weight: 700 !important;
 }
 
 /* ============================================================
@@ -2952,4 +2952,50 @@ body .logout-mini:hover {
 .edit-save:hover { background: #e67600; }
 @media (max-width: 500px) {
     .edit-grid { grid-template-columns: 1fr; }
+}
+/* ============================================================
+   CARD ACTION BUTTONS — module + mini countdown cards
+   ============================================================ */
+.card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    z-index: 10;
+}
+.card-actions button {
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 7px;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    backdrop-filter: blur(6px);
+    padding: 0;
+}
+.card-actions button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+.card-actions button.danger:hover {
+    background: rgba(239, 68, 68, 0.9);
+    border-color: #ef4444;
+}
+/* Fix: module header text pushed away from card-actions buttons */
+.module-card .module-header {
+    padding-right: 100px !important;
+}
+.module-card .module-header .module-name,
+.module-card .module-header .module-full {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
