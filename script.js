@@ -468,6 +468,12 @@ function buildCard(e, isPast) {
     const module = e.module || 'General';
     const opacity = isPast ? 0.5 : 1;
 
+    // Ring math: cap at 30 days = full ring
+    const days = r.days;
+    const daysPct = Math.min(100, (days / 30) * 100);
+    const circ = 2 * Math.PI * 40;
+    const offset = circ - (daysPct / 100) * circ;
+
     return '<div class="countdown-card ' + blinkClass + '" data-cd-id="' + e.id + '" data-cd-target="' + e.deadline + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
         '<div class="cc-actions">' +
             '<button class="cc-action-btn" onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>' +
@@ -480,12 +486,21 @@ function buildCard(e, isPast) {
             '</div>' +
         '</div>' +
         '<div class="cc-body">' +
+            '<div class="cc-days-ring" data-days-target="' + e.deadline + '">' +
+                '<svg viewBox="0 0 100 100">' +
+                    '<circle class="ring-bg" cx="50" cy="50" r="40"/>' +
+                    '<circle class="ring-progress" cx="50" cy="50" r="40" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>' +
+                '</svg>' +
+                '<div class="ring-center">' +
+                    '<div class="ring-num">' + String(days).padStart(2, '0') + '</div>' +
+                    '<div class="ring-lbl">DAYS</div>' +
+                '</div>' +
+            '</div>' +
             '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>' +
         '</div>' +
         '<div class="cc-footer">' + module + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
     '</div>';
 }
-
 // ===============================
 // HISTORY TOGGLE
 // ===============================
@@ -1876,13 +1891,12 @@ function makeFlip() {
     }
     return { el, set };
 }
-
 function flipCountdown(container, target) {
     const end = new Date(target).getTime();
     const root = document.createElement('div');
-    root.className = 'flipcd';
+    root.className = 'flipcd flipcd-trio';
 
-    const units = ['DAYS', 'HRS', 'MIN', 'SEC'].map(label => {
+    const units = ['HRS', 'MIN', 'SEC'].map(label => {
         const wrap = document.createElement('div');
         wrap.className = 'flipcd-unit';
         const flip = makeFlip();
@@ -1895,19 +1909,36 @@ function flipCountdown(container, target) {
     });
     container.replaceChildren(root);
 
+    // Find sibling DAYS ring (updates every tick)
+    const card = container.closest('[data-cd-target]');
+    const daysRing = card ? card.querySelector('[data-days-target]') : null;
+    const ringCirc = 2 * Math.PI * 40;
+
     const pad = n => String(n).padStart(2, '0');
+
+    function updateDaysRing(days) {
+        if (!daysRing) return;
+        const num = daysRing.querySelector('.ring-num');
+        if (num) num.textContent = pad(days);
+        const pct = Math.min(100, (days / 30) * 100);
+        const offset = ringCirc - (pct / 100) * ringCirc;
+        const progress = daysRing.querySelector('.ring-progress');
+        if (progress) progress.setAttribute('stroke-dashoffset', offset);
+    }
 
     function tick() {
         const ms = Math.max(0, end - Date.now());
         const s = Math.floor(ms / 1000);
-        units[0].set(pad(Math.floor(s / 86400)));
-        units[1].set(pad(Math.floor(s % 86400 / 3600)));
-        units[2].set(pad(Math.floor(s % 3600 / 60)));
-        units[3].set(pad(s % 60));
+        const days = Math.floor(s / 86400);
 
-        const days = ms / 86400000;
+        updateDaysRing(days);
+        units[0].set(pad(Math.floor(s % 86400 / 3600)));
+        units[1].set(pad(Math.floor(s % 3600 / 60)));
+        units[2].set(pad(s % 60));
+
+        const daysFloat = ms / 86400000;
         root.dataset.urgency =
-            days < 1 ? 'red' : days < 3 ? 'orange' : days < 7 ? 'yellow' : 'green';
+            daysFloat < 1 ? 'red' : daysFloat < 3 ? 'orange' : daysFloat < 7 ? 'yellow' : 'green';
     }
 
     tick();
