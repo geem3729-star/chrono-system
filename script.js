@@ -357,33 +357,50 @@ function renderModulesList() {
 function renderUpcoming() {
     const c = document.getElementById('upcomingCountdowns');
     if (!c) return;
+
     const now = Date.now();
-    const up = events.filter(e => new Date(e.deadline).getTime() > now).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-    if (!up.length) { c.innerHTML = '<p style="color:#888;">No upcoming deadlines</p>'; return; }
+    const up = events
+        .filter(e => new Date(e.deadline).getTime() > now)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+        .slice(0, 5); // keep sidebar tidy — show top 5
+
+    if (!up.length) {
+        c.innerHTML = '<p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p>';
+        return;
+    }
+
     let html = '';
     up.forEach(e => {
-        const r = getTimeRemaining(e.deadline);
         const d = new Date(e.deadline);
         const color = e.color || '#ff8c00';
-        html += '<div class="countdown-mini" style="--card-color:' + color + '; position:relative;">';
+        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        html += '<div class="countdown-mini" data-cd-target="' + e.deadline + '" style="--card-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
         html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>';
         html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>';
         html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete">✕</button>';
         html += '</div>';
-        html += '<div class="cm-header" style="padding-right:100px;">';
-        html += '<span class="cm-title">' + (e.title||'Deadline') + '</span>';
-        html += '<span class="cm-date">' + d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}) + '</span>';
+        html += '<div class="cm-header" style="padding-right:110px;">';
+        html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
+        html += '<span class="cm-date">' + dateStr + ' · ' + timeStr + '</span>';
         html += '</div>';
-        html += '<div class="cm-grid">';
-        html += '<div class="cm-item"><span class="cm-num">' + String(r.days).padStart(2,'0') + '</span><span class="cm-lbl">DAYS</span></div>';
-        html += '<div class="cm-item"><span class="cm-num">' + String(r.hours).padStart(2,'0') + '</span><span class="cm-lbl">HRS</span></div>';
-        html += '<div class="cm-item"><span class="cm-num">' + String(r.minutes).padStart(2,'0') + '</span><span class="cm-lbl">MIN</span></div>';
-        html += '<div class="cm-item"><span class="cm-num">' + String(r.seconds).padStart(2,'0') + '</span><span class="cm-lbl">SEC</span></div>';
-        html += '</div>';
+        html += '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>';
         html += '</div>';
     });
+
     c.innerHTML = html;
+
+    // Mount the flip timers
+    if (window._upcomingFlipStops) window._upcomingFlipStops.forEach(fn => fn());
+    window._upcomingFlipStops = [];
+    c.querySelectorAll('[data-cd-mount]').forEach(mount => {
+        const card = mount.closest('[data-cd-target]');
+        if (!card) return;
+        const stop = flipCountdown(mount, card.dataset.cdTarget);
+        window._upcomingFlipStops.push(stop);
+    });
 }
 
 function renderFullCountdowns() {
