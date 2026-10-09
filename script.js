@@ -459,15 +459,18 @@ function buildCard(e, isPast) {
     const module = e.module || 'General';
     const dayLabel = r.isOverdue ? 'DONE' : 'DAYS';
     const dayNum = r.isOverdue ? '✓' : days;
-    const liveDot = isPast ? '' : '<div class="cc-live-dot"></div>';
     const opacity = isPast ? 0.5 : 1;
+
     return '<div class="countdown-card ' + blinkClass + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
-        '<button class="cc-delete" data-id="' + e.id + '">✕</button>' +
+        '<div class="cc-actions">' +
+            '<button class="cc-action-btn" onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>' +
+            '<button class="cc-action-btn" onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>' +
+            '<button class="cc-action-btn cc-delete" data-id="' + e.id + '" title="Delete">✕</button>' +
+        '</div>' +
         '<div class="cc-header">' +
-            '<div style="padding-right:40px;">' +
+            '<div style="padding-right:120px;">' +
                 '<div class="cc-title">' + title + '</div>' +
             '</div>' +
-            liveDot +
         '</div>' +
         '<div class="cc-body">' +
             '<div class="cc-ring" style="filter:drop-shadow(0 0 8px ' + color + '40);">' +
@@ -573,6 +576,11 @@ setInterval(() => {
     renderUpcoming();
     const cd = document.getElementById('view-countdowns');
     if (cd && cd.classList.contains('active')) renderFullCountdowns();
+    // Live-update zoom modal if open
+    if (window._zoomId) {
+        const zoomed = events.find(ev => ev.id === window._zoomId);
+        if (zoomed) renderZoomContent(zoomed);
+    }
 }, 1000);
 
 // ============================================================
@@ -1692,4 +1700,102 @@ window.openAddModule = function() {
         const form = document.getElementById('moduleFormBody');
         if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 150);
+};
+// ============================================================
+// ZOOM — fullscreen countdown view
+// ============================================================
+window.zoomCountdown = function(id) {
+    const e = events.find(ev => ev.id === id);
+    if (!e) return;
+    window._zoomId = id;
+    renderZoomContent(e);
+    const modal = document.getElementById('zoomModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+function renderZoomContent(e) {
+    const r = getTimeRemaining(e.deadline);
+    const color = e.color || '#ff8c00';
+    const d = new Date(e.deadline);
+    const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setTxt('zoomDays',  String(r.days).padStart(2, '0'));
+    setTxt('zoomHours', String(r.hours).padStart(2, '0'));
+    setTxt('zoomMins',  String(r.minutes).padStart(2, '0'));
+    setTxt('zoomSecs',  String(r.seconds).padStart(2, '0'));
+    setTxt('zoomTitle', e.title || 'Countdown');
+    setTxt('zoomModule', e.module || 'General');
+    setTxt('zoomFooter', dateStr + ' at ' + timeStr);
+
+    const modal = document.getElementById('zoomModal');
+    if (modal) {
+        const inner = modal.querySelector('.zoom-inner');
+        if (inner) inner.style.setProperty('--card-color', color);
+    }
+}
+
+window.closeZoom = function() {
+    const modal = document.getElementById('zoomModal');
+    if (modal) modal.style.display = 'none';
+    window._zoomId = null;
+};
+
+// ============================================================
+// EDIT — modal to fix wrong countdown
+// ============================================================
+window.editCountdown = function(id) {
+    const e = events.find(ev => ev.id === id);
+    if (!e) return;
+
+    const d = new Date(e.deadline);
+    const pad = n => String(n).padStart(2, '0');
+    const dateVal = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+    const timeVal = pad(d.getHours()) + ':' + pad(d.getMinutes());
+
+    document.getElementById('editId').value = e.id;
+    document.getElementById('editTitle').value = e.title || '';
+    document.getElementById('editModule').value = e.module || 'General';
+    document.getElementById('editDate').value = dateVal;
+    document.getElementById('editTime').value = timeVal;
+    document.getElementById('editWeight').value = e.weight || 0;
+    document.getElementById('editMark').value = e.currentMark || 0;
+    document.getElementById('editColor').value = e.color || '#ff8c00';
+    document.getElementById('editConsequence').value = e.consequence || '';
+
+    const modal = document.getElementById('editModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('editModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveCountdownEdit = async function() {
+    const id = Number(document.getElementById('editId').value);
+    const e = events.find(ev => ev.id === id);
+    if (!e) return;
+
+    const title = document.getElementById('editTitle').value.trim();
+    const date = document.getElementById('editDate').value;
+    const time = document.getElementById('editTime').value;
+    if (!title || !date || !time) return alert('Title, date and time are required');
+
+    e.title = title;
+    e.module = document.getElementById('editModule').value.trim() || 'General';
+    e.deadline = date + 'T' + time;
+    e.weight = Number(document.getElementById('editWeight').value) || 0;
+    e.currentMark = Number(document.getElementById('editMark').value) || 0;
+    e.color = document.getElementById('editColor').value;
+    e.consequence = document.getElementById('editConsequence').value.trim() || 'None';
+
+    await saveEvents();
+    closeEditModal();
+    renderFullCountdowns();
+    renderUpcoming();
+    renderAssessTable();
+    renderDashboard();
+    alert('✅ Countdown updated');
 };

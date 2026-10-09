@@ -431,6 +431,46 @@ Sign In with Google
   </div>
 </div>
 
+<!-- ============ ZOOM MODAL ============ -->
+<div id="zoomModal" class="zoom-modal" onclick="if(event.target===this)closeZoom()">
+    <div class="zoom-inner">
+        <button class="zoom-close" onclick="closeZoom()">✕</button>
+        <div class="zoom-title" id="zoomTitle">Countdown</div>
+        <div class="zoom-module" id="zoomModule">General</div>
+        <div class="zoom-numbers">
+            <div class="zoom-unit"><div class="zoom-num" id="zoomDays">00</div><div class="zoom-lbl">DAYS</div></div>
+            <div class="zoom-unit"><div class="zoom-num" id="zoomHours">00</div><div class="zoom-lbl">HRS</div></div>
+            <div class="zoom-unit"><div class="zoom-num" id="zoomMins">00</div><div class="zoom-lbl">MIN</div></div>
+            <div class="zoom-unit"><div class="zoom-num" id="zoomSecs">00</div><div class="zoom-lbl">SEC</div></div>
+        </div>
+        <div class="zoom-footer" id="zoomFooter">—</div>
+    </div>
+</div>
+
+<!-- ============ EDIT MODAL ============ -->
+<div id="editModal" class="edit-modal" onclick="if(event.target===this)closeEditModal()">
+    <div class="edit-inner">
+        <div class="edit-header">
+            <div class="edit-title">Edit Countdown</div>
+            <button class="edit-close" onclick="closeEditModal()">✕</button>
+        </div>
+        <input type="hidden" id="editId">
+        <div class="edit-grid">
+            <div class="edit-field full"><label>Title</label><input type="text" id="editTitle"></div>
+            <div class="edit-field"><label>Module</label><input type="text" id="editModule"></div>
+            <div class="edit-field"><label>Color</label><input type="color" id="editColor"></div>
+            <div class="edit-field"><label>Date</label><input type="date" id="editDate"></div>
+            <div class="edit-field"><label>Time</label><input type="time" id="editTime"></div>
+            <div class="edit-field"><label>Weight %</label><input type="number" id="editWeight" min="0" max="100"></div>
+            <div class="edit-field"><label>Mark %</label><input type="number" id="editMark" min="0" max="100"></div>
+            <div class="edit-field full"><label>Consequence</label><input type="text" id="editConsequence"></div>
+        </div>
+        <div class="edit-actions">
+            <button class="edit-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="edit-save" onclick="saveCountdownEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
 <div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v99</div>
 <script type="module" src="script.js?v=102"></script>
 </body>
