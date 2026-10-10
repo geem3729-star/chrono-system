@@ -357,24 +357,26 @@ function renderModulesList() {
 function renderUpcoming() {
     const c = document.getElementById('upcomingCountdowns');
     if (!c) return;
-
     const now = Date.now();
     const up = events
         .filter(e => new Date(e.deadline).getTime() > now)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-        .slice(0, 5); // keep sidebar tidy — show top 5
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
     if (!up.length) {
-        c.innerHTML = '<p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p>';
+        c.innerHTML = '<p style="color:#888;">No upcoming deadlines</p>';
         return;
     }
 
     let html = '';
     up.forEach(e => {
+        const r = getTimeRemaining(e.deadline);
         const d = new Date(e.deadline);
         const color = e.color || '#ff8c00';
-        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        const days = r.days;
+        const daysPct = Math.min(100, (days / 30) * 100);
+        const circ = 2 * Math.PI * 40;
+        const offset = circ - (daysPct / 100) * circ;
 
         html += '<div class="countdown-mini" data-cd-target="' + e.deadline + '" style="--card-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
@@ -382,15 +384,31 @@ function renderUpcoming() {
         html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>';
         html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete">✕</button>';
         html += '</div>';
-        html += '<div class="cm-header" style="padding-right:110px;">';
+        html += '<div class="cm-header" style="padding-right:100px;">';
         html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
-        html += '<span class="cm-date">' + dateStr + ' · ' + timeStr + '</span>';
+        html += '<span class="cm-date">' + d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + '</span>';
+        html += '</div>';
+        html += '<div class="cm-body">';
+        html += '<div class="cc-days-ring cc-days-ring-sm" data-days-target="' + e.deadline + '">';
+        html += '<svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="40"/><circle class="ring-progress" cx="50" cy="50" r="40" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg>';
+        html += '<div class="ring-center"><div class="ring-num">' + String(days).padStart(2, '0') + '</div><div class="ring-lbl">DAYS</div></div>';
         html += '</div>';
         html += '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>';
         html += '</div>';
+        html += '</div>';
     });
-
     c.innerHTML = html;
+
+    // Mount flip timers
+    if (window._upcomingFlipStops) window._upcomingFlipStops.forEach(fn => fn());
+    window._upcomingFlipStops = [];
+    c.querySelectorAll('[data-cd-mount]').forEach(mount => {
+        const card = mount.closest('[data-cd-target]');
+        if (!card) return;
+        const stop = flipCountdown(mount, card.dataset.cdTarget);
+        window._upcomingFlipStops.push(stop);
+    });
+}
 
     // Mount the flip timers
     if (window._upcomingFlipStops) window._upcomingFlipStops.forEach(fn => fn());
@@ -401,7 +419,7 @@ function renderUpcoming() {
         const stop = flipCountdown(mount, card.dataset.cdTarget);
         window._upcomingFlipStops.push(stop);
     });
-}
+
 
 function renderFullCountdowns() {
     const list = document.getElementById('fullCountdownsList');

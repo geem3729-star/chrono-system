@@ -485,7 +485,7 @@ body {
    ============================================================ */
 .modules-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
 }
 
@@ -3138,9 +3138,17 @@ body .logout-mini:hover {
    ============================================================ */
 .cc-days-ring {
     position: relative;
-    width: 96px;
-    height: 96px;
+    width: 115px;
+    height: 115px;
     flex-shrink: 0;
+    align-self: stretch;
+    max-height: 130px;
+}
+.cc-days-ring svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transform: rotate(-90deg);
 }
 .cc-days-ring svg {
     width: 100%;
@@ -3187,8 +3195,8 @@ body .logout-mini:hover {
 /* Mobile — shrink ring */
 @media (max-width: 500px) {
     .cc-days-ring {
-        width: 72px;
-        height: 72px;
+        width: 82px;
+        height: 82px;
     }
     .cc-days-ring .ring-num {
         font-size: 1.3rem;
@@ -3196,4 +3204,47 @@ body .logout-mini:hover {
     .cc-body {
         gap: 10px;
     }
+}
+/* ============================================================
+   DASHBOARD MINI COUNTDOWN — ring + flip layout
+   ============================================================ */
+.countdown-mini .cm-body {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+.countdown-mini .cm-body .flipcd-mount {
+    flex: 1;
+    min-width: 0;
+}
+.countdown-mini .cc-days-ring-sm {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+.countdown-mini .cc-days-ring-sm .ring-bg {
+    stroke-width: 9;
+}
+.countdown-mini .cc-days-ring-sm .ring-progress {
+    stroke-width: 9;
+}
+.countdown-mini .cc-days-ring-sm .ring-num {
+    font-size: 1rem;
+}
+.countdown-mini .cc-days-ring-sm .ring-lbl {
+    font-size: 0.45rem;
+    margin-top: 2px;
+    letter-spacing: 0.1em;
+}
+.countdown-mini .flipcd {
+    gap: 5px;
+}
+.countdown-mini .flip {
+    --radius: 8px;
+}
+.countdown-mini .flipcd-label {
+    font-size: 0.5rem;
+    margin-top: 4px;
+    letter-spacing: 0.1em;
 }
