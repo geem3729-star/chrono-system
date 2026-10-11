@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
 import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
     authDomain: "chronos-system-e3d4c.firebaseapp.com",
@@ -21,13 +21,10 @@ let currentUser = null;
 let events = [];
 let modules = [];
 let allUsers = [];
+let pdfFiles = [];
 
-// ⚠️ CHANGE THIS TO YOUR EMAIL
 const ADMIN_EMAIL = "keketsokagiso25@gmail.com";
 
-// ===============================
-// VIEW SWITCHER
-// ===============================
 window.switchView = function(viewName, el) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -40,35 +37,25 @@ window.switchView = function(viewName, el) {
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
     if (viewName === 'examelig') renderExamEligFull();
     if (viewName === 'admin') renderAdminPanel();
+    if (viewName === 'assessments') loadPdfs().then(() => renderAssessmentsPage());
 };
 
-
-// ===============================
-// AUTH
-// ===============================
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
     try {
         await signInWithPopup(auth, provider);
     } catch (e) {
-        // If popup is blocked on iOS, tell the user how to fix it
         if (e.code === 'auth/popup-blocked') {
             alert('Please allow popups for this site, then try again.\n\nSafari: Settings → Safari → Block Pop-ups → OFF');
         } else if (e.code === 'auth/popup-closed-by-user') {
-            // User closed the popup - do nothing, no alert needed
         } else {
             alert('Sign-in failed: ' + e.message);
         }
     }
 });
 
-// Catch the return from Google redirect
-
-
-
 window.handleLogout = async function() {
     if (confirm('Logout?')) await signOut(auth);
 };
-
 
 onAuthStateChanged(auth, async (user) => {
     const ls = document.getElementById('loadingScreen');
@@ -76,33 +63,17 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         const name = user.displayName || user.email.split('@')[0];
-
-        // ============ LOG THIS LOGIN ============
         try {
             const userRef = ref(db, `allUsers/${user.uid}`);
             const existing = await get(userRef);
             const now = new Date().toISOString();
             if (existing.exists()) {
                 const data = existing.val();
-                await set(userRef, {
-                    ...data,
-                    lastSeen: now,
-                    loginCount: (data.loginCount || 0) + 1
-                });
+                await set(userRef, { ...data, lastSeen: now, loginCount: (data.loginCount || 0) + 1 });
             } else {
-                await set(userRef, {
-                    uid: user.uid,
-                    name: name,
-                    email: user.email,
-                    photo: user.photoURL || '',
-                    firstSeen: now,
-                    lastSeen: now,
-                    loginCount: 1
-                });
+                await set(userRef, { uid: user.uid, name: name, email: user.email, photo: user.photoURL || '', firstSeen: now, lastSeen: now, loginCount: 1 });
             }
         } catch (e) { console.error('Log user error:', e); }
-
-        // Show Admin link if this is YOU
         if (user.email === ADMIN_EMAIL) {
             const adminBtn = document.getElementById('adminNavBtn');
             if (adminBtn) adminBtn.style.display = 'flex';
@@ -121,81 +92,57 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// ===============================
-// LOAD / SAVE DATA
-// ===============================
 function loadData() {
     if (!currentUser) return;
-
-    // ---- Real-time listener: EVENTS ----
     onValue(ref(db, `users/${currentUser.uid}/events`), (snapshot) => {
         const val = snapshot.val();
-        events = val
-            ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x))
-            : [];
-
-        // Re-render everything that shows events
+        events = val ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x)) : [];
         renderDashboard();
-        renderAssessTable();
         renderUpcoming();
-        if (document.getElementById('view-countdowns')?.classList.contains('active')) {
-            renderFullCountdowns();
-        }
-        if (document.getElementById('view-assessments')?.classList.contains('active')) {
-            renderAssessmentsPage();
-        }
+        if (document.getElementById('view-countdowns')?.classList.contains('active')) renderFullCountdowns();
+        if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
     });
-
-    // ---- Real-time listener: MODULES ----
     onValue(ref(db, `users/${currentUser.uid}/modules`), (snapshot) => {
         const val = snapshot.val();
-        modules = val
-            ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x))
-            : [];
-
+        modules = val ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x)) : [];
         renderDashboard();
         renderModulesList();
-        if (document.getElementById('view-assessments')?.classList.contains('active')) {
-            renderAssessmentsPage();
-        }
+        if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
     });
-
-    // ---- Real-time listener: ADMIN USERS ----
     if (currentUser.email === ADMIN_EMAIL) {
         onValue(ref(db, `allUsers`), (snapshot) => {
             allUsers = snapshot.exists() ? Object.values(snapshot.val()).filter(x => x) : [];
-            if (document.getElementById('view-admin')?.classList.contains('active')) {
-                renderAdminPanel();
-            }
+            if (document.getElementById('view-admin')?.classList.contains('active')) renderAdminPanel();
         });
     }
 }
 
-// ---- SAVE: EVENTS (countdowns) ----
 async function saveEvents() {
     if (!currentUser) return;
-    try {
-        await set(ref(db, `users/${currentUser.uid}/events`), events);
-    } catch (e) {
-        console.error('Save events error:', e);
-        alert('Could not save countdowns: ' + e.message);
-    }
+    try { await set(ref(db, `users/${currentUser.uid}/events`), events); }
+    catch (e) { console.error('Save events error:', e); alert('Could not save countdowns: ' + e.message); }
 }
 
-// ---- SAVE: MODULES ----
 async function saveModules() {
     if (!currentUser) return;
-    try {
-        await set(ref(db, `users/${currentUser.uid}/modules`), modules);
-    } catch (e) {
-        console.error('Save modules error:', e);
-        alert('Could not save modules: ' + e.message);
-    }
+    try { await set(ref(db, `users/${currentUser.uid}/modules`), modules); }
+    catch (e) { console.error('Save modules error:', e); alert('Could not save modules: ' + e.message); }
 }
 
-// ===============================
-// MODULE FORM
-// ===============================
+async function loadPdfs() {
+    if (!currentUser) return;
+    try {
+        const snap = await get(child(ref(db), `users/${currentUser.uid}/pdfs`));
+        pdfFiles = snap.exists() ? Object.values(snap.val()).filter(x => x) : [];
+    } catch (e) { console.error(e); }
+}
+
+async function savePdfs() {
+    if (!currentUser) return;
+    try { await set(ref(db, `users/${currentUser.uid}/pdfs`), pdfFiles); }
+    catch (e) { alert('Could not save PDF.'); }
+}
+
 function setupModuleForm() {
     const preset = document.getElementById('presetModule');
     if (!preset) return;
@@ -204,7 +151,6 @@ function setupModuleForm() {
     const slider = document.getElementById('moduleMarkSlider');
     const num = document.getElementById('moduleMark');
     const disp = document.getElementById('markDisplay');
-
     preset.addEventListener('change', () => {
         const val = preset.value;
         if (val === '' || val === 'CUSTOM') { codeInput.value=''; nameInput.value=''; return; }
@@ -244,9 +190,6 @@ window.deleteModule = async function(id) {
     renderModulesList(); renderDashboard();
 };
 
-// ===============================
-// TIME HELPER
-// ===============================
 function getTimeRemaining(iso) {
     const diff = new Date(iso).getTime() - Date.now();
     if (diff <= 0) return { days:0, hours:0, minutes:0, seconds:0, isOverdue:true };
@@ -254,41 +197,29 @@ function getTimeRemaining(iso) {
     return { days: Math.floor(s/86400), hours: Math.floor((s%86400)/3600), minutes: Math.floor((s%3600)/60), seconds: s%60, isOverdue:false };
 }
 
-// ===============================
-// RENDER DASHBOARD
-// ===============================
 function renderDashboard() {
     renderModules();
     renderUpcoming();
-    renderAssessTable();
-    renderExamElig();
 }
-
 function renderModules() {
     const row = document.getElementById('modulesRow');
     if (!row) return;
-
     if (!modules.length) {
         row.innerHTML = '<div class="module-card" style="grid-column:1/-1;"><p style="color:#888;padding:24px;text-align:center;">No modules yet. Go to Modules to add them.</p></div>' +
             '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">0%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">Add modules to begin</div></div>';
         return;
     }
-
     let html = '';
     let total = 0;
-
     modules.forEach(function(m) {
         const mark = m.currentMark || 0;
         total += mark;
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-
-        let bc = 'eligible';
-        let bt = '✅ Qualify';
+        let bc = 'eligible'; let bt = '✅ Qualify';
         if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
         else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
-
         html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
         html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
@@ -302,39 +233,31 @@ function renderModules() {
         html += '<div class="module-badge ' + bc + '">' + bt + '</div>';
         html += '</div>';
     });
-
     const avg = Math.round(total / modules.length);
     let tag = 'Needs Focus!';
     if (avg >= 75) tag = 'Excellent!';
     else if (avg >= 60) tag = 'Good Progress!';
     else if (avg >= 40) tag = 'Keep Pushing!';
-
     html += '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">' + avg + '%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">' + tag + '</div></div>';
-
     row.innerHTML = html;
 }
 
 function renderModulesList() {
     const list = document.getElementById('modulesList');
     if (!list) return;
-
     if (!modules.length) {
         list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No modules yet. Add one above.</p>';
         return;
     }
-
     let html = '';
     modules.forEach(function(m) {
         const mark = m.currentMark || 0;
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-
-        let bc = 'eligible';
-        let bt = '✅ Qualify';
+        let bc = 'eligible'; let bt = '✅ Qualify';
         if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
         else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
-
         html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
         html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
@@ -348,36 +271,27 @@ function renderModulesList() {
         html += '<div class="module-badge ' + bc + '">' + bt + '</div>';
         html += '</div>';
     });
-
     list.innerHTML = html;
 }
-// ===============================
-// FULL COUNTDOWNS PAGE
-// ===============================
+
 function renderUpcoming() {
     const c = document.getElementById('upcomingCountdowns');
     if (!c) return;
     const now = Date.now();
-    const up = events
-        .filter(e => new Date(e.deadline).getTime() > now)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
+    const up = events.filter(e => new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     if (!up.length) {
         c.innerHTML = '<p style="color:#888;">No upcoming deadlines</p>';
         return;
     }
-
     let html = '';
     up.forEach(e => {
         const r = getTimeRemaining(e.deadline);
         const d = new Date(e.deadline);
         const color = e.color || '#ff8c00';
-
         const days = r.days;
         const daysPct = Math.min(100, (days / 30) * 100);
         const circ = 2 * Math.PI * 40;
         const offset = circ - (daysPct / 100) * circ;
-
         html += '<div class="countdown-mini" data-cd-target="' + e.deadline + '" style="--card-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
         html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>';
@@ -388,85 +302,76 @@ function renderUpcoming() {
         html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
         html += '<span class="cm-date">' + d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + '</span>';
         html += '</div>';
-        html += '<div class="cm-body">';
-        html += '<div class="cc-days-ring cc-days-ring-sm" data-days-target="' + e.deadline + '">';
-        html += '<svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="40"/><circle class="ring-progress" cx="50" cy="50" r="40" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg>';
-        html += '<div class="ring-center"><div class="ring-num">' + String(days).padStart(2, '0') + '</div><div class="ring-lbl">DAYS</div></div>';
-        html += '</div>';
-        html += '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>';
+               const pad2 = n => String(n).padStart(2, '0');
+        html += '<div class="cc-grid">';
+        html += '<div class="cc-box"><div class="cc-box-num" data-unit="days">' + pad2(r.days) + '</div><div class="cc-box-lbl">DAYS</div></div>';
+        html += '<div class="cc-box"><div class="cc-box-num" data-unit="hours">' + pad2(r.hours) + '</div><div class="cc-box-lbl">HRS</div></div>';
+        html += '<div class="cc-box"><div class="cc-box-num" data-unit="mins">' + pad2(r.minutes) + '</div><div class="cc-box-lbl">MIN</div></div>';
+        html += '<div class="cc-box"><div class="cc-box-num" data-unit="secs">' + pad2(r.seconds) + '</div><div class="cc-box-lbl">SEC</div></div>';
         html += '</div>';
         html += '</div>';
     });
     c.innerHTML = html;
-
-    // Mount flip timers
-    if (window._upcomingFlipStops) window._upcomingFlipStops.forEach(fn => fn());
-    window._upcomingFlipStops = [];
-    c.querySelectorAll('[data-cd-mount]').forEach(mount => {
-        const card = mount.closest('[data-cd-target]');
-        if (!card) return;
-        const stop = flipCountdown(mount, card.dataset.cdTarget);
-        window._upcomingFlipStops.push(stop);
-    });
+        attachCardTickers();
 }
-
-    // Mount the flip timers
-    if (window._upcomingFlipStops) window._upcomingFlipStops.forEach(fn => fn());
-    window._upcomingFlipStops = [];
-    c.querySelectorAll('[data-cd-mount]').forEach(mount => {
-        const card = mount.closest('[data-cd-target]');
-        if (!card) return;
-        const stop = flipCountdown(mount, card.dataset.cdTarget);
-        window._upcomingFlipStops.push(stop);
-    });
-
 
 function renderFullCountdowns() {
     const list = document.getElementById('fullCountdownsList');
     const hist = document.getElementById('historyList');
     if (!list) return;
     const now = Date.now();
-    const up = events.filter(e => new Date(e.deadline).getTime() > now).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-    const past = events.filter(e => new Date(e.deadline).getTime() <= now).sort((a,b)=>new Date(b.deadline)-new Date(a.deadline));
-
-    if (!up.length) { list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No active countdowns.</p>'; }
-    else { list.innerHTML = up.map(e => buildCard(e, false)).join(''); }
-
-     if (!hist) return;
-    if (!past.length) {
-        hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>';
+    const up = events.filter(e => new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const past = events.filter(e => new Date(e.deadline).getTime() <= now).sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+    if (!up.length) {
+        list.innerHTML = '<p style="color:#888;padding:20px;grid-column:1/-1;">No active countdowns.</p>';
     } else {
-        hist.innerHTML = past.map(e => {
-            const d = new Date(e.deadline);
-            return `<div style="background:linear-gradient(90deg, color-mix(in srgb, ${e.color || '#ff8c00'} 25%, #0a0a0a) 0%, #0a0a0a 100%); border:1px solid color-mix(in srgb, ${e.color || '#ff8c00'} 40%, #262626); border-left:5px solid ${e.color || '#ff8c00'}; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;">
-    <div style="flex:1; text-align:center; min-width:0;">
-        <div style="color:#fff;font-weight:600;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-            <span style="color:${e.color || '#ff8c00'};font-weight:700;">✓</span> ${e.title || 'Deadline'}
-        </div>
-        <div style="color:#888;font-size:0.75rem;margin-top:4px;">
-            ${e.module || 'General'} · ${d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'})}
-        </div>
-    </div>
-    <div style="font-size:0.7rem;font-weight:700;color:${e.color || '#ff8c00'};background:color-mix(in srgb, ${e.color || '#ff8c00'} 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>
-    <button onclick="deleteEvent(${e.id})" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>
-</div>`;
-        }).join('');
+        list.innerHTML = up.map(e => buildCard(e, false)).join('');
     }
+    if (hist) {
+        if (!past.length) {
+            hist.innerHTML = '<p style="color:#888;padding:20px;">No past deadlines.</p>';
+        } else {
+            hist.innerHTML = past.map(e => {
+                const d = new Date(e.deadline);
+                const color = e.color || '#ff8c00';
+                return '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 25%, #0a0a0a) 0%, #0a0a0a 100%); border:1px solid color-mix(in srgb, ' + color + ' 40%, #262626); border-left:5px solid ' + color + '; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px;">' +
+                    '<div style="flex:1; text-align:center; min-width:0;">' +
+                        '<div style="color:#fff;font-weight:600;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;"><span style="color:' + color + ';font-weight:700;">✓</span> ' + (e.title || 'Deadline') + '</div>' +
+                        '<div style="color:#888;font-size:0.75rem;margin-top:4px;">' + (e.module || 'General') + ' · ' + d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) + '</div>' +
+                    '</div>' +
+                    '<div style="font-size:0.7rem;font-weight:700;color:' + color + ';background:color-mix(in srgb, ' + color + ' 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>' +
+                    '<button onclick="deleteEvent(' + e.id + ')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>' +
+                '</div>';
+            }).join('');
+        }
+    }
+       attachCardTickers();
+}
 
-    // Mount flip timers
-    if (window._flipStops) window._flipStops.forEach(fn => fn());
-    window._flipStops = [];
-    list.querySelectorAll('[data-cd-mount]').forEach(mount => {
-        const card = mount.closest('[data-cd-target]');
-        if (!card) return;
-        const stop = flipCountdown(mount, card.dataset.cdTarget);
-        window._flipStops.push(stop);
+function attachCardTickers() {
+    if (window._cardTickers) window._cardTickers.forEach(fn => fn());
+    window._cardTickers = [];
+    const pad = n => String(n).padStart(2, '0');
+    document.querySelectorAll('.countdown-card[data-cd-target], .countdown-mini[data-cd-target]').forEach(card => {
+        const end = new Date(card.dataset.cdTarget).getTime();
+        const update = () => {
+            const ms = Math.max(0, end - Date.now());
+            const s = Math.floor(ms / 1000);
+            const daysEl = card.querySelector('[data-unit="days"]');
+            const hrsEl  = card.querySelector('[data-unit="hours"]');
+            const minEl  = card.querySelector('[data-unit="mins"]');
+            const secEl  = card.querySelector('[data-unit="secs"]');
+            if (daysEl) daysEl.textContent = pad(Math.floor(s / 86400));
+            if (hrsEl)  hrsEl.textContent  = pad(Math.floor(s % 86400 / 3600));
+            if (minEl)  minEl.textContent  = pad(Math.floor(s % 3600 / 60));
+            if (secEl)  secEl.textContent  = pad(s % 60);
+        };
+        update();
+        const id = setInterval(update, 1000);
+        window._cardTickers.push(() => clearInterval(id));
     });
 }
 
-// ===============================
-// BUILD COUNTDOWN CARD
-// ===============================
 function buildCard(e, isPast) {
     const r = getTimeRemaining(e.deadline);
     const d = new Date(e.deadline);
@@ -481,16 +386,11 @@ function buildCard(e, isPast) {
 
     const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
     const title = e.title || 'Deadline';
     const module = e.module || 'General';
     const opacity = isPast ? 0.5 : 1;
 
-    // Ring math: cap at 30 days = full ring
-    const days = r.days;
-    const daysPct = Math.min(100, (days / 30) * 100);
-    const circ = 2 * Math.PI * 40;
-    const offset = circ - (daysPct / 100) * circ;
+    const pad = n => String(n).padStart(2, '0');
 
     return '<div class="countdown-card ' + blinkClass + '" data-cd-id="' + e.id + '" data-cd-target="' + e.deadline + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
         '<div class="cc-actions">' +
@@ -498,30 +398,17 @@ function buildCard(e, isPast) {
             '<button class="cc-action-btn" onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>' +
             '<button class="cc-action-btn cc-delete" data-id="' + e.id + '" title="Delete">✕</button>' +
         '</div>' +
-        '<div class="cc-header">' +
-            '<div style="padding-right:120px;">' +
-                '<div class="cc-title">' + title + '</div>' +
-            '</div>' +
-        '</div>' +
-        '<div class="cc-body">' +
-            '<div class="cc-days-ring" data-days-target="' + e.deadline + '">' +
-                '<svg viewBox="0 0 100 100">' +
-                    '<circle class="ring-bg" cx="50" cy="50" r="40"/>' +
-                    '<circle class="ring-progress" cx="50" cy="50" r="40" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/>' +
-                '</svg>' +
-                '<div class="ring-center">' +
-                    '<div class="ring-num">' + String(days).padStart(2, '0') + '</div>' +
-                    '<div class="ring-lbl">DAYS</div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="flipcd-mount" data-cd-mount="' + e.id + '"></div>' +
+        '<div class="cc-header"><div style="padding-right:120px;"><div class="cc-title">' + title + '</div></div></div>' +
+        '<div class="cc-grid">' +
+            '<div class="cc-box"><div class="cc-box-num" data-unit="days">' + pad(r.days) + '</div><div class="cc-box-lbl">DAYS</div></div>' +
+            '<div class="cc-box"><div class="cc-box-num" data-unit="hours">' + pad(r.hours) + '</div><div class="cc-box-lbl">HRS</div></div>' +
+            '<div class="cc-box"><div class="cc-box-num" data-unit="mins">' + pad(r.minutes) + '</div><div class="cc-box-lbl">MIN</div></div>' +
+            '<div class="cc-box"><div class="cc-box-num" data-unit="secs">' + pad(r.seconds) + '</div><div class="cc-box-lbl">SEC</div></div>' +
         '</div>' +
         '<div class="cc-footer">' + module + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
     '</div>';
 }
-// ===============================
-// HISTORY TOGGLE
-// ===============================
+
 window.toggleHistory = function() {
     const h = document.getElementById('historyList');
     const a = document.getElementById('historyArrow');
@@ -530,9 +417,6 @@ window.toggleHistory = function() {
     else { h.style.display = 'none'; a.textContent = '▼'; }
 };
 
-// ===============================
-// COUNTDOWN DROPDOWN
-// ===============================
 function populateCdDropdown() {
     const s = document.getElementById('cdModule');
     if (!s) return;
@@ -544,9 +428,6 @@ function populateCdDropdown() {
     });
 }
 
-// ===============================
-// ADD COUNTDOWN
-// ===============================
 document.getElementById('addCountdownBtn')?.addEventListener('click', async () => {
     const title = document.getElementById('cdTitle').value.trim();
     const module = document.getElementById('cdModule').value || 'General';
@@ -556,10 +437,8 @@ document.getElementById('addCountdownBtn')?.addEventListener('click', async () =
     const mark = Number(document.getElementById('cdMark').value) || 0;
     const color = document.getElementById('cdColor').value;
     const consequence = document.getElementById('cdConsequence').value.trim();
-
     if (!title) return alert('Enter a title');
     if (!date || !time) return alert('Pick date and time');
-
     events.push({ id: Date.now(), title, module, deadline: date + 'T' + time, weight, currentMark: mark, color, consequence: consequence || 'None' });
     await saveEvents();
     document.getElementById('cdTitle').value = '';
@@ -570,21 +449,17 @@ document.getElementById('addCountdownBtn')?.addEventListener('click', async () =
     document.getElementById('cdMark').value = 0;
     document.getElementById('cdColor').value = '#ff8c00';
     document.getElementById('cdConsequence').value = '';
-    renderFullCountdowns(); renderUpcoming(); renderDashboard(); renderAssessTable();
+    renderFullCountdowns(); renderUpcoming(); renderDashboard();
     alert('Countdown added!');
 });
 
-// ===============================
-// DELETE EVENT
-// ===============================
 window.deleteEvent = async function(id) {
     if (!confirm('Delete this deadline?')) return;
     events = events.filter(e => e.id !== id);
     await saveEvents();
-    renderFullCountdowns(); renderDashboard(); renderUpcoming(); renderAssessTable();
+    renderFullCountdowns(); renderDashboard(); renderUpcoming();
 };
 
-// Delete button handler for countdown cards
 document.addEventListener('click', function(ev) {
     const btn = ev.target.closest('.cc-delete');
     if (btn) {
@@ -594,30 +469,45 @@ document.addEventListener('click', function(ev) {
     }
 });
 
-// ===============================
-// LIVE UPDATE
-// ===============================
 setInterval(() => {
     if (!currentUser) return;
     renderUpcoming();
     const cd = document.getElementById('view-countdowns');
     if (cd && cd.classList.contains('active')) renderFullCountdowns();
-    // Live-update zoom modal if open
     if (window._zoomId) {
         const zoomed = events.find(ev => ev.id === window._zoomId);
         if (zoomed) renderZoomContent(zoomed);
     }
 }, 1000);
 
-// ============================================================
-// ADMIN PANEL - See who uses your app
-// ============================================================
+function renderExamElig() {}
+
+function renderExamEligFull() {
+    const list = document.getElementById('examEligListFull');
+    if (!list) return;
+    if (!modules.length) {
+        list.innerHTML = '<p style="color:#888;padding:20px;">Add modules first.</p>';
+        return;
+    }
+    let html = '';
+    modules.forEach(m => {
+        const mark = m.currentMark || 0;
+        const eligible = mark >= 40;
+        const color = eligible ? '#4ade80' : '#fb923c';
+        const text = eligible ? '✅ Eligible for exam' : '⚠️ Not yet (need 40%)';
+        html += '<div class="eligibility-item">' +
+            '<div><div class="elig-name">' + m.code + ' — ' + (m.name || m.code) + '</div>' +
+            '<div class="elig-note">Current mark: ' + mark + '%</div></div>' +
+            '<div class="elig-status" style="color:' + color + ';">' + text + '</div>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+}
 async function renderAdminPanel() {
     const list = document.getElementById('adminUserList');
     const stats = document.getElementById('adminStats');
     if (!list) return;
 
-    // Reload fresh data
     if (currentUser && currentUser.email === ADMIN_EMAIL) {
         try {
             const u = await get(child(ref(db), `allUsers`));
@@ -631,17 +521,10 @@ async function renderAdminPanel() {
         return;
     }
 
-    // Sort by lastSeen
     const sorted = [...allUsers].sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
-
-    // Stats
     const totalUsers = allUsers.length;
     const totalLogins = allUsers.reduce((sum, u) => sum + (u.loginCount || 0), 0);
-    const activeToday = allUsers.filter(u => {
-        const last = new Date(u.lastSeen);
-        const now = new Date();
-        return (now - last) < 24 * 60 * 60 * 1000;
-    }).length;
+    const activeToday = allUsers.filter(u => (new Date() - new Date(u.lastSeen)) < 24 * 60 * 60 * 1000).length;
 
     if (stats) {
         stats.innerHTML = `
@@ -660,17 +543,13 @@ async function renderAdminPanel() {
         `;
     }
 
-    // User list
     let html = '';
     sorted.forEach(u => {
         const first = new Date(u.firstSeen);
         const last = new Date(u.lastSeen);
         const firstStr = first.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         const lastStr = last.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' at ' + last.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
         const isMe = u.email === ADMIN_EMAIL;
-
-        // Activity dot
         const hoursAgo = (Date.now() - last.getTime()) / (1000 * 60 * 60);
         let dot = '#888';
         if (hoursAgo < 1) dot = '#22c55e';
@@ -686,9 +565,7 @@ async function renderAdminPanel() {
                     u.name + (isMe ? '<span style="font-size:0.65rem;background:#ff8c00;color:#fff;padding:2px 8px;border-radius:50px;font-weight:700;">YOU</span>' : '') +
                 '</div>' +
                 '<div style="font-size:0.75rem;color:#888;margin-top:2px;">' + u.email + '</div>' +
-                '<div style="font-size:0.72rem;color:#666;margin-top:6px;">' +
-                    '📅 Joined: ' + firstStr + ' &nbsp;·&nbsp; 🔄 Logins: ' + (u.loginCount || 1) +
-                '</div>' +
+                '<div style="font-size:0.72rem;color:#666;margin-top:6px;">📅 Joined: ' + firstStr + ' &nbsp;·&nbsp; 🔄 Logins: ' + (u.loginCount || 1) + '</div>' +
             '</div>' +
             '<div style="text-align:right;min-width:180px;">' +
                 '<div style="font-size:0.7rem;color:#666;margin-bottom:4px;">LAST SEEN</div>' +
@@ -702,62 +579,33 @@ async function renderAdminPanel() {
     });
 
     list.innerHTML = html;
-
-    // Draw the activity chart once the users are loaded
     renderUserActivityChart();
 }
 
-// ============================================================
-// ASSESSMENTS PAGE
-// ============================================================
-
-let pdfFiles = []; // Store uploaded PDFs
-
-async function loadPdfs() {
-    if (!currentUser) return;
-    try {
-        const snap = await get(child(ref(db), `users/${currentUser.uid}/pdfs`));
-        pdfFiles = snap.exists() ? Object.values(snap.val()).filter(x => x) : [];
-    } catch (e) { console.error(e); }
-}
-
-async function savePdfs() {
-    if (!currentUser) return;
-    try { await set(ref(db, `users/${currentUser.uid}/pdfs`), pdfFiles); }
-    catch (e) { alert('Could not save PDF.'); }
-}
-// ============================================================
-// ASSESSMENT BOARD
-// ============================================================
 let abTab = 'all';
-
 window.setABTab = function(tab) {
     abTab = tab;
-    document.querySelectorAll('.ab-tab').forEach(b => {
-        b.classList.toggle('ab-tab-active', b.dataset.abTab === tab);
-    });
+    document.querySelectorAll('.ab-tab').forEach(b => b.classList.toggle('ab-tab-active', b.dataset.abTab === tab));
     renderABList();
 };
 
-// Called whenever data changes - keeps your current tab + search text
 function renderAssessmentsPage() {
     const now = Date.now();
     const total = events.length;
     const completed = events.filter(e => new Date(e.deadline).getTime() <= now).length;
     const upcoming = events.filter(e => new Date(e.deadline).getTime() > now).length;
-    const overdue = 0;
 
     const el = (id) => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
     if (el('statCompleted')) el('statCompleted').textContent = completed;
     if (el('statUpcoming')) el('statUpcoming').textContent = upcoming;
-    if (el('statOverdue')) el('statOverdue').textContent = overdue;
+    if (el('statOverdue')) el('statOverdue').textContent = 0;
 
     const maxVal = Math.max(total, 1);
     if (el('statTotalBar')) el('statTotalBar').style.width = '100%';
     if (el('statCompletedBar')) el('statCompletedBar').style.width = (completed / maxVal * 100) + '%';
     if (el('statUpcomingBar')) el('statUpcomingBar').style.width = (upcoming / maxVal * 100) + '%';
-    if (el('statOverdueBar')) el('statOverdueBar').style.width = (overdue / maxVal * 100) + '%';
+    if (el('statOverdueBar')) el('statOverdueBar').style.width = '0%';
 
     const grid = el('modulesAssessList');
     if (grid) {
@@ -769,19 +617,15 @@ function renderAssessmentsPage() {
                 const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
                 const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
-
                 let badgeClass = 'ontrack', badgeText = 'On Track';
                 if (progress === 0 && modEvents.length > 0) { badgeClass = 'upcoming'; badgeText = 'Upcoming'; }
-                else if (progress < 100) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
+                else if (progress < 100 && progress > 0) { badgeClass = 'inprogress'; badgeText = 'In Progress'; }
                 else if (progress === 100) { badgeClass = 'ontrack'; badgeText = 'Complete'; }
                 if (modEvents.length === 0) { badgeClass = 'upcoming'; badgeText = 'No Tasks'; }
-
                 const iconChar = (m.code || '?').charAt(0);
                 const color = m.color || '#ff8c00';
-
                 const activeEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
                 const completedEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
-
                 let assessListHtml = '';
                 if (activeEvents.length === 0 && completedEvents.length === 0) {
                     assessListHtml = '<li style="color:#666;font-size:0.75rem;">No assessments yet</li>';
@@ -798,13 +642,10 @@ function renderAssessmentsPage() {
                         });
                     }
                 }
-
                 html += '<div class="module-assess-card" style="--module-color:' + color + ';">' +
                     '<div class="module-assess-header">' +
-                        '<div class="module-assess-title">' +
-                            '<div class="module-assess-icon">' + iconChar + '</div>' +
-                            '<div><div class="module-assess-name">' + (m.name || m.code) + '</div><div class="module-assess-code">' + m.code + '</div></div>' +
-                        '</div>' +
+                        '<div class="module-assess-title"><div class="module-assess-icon">' + iconChar + '</div>' +
+                        '<div><div class="module-assess-name">' + (m.name || m.code) + '</div><div class="module-assess-code">' + m.code + '</div></div></div>' +
                         '<span class="module-assess-badge ' + badgeClass + '">' + badgeText + '</span>' +
                     '</div>' +
                     '<ul class="module-assess-list">' + assessListHtml + '</ul>' +
@@ -852,83 +693,41 @@ function renderAssessmentsPage() {
     }
 }
 
-
 function renderABList() {
     const container = document.getElementById('abList');
     if (!container) return;
-
     const now = Date.now();
     const searchVal = (document.getElementById('abSearchInput')?.value || '').toLowerCase().trim();
-
     if (!modules.length) {
         container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">📚</div><div>Add modules first to see your assessment plan.</div></div>';
         return;
     }
-
-        let html = '';
+    let html = '';
     let totalShown = 0;
-
-    // Column header row
-    html += '<div class="ab-col-head">' +
-        '<div></div>' +
-        '<div>ASSESSMENT</div>' +
-        '<div>WEIGHT</div>' +
-        '<div>DUE DATE</div>' +
-        '<div>MY MARK</div>' +
-        '<div>STATUS</div>' +
-    '</div>';
-
+    html += '<div class="ab-col-head"><div></div><div>ASSESSMENT</div><div>WEIGHT</div><div>DUE DATE</div><div>MY MARK</div><div>STATUS</div></div>';
     modules.forEach(m => {
-        let modEvents = events.filter(e => e.module === m.code)
-                              .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
-        // Tab filter
-        if (abTab === 'upcoming')  modEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
+        let modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        if (abTab === 'upcoming') modEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
         if (abTab === 'completed') modEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
-
-        // Search filter
         if (searchVal) {
-            modEvents = modEvents.filter(e =>
-                (e.title || '').toLowerCase().includes(searchVal) ||
-                (e.module || '').toLowerCase().includes(searchVal) ||
-                (m.name || '').toLowerCase().includes(searchVal)
-            );
+            modEvents = modEvents.filter(e => (e.title || '').toLowerCase().includes(searchVal) || (e.module || '').toLowerCase().includes(searchVal) || (m.name || '').toLowerCase().includes(searchVal));
         }
-
         if (!modEvents.length) return;
         totalShown += modEvents.length;
-
         const color = m.color || '#ff8c00';
         const iconChar = (m.code || '?').charAt(0);
-        const allMod = events.filter(e => e.module === m.code);
-
-        // Average only over assessments that actually have a mark
-        const marked = allMod.filter(e => Number(e.currentMark) > 0);
-        const avgText = marked.length
-            ? Math.round(marked.reduce((s, e) => s + Number(e.currentMark), 0) / marked.length) + '%'
-            : '–';
-
-              html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
-            '<div class="ab-module-header">' +
-                '<div class="ab-module-title">' +
-                    '<div class="ab-module-icon">' + iconChar + '</div>' +
-                    '<div>' +
-                        '<div class="ab-module-code">' + m.code + '</div>' +
-                        '<div class="ab-module-name">' + (m.name || m.code) + '</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
+        html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
+            '<div class="ab-module-header"><div class="ab-module-title"><div class="ab-module-icon">' + iconChar + '</div>' +
+            '<div><div class="ab-module-code">' + m.code + '</div><div class="ab-module-name">' + (m.name || m.code) + '</div></div></div></div>' +
             '<div class="ab-module-body">';
-
         modEvents.forEach(e => {
             const d = new Date(e.deadline);
             const isPast = d.getTime() <= now;
             const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
             const daysLeft = Math.floor((d.getTime() - now) / 86400000);
             const statusColor = isPast ? '#22c55e' : '#f59e0b';
-            const statusText  = isPast ? 'Completed' : 'Upcoming';
+            const statusText = isPast ? 'Completed' : 'Upcoming';
             const hasMark = Number(e.currentMark) > 0;
-
             let pct = 0;
             let progressLabel = '';
             if (isPast) {
@@ -938,15 +737,11 @@ function renderABList() {
                 pct = Math.max(2, Math.min(100, 100 - (daysLeft / 90) * 100));
                 progressLabel = '⏱ ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
             }
-
             const markDisplay = hasMark ? e.currentMark + ' / 100' : '- / 100';
-                   html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
+            html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
                 '<div class="ab-row-main">' +
                     '<div class="ab-row-icon">📄</div>' +
-                    '<div class="ab-row-info">' +
-                        '<div class="ab-row-name">' + (e.title || 'Assessment') + '</div>' +
-                        '<div class="ab-row-sub">' + (e.module || '') + '</div>' +
-                    '</div>' +
+                    '<div class="ab-row-info"><div class="ab-row-name">' + (e.title || 'Assessment') + '</div><div class="ab-row-sub">' + (e.module || '') + '</div></div>' +
                     '<div class="ab-row-meta">' + (e.weight || 0) + '%</div>' +
                     '<div class="ab-row-meta">' + dateStr + '</div>' +
                     '<div class="ab-row-meta">' + markDisplay + '</div>' +
@@ -954,61 +749,23 @@ function renderABList() {
                 '</div>' +
                 '<div class="ab-row-progress">' +
                     '<div class="ab-progress-label">' + progressLabel + '</div>' +
-                    '<div class="ab-progress-bar">' +
-                        '<div class="ab-progress-fill" style="width:' + pct + '%; background:' + (isPast ? '#22c55e' : color) + ';"></div>' +
-                    '</div>' +
+                    '<div class="ab-progress-bar"><div class="ab-progress-fill" style="width:' + pct + '%; background:' + (isPast ? '#22c55e' : color) + ';"></div></div>' +
                     '<div class="ab-progress-pct">' + Math.round(pct) + '%</div>' +
                 '</div>' +
             '</div>';
         });
-
         html += '</div></div>';
     });
-
     if (!totalShown) {
         const hasAny = events.some(ev => modules.some(m => m.code === ev.module));
-        const msg = hasAny
-            ? 'Nothing matches your filter.'
-            : 'No assessments yet. Add one on the Countdowns page and pick a module (countdowns set to "General" don\'t show here).';
+        const msg = hasAny ? 'Nothing matches your filter.' : 'No assessments yet. Add one on the Countdowns page and pick a module.';
         container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">🎉</div><div>' + msg + '</div></div>';
         return;
     }
-
     container.innerHTML = html;
 }
-
-// index.html calls this from oninput="renderABList()", so it must be global
 window.renderABList = renderABList;
 
-function renderPdfList() {
-    const list = document.getElementById('uploadedFilesList');
-    if (!list) return;
-    if (!pdfFiles.length) {
-        list.innerHTML = '';
-        return;
-    }
-    let html = '';
-    pdfFiles.forEach((f, idx) => {
-        html += '<div class="pdf-file-item">' +
-            '<span class="pdf-icon">📄</span>' +
-            '<span class="pdf-name">' + f.name + ' <span style="color:#666;font-size:0.7rem;">(' + f.module + ')</span></span>' +
-            '<a href="' + f.data + '" download="' + f.name + '">Download</a>' +
-            '<button class="pdf-delete" onclick="deletePdf(' + idx + ')">✕</button>' +
-        '</div>';
-    });
-    list.innerHTML = html;
-}
-
-window.deletePdf = async function(idx) {
-    if (!confirm('Delete this file?')) return;
-    pdfFiles.splice(idx, 1);
-    await savePdfs();
-    renderPdfList();
-};
-
-// ============================================================
-// MODULE VIEWER MODAL — see + upload scope per assessment
-// ============================================================
 let currentViewerModule = null;
 window.viewModuleAssessments = function(moduleCode) {
     currentViewerModule = moduleCode;
@@ -1026,28 +783,19 @@ function renderModuleViewer() {
     if (!currentViewerModule) return;
     const m = modules.find(mod => mod.code === currentViewerModule);
     if (!m) return;
-
     const now = Date.now();
-    const allModEvents = events.filter(e => e.module === m.code)
-                               .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const allModEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     const completed = allModEvents.filter(e => new Date(e.deadline).getTime() <= now);
-    const upcoming  = allModEvents.filter(e => new Date(e.deadline).getTime() > now);
+    const upcoming = allModEvents.filter(e => new Date(e.deadline).getTime() > now);
     const color = m.color || '#ff8c00';
     const iconChar = (m.code || '?').charAt(0);
-
     let html = '';
-
-    // ============ HEADER ============
     html += '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">' +
         '<div style="display:flex; align-items:center; gap:16px;">' +
             '<div style="width:56px; height:56px; border-radius:14px; background:color-mix(in srgb, ' + color + ' 15%, #141414); display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:' + color + '; font-weight:800;">' + iconChar + '</div>' +
             '<div>' +
                 '<div style="font-size:1.4rem; font-weight:700; color:#f5f5f5;">' + (m.name || m.code) + '</div>' +
-                '<div style="font-size:0.8rem; color:#888; margin-top:4px; display:flex; align-items:center; gap:8px;">' +
-                    '<span>' + m.code + '</span>' +
-                    '<span style="color:#333;">•</span>' +
-                    '<span>' + allModEvents.length + ' Assessments</span>' +
-                '</div>' +
+                '<div style="font-size:0.8rem; color:#888; margin-top:4px; display:flex; align-items:center; gap:8px;"><span>' + m.code + '</span><span style="color:#333;">•</span><span>' + allModEvents.length + ' Assessments</span></div>' +
             '</div>' +
         '</div>' +
         '<div style="display:flex; align-items:center; gap:12px;">' +
@@ -1059,43 +807,23 @@ function renderModuleViewer() {
             '<button onclick="closeModuleViewer()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:42px; height:42px; border-radius:50%; cursor:pointer; font-weight:700; font-size:1rem;">✕</button>' +
         '</div>' +
     '</div>';
-
-    // ============ QUICK ACTIONS — full-width 3-column row ============
     html += '<div style="margin-bottom:22px;">' +
         '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:12px; display:flex; align-items:center; gap:8px;">⚡ Quick Actions</div>' +
         '<div class="mv-actions-grid">' +
-            '<button onclick="viewImagesFor(\'' + m.code + '\')" class="mv-action-btn">' +
-                '<span class="mv-action-icon" style="background:rgba(59,130,246,0.15);">🖼️</span>' +
-                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View Images</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all images</div></div>' +
-            '</button>' +
-            '<button onclick="viewPdfsFor(\'' + m.code + '\')" class="mv-action-btn">' +
-                '<span class="mv-action-icon" style="background:rgba(239,68,68,0.15);">📄</span>' +
-                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View PDFs</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all PDFs</div></div>' +
-            '</button>' +
-            '<button onclick="uploadModuleFile(\'' + m.code + '\')" class="mv-action-btn">' +
-                '<span class="mv-action-icon" style="background:rgba(139,92,246,0.15);">📤</span>' +
-                '<div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">Upload Files</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Add study materials</div></div>' +
-            '</button>' +
+            '<button onclick="viewImagesFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(59,130,246,0.15);">🖼️</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View Images</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all images</div></div></button>' +
+            '<button onclick="viewPdfsFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(239,68,68,0.15);">📄</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View PDFs</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all PDFs</div></div></button>' +
+            '<button onclick="uploadModuleFile(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(139,92,246,0.15);">📤</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">Upload Files</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Add study materials</div></div></button>' +
         '</div>' +
     '</div>';
-
-    // ============ TABS ============
     html += '<div style="display:flex; gap:24px; border-bottom:1px solid #1f1f1f; margin-bottom:20px;">' +
         '<button onclick="setModuleTab(\'all\')" id="mvTabAll" class="mv-tab mv-tab-active" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:' + color + '; cursor:pointer; border-bottom:2px solid ' + color + '; margin-bottom:-1px;">All Assessments</button>' +
         '<button onclick="setModuleTab(\'completed\')" id="mvTabCompleted" class="mv-tab" style="background:none; border:none; padding:12px 0; font-size:0.85rem; font-weight:700; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;">Completed (' + completed.length + ')</button>' +
     '</div>';
-
-    // ============ 2-COLUMN: Assessments + Progress ============
     const progressPct = allModEvents.length > 0 ? Math.round((completed.length / allModEvents.length) * 100) : 0;
     const circ = 2 * Math.PI * 40;
     const offset = circ - (progressPct / 100) * circ;
-
     html += '<div class="mv-grid">';
-
-    // Left: assessment list
     html += '<div class="mv-left" id="mvAssessList"></div>';
-
-    // Right: progress + tip
     html += '<div class="mv-right">' +
         '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
             '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:16px; display:flex; align-items:center; gap:8px;">📊 Progress Overview</div>' +
@@ -1122,11 +850,8 @@ function renderModuleViewer() {
             '<div style="font-size:0.72rem; color:#888; line-height:1.5;">Keep up with your assessments, view your resources, and make sure to upload your files where needed.</div>' +
         '</div>' +
     '</div>';
-
-    html += '</div>'; // end mv-grid
-
+    html += '</div>';
     document.getElementById('moduleViewerBody').innerHTML = html;
-
     window.mvAllEvents = allModEvents;
     window.mvCompletedEvents = completed;
     window.mvCurrentTab = 'all';
@@ -1139,12 +864,10 @@ function renderModuleAssessmentList() {
     const color = (modules.find(x => x.code === currentViewerModule) || {}).color || '#ff8c00';
     const now = Date.now();
     const items = window.mvCurrentTab === 'completed' ? window.mvCompletedEvents : window.mvAllEvents;
-
     if (!items.length) {
         list.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#666;">🎉 Nothing here yet.</div>';
         return;
     }
-
     let html = '';
     items.forEach(e => {
         const d = new Date(e.deadline);
@@ -1152,8 +875,7 @@ function renderModuleAssessmentList() {
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         const statusColor = isPast ? '#22c55e' : '#3b82f6';
-        const statusText  = isPast ? 'COMPLETED' : 'UPCOMING';
-
+        const statusText = isPast ? 'COMPLETED' : 'UPCOMING';
         const files = pdfFiles.filter(f => f.eventId === e.id);
         let filesHTML = '';
         if (files.length) {
@@ -1162,51 +884,35 @@ function renderModuleAssessmentList() {
                 const isImg = f.type && f.type.startsWith('image/');
                 const ext = isImg ? 'IMG' : 'PDF';
                 const sizeMB = (f.size / (1024*1024)).toFixed(1);
-                const thumbStyle = isImg
-                    ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
-                    : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
+                const thumbStyle = isImg ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;' : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
                 filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:10px; overflow:hidden; cursor:pointer; border:1px solid #262626; height:90px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
                     (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; opacity:0.6;">📄</div>') +
                     '<div style="position:absolute; bottom:0; left:0; right:0; padding:6px 8px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:6px;">' +
                         '<div style="width:18px; height:18px; border-radius:4px; background:' + (isImg ? '#3b82f6' : '#ef4444') + '; display:flex; align-items:center; justify-content:center; font-size:0.5rem; font-weight:800; color:#fff;">' + ext + '</div>' +
-                        '<div style="flex:1; min-width:0;">' +
-                            '<div style="font-size:0.65rem; color:#fff; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.name + '</div>' +
-                            '<div style="font-size:0.55rem; color:#888;">' + sizeMB + ' MB</div>' +
-                        '</div>' +
+                        '<div style="flex:1; min-width:0;"><div style="font-size:0.65rem; color:#fff; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.name + '</div><div style="font-size:0.55rem; color:#888;">' + sizeMB + ' MB</div></div>' +
                     '</div>' +
                     '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:5px; right:5px; width:22px; height:22px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.65rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>' +
                 '</div>';
             });
             filesHTML += '</div>';
         } else {
-            filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;">' +
-                '<span style="font-size:1.2rem; opacity:0.4;">☁️</span>' +
-                '<span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span>' +
-            '</div>';
+            filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;"><span style="font-size:1.2rem; opacity:0.4;">☁️</span><span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span></div>';
         }
-
         html += '<div style="background:#141414; border:1px solid #1f1f1f; border-left:3px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:12px;">' +
             '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">' +
                 '<div style="display:flex; align-items:center; gap:12px; flex:1; min-width:200px;">' +
                     '<div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:1rem;">📝</div>' +
-                    '<div>' +
-                        '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
-                        '<div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
-                    '</div>' +
+                    '<div><div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div><div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div></div>' +
                 '</div>' +
                 '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
                     '<div style="font-size:0.6rem; font-weight:700; color:' + statusColor + '; background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); padding:4px 12px; border-radius:50px; border:1px solid color-mix(in srgb, ' + statusColor + ' 30%, transparent);">' + statusText + '</div>' +
                     '<button onclick="uploadScopeFor(\'' + currentViewerModule + '\', ' + e.id + ')" style="padding:7px 14px; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.4); color:#ff8c00; border-radius:8px; font-size:0.7rem; font-weight:700; cursor:pointer; white-space:nowrap;">+ Upload</button>' +
                 '</div>' +
             '</div>' +
-            '<div style="display:flex; align-items:center; gap:8px; margin-top:16px;">' +
-                '<span style="font-size:1rem;">📎</span>' +
-                '<span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span>' +
-            '</div>' +
+            '<div style="display:flex; align-items:center; gap:8px; margin-top:16px;"><span style="font-size:1rem;">📎</span><span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span></div>' +
             filesHTML +
         '</div>';
     });
-
     list.innerHTML = html;
 }
 
@@ -1215,18 +921,11 @@ window.setModuleTab = function(tab) {
     const allBtn = document.getElementById('mvTabAll');
     const compBtn = document.getElementById('mvTabCompleted');
     const color = (modules.find(x => x.code === currentViewerModule) || {}).color || '#ff8c00';
-    if (allBtn) {
-        allBtn.style.color = tab === 'all' ? color : '#888';
-        allBtn.style.borderBottom = tab === 'all' ? '2px solid ' + color : '2px solid transparent';
-    }
-    if (compBtn) {
-        compBtn.style.color = tab === 'completed' ? color : '#888';
-        compBtn.style.borderBottom = tab === 'completed' ? '2px solid ' + color : '2px solid transparent';
-    }
+    if (allBtn) { allBtn.style.color = tab === 'all' ? color : '#888'; allBtn.style.borderBottom = tab === 'all' ? '2px solid ' + color : '2px solid transparent'; }
+    if (compBtn) { compBtn.style.color = tab === 'completed' ? color : '#888'; compBtn.style.borderBottom = tab === 'completed' ? '2px solid ' + color : '2px solid transparent'; }
     renderModuleAssessmentList();
 };
 
-// Sidebar helpers
 window.viewImagesFor = function(moduleCode) {
     const imgs = pdfFiles.filter(f => f.module === moduleCode && f.type && f.type.startsWith('image/'));
     if (!imgs.length) return alert('No images uploaded for this module yet.');
@@ -1254,19 +953,9 @@ async function handleScopeFile(file, moduleCode, eventId) {
     const isImage = file.type.startsWith('image/');
     if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
     if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
-
     const reader = new FileReader();
     reader.onload = async (e) => {
-        pdfFiles.push({
-            id: Date.now(),
-            name: file.name,
-            module: moduleCode,
-            eventId: eventId,
-            type: file.type,
-            size: file.size,
-            data: e.target.result,
-            uploadedAt: new Date().toISOString()
-        });
+        pdfFiles.push({ id: Date.now(), name: file.name, module: moduleCode, eventId: eventId, type: file.type, size: file.size, data: e.target.result, uploadedAt: new Date().toISOString() });
         await savePdfs();
         renderModuleViewer();
         renderAssessmentsPage();
@@ -1274,80 +963,6 @@ async function handleScopeFile(file, moduleCode, eventId) {
     };
     reader.readAsDataURL(file);
 }
-
-// PDF upload handling
-function setupPdfUpload() {
-    const dropZone = document.getElementById('pdfDropZone');
-    const fileInput = document.getElementById('pdfFileInput');
-    if (!dropZone || !fileInput) return;
-
-    ['dragenter', 'dragover'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-    });
-    ['dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-        });
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        const file = e.dataTransfer.files[0];
-        if (file) handlePdfFile(file);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) handlePdfFile(file);
-    });
-}
-
-async function handlePdfFile(file) {
-    if (file.type !== 'application/pdf') return alert('⚠️ Only PDF files allowed');
-    if (file.size > 2 * 1024 * 1024) return alert('⚠️ File too big (max 2MB)');
-
-    const module = document.getElementById('pdfModuleSelect').value;
-    if (!module) return alert('⚠️ Please select which module this file is for');
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        pdfFiles.push({
-            id: Date.now(),
-            name: file.name,
-            module: module,
-            size: file.size,
-            data: e.target.result,
-            uploadedAt: new Date().toISOString()
-        });
-        await savePdfs();
-        renderPdfList();
-        alert('✅ File uploaded!');
-    };
-    reader.readAsDataURL(file);
-}
-
-// Hook into switchView
-const _origSwitchView = window.switchView;
-window.switchView = function(viewName, el) {
-    _origSwitchView(viewName, el);
-    if (viewName === 'assessments') {
-        loadPdfs().then(() => renderAssessmentsPage());
-    }
-};
-
-// Init on load
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        setupPdfUpload();
-    }, 500);
-});
-
-// ============================================================
-// MODULE FILE UPLOAD + VIEWER
-// ============================================================
 
 window.uploadModuleFile = function(moduleCode) {
     const input = document.createElement('input');
@@ -1365,18 +980,9 @@ async function handleModuleFile(file, moduleCode) {
     const isImage = file.type.startsWith('image/');
     if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
     if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
-
     const reader = new FileReader();
     reader.onload = async (e) => {
-        pdfFiles.push({
-            id: Date.now(),
-            name: file.name,
-            module: moduleCode,
-            type: file.type,
-            size: file.size,
-            data: e.target.result,
-            uploadedAt: new Date().toISOString()
-        });
+        pdfFiles.push({ id: Date.now(), name: file.name, module: moduleCode, type: file.type, size: file.size, data: e.target.result, uploadedAt: new Date().toISOString() });
         await savePdfs();
         renderAssessmentsPage();
         alert('✅ File uploaded to ' + moduleCode);
@@ -1394,64 +1000,43 @@ window.deleteModuleFile = async function(fileId) {
 window.openFileViewer = function(fileId) {
     const file = pdfFiles.find(f => f.id === fileId);
     if (!file) return;
-
     document.getElementById('viewerFileName').textContent = file.name;
     document.getElementById('viewerFileModule').textContent = file.module + ' · ' + (file.type.includes('pdf') ? 'PDF Document' : 'Image');
     document.getElementById('viewerDownloadBtn').href = file.data;
     document.getElementById('viewerDownloadBtn').download = file.name;
-
     const content = document.getElementById('viewerContent');
-
     if (file.type.startsWith('image/')) {
-        // Image - show directly
         content.innerHTML = '<img src="' + file.data + '" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;">';
     } else {
-        // PDF - convert data URL to blob URL (Chrome blocks data URLs in embed)
         const base64 = file.data.split(',')[1];
         const binary = atob(base64);
         const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
+        for (let i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
         const blob = new Blob([bytes], { type: 'application/pdf' });
         const blobUrl = URL.createObjectURL(blob);
-
         content.innerHTML = '<iframe src="' + blobUrl + '" style="width:100%; height:100%; border:none; border-radius:8px; min-height:600px;"></iframe>';
     }
-
     document.getElementById('fileViewerModal').style.display = 'block';
 };
 
 window.closeFileViewer = function() {
     const content = document.getElementById('viewerContent');
-    // Revoke any blob URLs to free memory
     const iframe = content.querySelector('iframe');
-    if (iframe && iframe.src.startsWith('blob:')) {
-        URL.revokeObjectURL(iframe.src);
-    }
+    if (iframe && iframe.src.startsWith('blob:')) URL.revokeObjectURL(iframe.src);
     document.getElementById('fileViewerModal').style.display = 'none';
     content.innerHTML = '';
 };
 
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFileViewer(); });
 
-// ESC key closes viewer
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeFileViewer();
-});
-
-// ============================================================
-// MOBILE SIDEBAR TOGGLE
-// ============================================================
 window.toggleMobileSidebar = function() {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
     if (!sidebar || !overlay) return;
-
     const isOpen = sidebar.classList.toggle('mobile-open');
     overlay.classList.toggle('active', isOpen);
 };
 
-// Close sidebar when clicking a nav item (on mobile)
 document.addEventListener('click', function(e) {
     const navItem = e.target.closest('.nav-item');
     if (navItem && window.innerWidth <= 900) {
@@ -1464,7 +1049,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Close on resize to desktop
 window.addEventListener('resize', () => {
     if (window.innerWidth > 900) {
         const sidebar = document.querySelector('.sidebar');
@@ -1474,11 +1058,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-// ============================================================
-// USER ACTIVITY CHART
-// ============================================================
 let chartRange = 'days';
-
 window.setChartRange = function(range) {
     chartRange = range;
     document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
@@ -1490,31 +1070,22 @@ function renderUserActivityChart() {
     const chartEl = document.getElementById('userActivityChart');
     const labelsEl = document.getElementById('userActivityLabels');
     if (!chartEl || !allUsers.length) return;
-
     const now = new Date();
     let buckets = [];
     let labels = [];
-
     if (chartRange === 'days') {
-        // Last 7 days
         for (let i = 6; i >= 0; i--) {
-            const d = new Date(now);
-            d.setDate(d.getDate() - i);
-            d.setHours(0, 0, 0, 0);
+            const d = new Date(now); d.setDate(d.getDate() - i); d.setHours(0, 0, 0, 0);
             buckets.push({ start: d.getTime(), end: d.getTime() + 86400000, count: 0 });
             labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
         }
     } else if (chartRange === 'weeks') {
-        // Last 8 weeks
         for (let i = 7; i >= 0; i--) {
-            const d = new Date(now);
-            d.setDate(d.getDate() - (i * 7));
-            d.setHours(0, 0, 0, 0);
+            const d = new Date(now); d.setDate(d.getDate() - (i * 7)); d.setHours(0, 0, 0, 0);
             buckets.push({ start: d.getTime(), end: d.getTime() + (7 * 86400000), count: 0 });
             labels.push('W' + (8 - i));
         }
     } else {
-        // Last 6 months
         for (let i = 5; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
@@ -1522,44 +1093,26 @@ function renderUserActivityChart() {
             labels.push(d.toLocaleDateString('en-US', { month: 'short' }));
         }
     }
-
-    // Count users per bucket (using firstSeen)
     allUsers.forEach(u => {
         const t = new Date(u.firstSeen).getTime();
-        buckets.forEach(b => {
-            if (t >= b.start && t < b.end) b.count++;
-        });
+        buckets.forEach(b => { if (t >= b.start && t < b.end) b.count++; });
     });
-
     const maxCount = Math.max(...buckets.map(b => b.count), 1);
-
-    // Build bars
     let chartHTML = '';
     let labelsHTML = '';
     buckets.forEach((b, i) => {
         const heightPct = (b.count / maxCount) * 100;
-        chartHTML += '<div class="chart-bar-wrap">' +
-            '<div class="chart-bar-count">' + b.count + '</div>' +
-            '<div class="chart-bar" style="height:' + Math.max(heightPct, 2) + '%;" title="' + b.count + ' users"></div>' +
-        '</div>';
+        chartHTML += '<div class="chart-bar-wrap"><div class="chart-bar-count">' + b.count + '</div><div class="chart-bar" style="height:' + Math.max(heightPct, 2) + '%;" title="' + b.count + ' users"></div></div>';
         labelsHTML += '<div class="chart-label">' + labels[i] + '</div>';
     });
-
     chartEl.innerHTML = chartHTML;
     labelsEl.innerHTML = labelsHTML;
 }
 
-// ============================================================
-// COLLAPSIBLE ADD COUNTDOWN FORM
-// ============================================================
 window.toggleCountdownForm = function() {
     const body = document.getElementById('countdownFormBody');
     const arrow = document.getElementById('cdFormArrow');
-    if (!body) {
-        console.error('countdownFormBody not found!');
-        return;
-    }
-
+    if (!body) return;
     if (body.style.display === 'none' || body.style.display === '') {
         body.style.display = 'block';
         if (arrow) arrow.style.transform = 'rotate(180deg)';
@@ -1569,14 +1122,10 @@ window.toggleCountdownForm = function() {
     }
 };
 
-// ============================================================
-// COLLAPSIBLE ADD MODULE FORM
-// ============================================================
 window.toggleModuleForm = function() {
     const body = document.getElementById('moduleFormBody');
     const arrow = document.getElementById('moduleFormArrow');
     if (!body) return;
-
     if (body.style.display === 'none' || body.style.display === '') {
         body.style.display = 'block';
         if (arrow) arrow.style.transform = 'rotate(180deg)';
@@ -1586,9 +1135,6 @@ window.toggleModuleForm = function() {
     }
 };
 
-// ============================================================
-// MODAL — Total + Upcoming + Completed
-// ============================================================
 function renderModalList(list, emptyMessage) {
     if (!list || !list.length) {
         return '<p style="color:#888; text-align:center; padding:40px;">' + emptyMessage + '</p>';
@@ -1602,10 +1148,8 @@ function renderModalList(list, emptyMessage) {
         const isPast = d.getTime() <= Date.now();
         const tag = isPast ? 'COMPLETED' : 'UPCOMING';
         html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
-            '<div style="flex:1; min-width:180px;">' +
-                '<div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
-                '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
-            '</div>' +
+            '<div style="flex:1; min-width:180px;"><div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
+            '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div></div>' +
             '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' + tag + '</div>' +
             '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
         '</div>';
@@ -1619,14 +1163,9 @@ window.openTotalModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-
     if (title) title.textContent = '📝 All Assessments';
     if (sub) sub.textContent = 'Every assessment across all your modules';
-
-    const all = events
-        .filter(e => e.module && e.module !== 'General')
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
+    const all = events.filter(e => e.module && e.module !== 'General').sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
     modal.style.display = 'block';
 };
@@ -1637,16 +1176,10 @@ window.openUpcomingModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-
     if (title) title.textContent = '⏰ Upcoming Assessments';
     if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
-
     const now = Date.now();
-    const upcoming = events
-        .filter(e => e.module && e.module !== 'General')
-        .filter(e => new Date(e.deadline).getTime() > now)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-
+    const upcoming = events.filter(e => e.module && e.module !== 'General').filter(e => new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines. You are caught up!');
     modal.style.display = 'block';
 };
@@ -1660,8 +1193,7 @@ window.openCompletedModal = function() {
     if (title) title.textContent = '✅ Completed Deadlines';
     if (sub) sub.textContent = 'All the assessments you have finished';
     const now = Date.now();
-    const completed = events.filter(function(e) { return new Date(e.deadline).getTime() <= now; })
-                            .sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+    const completed = events.filter(function(e) { return new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
     list.innerHTML = renderModalList(completed, '🎉 No completed deadlines yet.');
     modal.style.display = 'block';
 };
@@ -1671,25 +1203,16 @@ window.closeCompletedModal = function() {
     if (modal) modal.style.display = 'none';
 };
 
-// ============================================================
-// TAP HANDLERS — Total + Upcoming + Completed cards (mobile + PC)
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const totalCard = document.getElementById('totalCardBtn');
     const completedCard = document.getElementById('completedCardBtn');
     const upcomingCard = document.getElementById('upcomingCardBtn');
-
     function bindTap(el, fn) {
         if (!el) return;
-        const handler = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fn();
-        };
+        const handler = function(e) { e.preventDefault(); e.stopPropagation(); fn(); };
         el.addEventListener('click', handler);
         el.addEventListener('touchend', handler);
     }
-
     bindTap(totalCard, function() { window.openTotalModal(); });
     bindTap(completedCard, function() { window.openCompletedModal(); });
     bindTap(upcomingCard, function() { window.openUpcomingModal(); });
@@ -1702,7 +1225,7 @@ document.addEventListener('keydown', function(e) {
         if (typeof closeFileViewer === 'function') closeFileViewer();
     }
 });
-// Show Safari warning on iOS Safari only
+
 (function() {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1713,23 +1236,7 @@ document.addEventListener('keydown', function(e) {
 })();
 
 console.log('👑 Golden Plan loaded!');
-window.openAddModule = function() {
-    // Switch to modules view
-    switchView('modules', document.querySelector('[data-view=modules]'));
-    // Then open the collapsible form
-    setTimeout(() => {
-        const body = document.getElementById('moduleFormBody');
-        const arrow = document.getElementById('moduleFormArrow');
-        if (body) body.style.display = 'block';
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
-        // Scroll to form
-        const form = document.getElementById('moduleFormBody');
-        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 150);
-};
-// ============================================================
-// ZOOM — fullscreen countdown view
-// ============================================================
+
 window.zoomCountdown = function(id) {
     const e = events.find(ev => ev.id === id);
     if (!e) return;
@@ -1738,48 +1245,61 @@ window.zoomCountdown = function(id) {
     const modal = document.getElementById('zoomModal');
     if (modal) modal.style.display = 'flex';
 };
-
 function renderZoomContent(e) {
-    const r = getTimeRemaining(e.deadline);
     const color = e.color || '#ff8c00';
     const d = new Date(e.deadline);
     const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    setTxt('zoomDays',  String(r.days).padStart(2, '0'));
-    setTxt('zoomHours', String(r.hours).padStart(2, '0'));
-    setTxt('zoomMins',  String(r.minutes).padStart(2, '0'));
-    setTxt('zoomSecs',  String(r.seconds).padStart(2, '0'));
     setTxt('zoomTitle', e.title || 'Countdown');
     setTxt('zoomModule', e.module || 'General');
     setTxt('zoomFooter', dateStr + ' at ' + timeStr);
 
     const modal = document.getElementById('zoomModal');
-    if (modal) {
-        const inner = modal.querySelector('.zoom-inner');
-        if (inner) inner.style.setProperty('--card-color', color);
-    }
-}
+    if (!modal) return;
 
+    const inner = modal.querySelector('.zoom-inner');
+    if (inner) inner.style.setProperty('--card-color', color);
+
+    const grid = document.getElementById('zoomGrid');
+    if (grid) grid.dataset.cdTarget = e.deadline;
+
+    // Kill any previous ticker and start a fresh one on the grid
+    if (window._zoomTicker) clearInterval(window._zoomTicker);
+    const end = new Date(e.deadline).getTime();
+    const pad = n => String(n).padStart(2, '0');
+    const update = () => {
+        const ms = Math.max(0, end - Date.now());
+        const s = Math.floor(ms / 1000);
+        const g = document.getElementById('zoomGrid');
+        if (!g) return;
+        const dEl = g.querySelector('[data-unit="days"]');
+        const hEl = g.querySelector('[data-unit="hours"]');
+        const mEl = g.querySelector('[data-unit="mins"]');
+        const sEl = g.querySelector('[data-unit="secs"]');
+        if (dEl) dEl.textContent = pad(Math.floor(s / 86400));
+        if (hEl) hEl.textContent = pad(Math.floor(s % 86400 / 3600));
+        if (mEl) mEl.textContent = pad(Math.floor(s % 3600 / 60));
+        if (sEl) sEl.textContent = pad(s % 60);
+    };
+    update();
+    window._zoomTicker = setInterval(update, 1000);
+}
 window.closeZoom = function() {
     const modal = document.getElementById('zoomModal');
     if (modal) modal.style.display = 'none';
+    if (window._zoomTicker) { clearInterval(window._zoomTicker); window._zoomTicker = null; }
     window._zoomId = null;
 };
 
-// ============================================================
-// EDIT — modal to fix wrong countdown
-// ============================================================
 window.editCountdown = function(id) {
     const e = events.find(ev => ev.id === id);
     if (!e) return;
-
     const d = new Date(e.deadline);
     const pad = n => String(n).padStart(2, '0');
     const dateVal = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
     const timeVal = pad(d.getHours()) + ':' + pad(d.getMinutes());
-
     document.getElementById('editId').value = e.id;
     document.getElementById('editTitle').value = e.title || '';
     document.getElementById('editModule').value = e.module || 'General';
@@ -1789,7 +1309,6 @@ window.editCountdown = function(id) {
     document.getElementById('editMark').value = e.currentMark || 0;
     document.getElementById('editColor').value = e.color || '#ff8c00';
     document.getElementById('editConsequence').value = e.consequence || '';
-
     const modal = document.getElementById('editModal');
     if (modal) modal.style.display = 'flex';
 };
@@ -1803,12 +1322,10 @@ window.saveCountdownEdit = async function() {
     const id = Number(document.getElementById('editId').value);
     const e = events.find(ev => ev.id === id);
     if (!e) return;
-
     const title = document.getElementById('editTitle').value.trim();
     const date = document.getElementById('editDate').value;
     const time = document.getElementById('editTime').value;
     if (!title || !date || !time) return alert('Title, date and time are required');
-
     e.title = title;
     e.module = document.getElementById('editModule').value.trim() || 'General';
     e.deadline = date + 'T' + time;
@@ -1816,28 +1333,22 @@ window.saveCountdownEdit = async function() {
     e.currentMark = Number(document.getElementById('editMark').value) || 0;
     e.color = document.getElementById('editColor').value;
     e.consequence = document.getElementById('editConsequence').value.trim() || 'None';
-
     await saveEvents();
     closeEditModal();
     renderFullCountdowns();
     renderUpcoming();
-    renderAssessTable();
     renderDashboard();
     alert('✅ Countdown updated');
 };
-// ============================================================
-// EDIT MODULE — modal to fix a module
-// ============================================================
+
 window.editModule = function(id) {
     const m = modules.find(mod => mod.id === id);
     if (!m) return;
-
     document.getElementById('editModId').value = m.id;
     document.getElementById('editModCode').value = m.code || '';
     document.getElementById('editModName').value = m.name || '';
     document.getElementById('editModMark').value = m.currentMark || 0;
     document.getElementById('editModColor').value = m.color || '#ff8c00';
-
     const modal = document.getElementById('editModuleModal');
     if (modal) modal.style.display = 'flex';
 };
@@ -1851,15 +1362,12 @@ window.saveModuleEdit = async function() {
     const id = Number(document.getElementById('editModId').value);
     const m = modules.find(mod => mod.id === id);
     if (!m) return;
-
     const code = document.getElementById('editModCode').value.trim().toUpperCase();
     if (!code) return alert('Module code is required');
-
     m.code = code;
     m.name = document.getElementById('editModName').value.trim() || code;
     m.currentMark = Number(document.getElementById('editModMark').value) || 0;
     m.color = document.getElementById('editModColor').value;
-
     await saveModules();
     closeEditModuleModal();
     renderModules();
@@ -1867,9 +1375,7 @@ window.saveModuleEdit = async function() {
     renderDashboard();
     alert('✅ Module updated');
 };
-// ============================================================
-// FLIP COUNTDOWN ENGINE
-// ============================================================
+
 function makeFlip() {
     const el = document.createElement('div');
     el.className = 'flip';
@@ -1879,11 +1385,9 @@ function makeFlip() {
         '<div class="half top flap-top"><span></span></div>' +
         '<div class="half bottom flap-bottom"><span></span></div>' +
         '<div class="seam"></div>';
-
     const spans = el.querySelectorAll('.half span');
     const [top, bottom, flapTop, flapBottom] = spans;
     let current = null, timer = null;
-
     function set(value) {
         if (value === current) return;
         if (current === null) {
@@ -1895,11 +1399,9 @@ function makeFlip() {
         bottom.textContent = current;
         flapTop.textContent = current;
         flapBottom.textContent = value;
-
         el.classList.remove('go');
         void el.offsetWidth;
         el.classList.add('go');
-
         current = value;
         clearTimeout(timer);
         timer = setTimeout(() => {
@@ -1909,11 +1411,11 @@ function makeFlip() {
     }
     return { el, set };
 }
+
 function flipCountdown(container, target) {
     const end = new Date(target).getTime();
     const root = document.createElement('div');
     root.className = 'flipcd flipcd-trio';
-
     const units = ['HRS', 'MIN', 'SEC'].map(label => {
         const wrap = document.createElement('div');
         wrap.className = 'flipcd-unit';
@@ -1926,14 +1428,10 @@ function flipCountdown(container, target) {
         return flip;
     });
     container.replaceChildren(root);
-
-    // Find sibling DAYS ring (updates every tick)
     const card = container.closest('[data-cd-target]');
     const daysRing = card ? card.querySelector('[data-days-target]') : null;
     const ringCirc = 2 * Math.PI * 40;
-
     const pad = n => String(n).padStart(2, '0');
-
     function updateDaysRing(days) {
         if (!daysRing) return;
         const num = daysRing.querySelector('.ring-num');
@@ -1943,22 +1441,17 @@ function flipCountdown(container, target) {
         const progress = daysRing.querySelector('.ring-progress');
         if (progress) progress.setAttribute('stroke-dashoffset', offset);
     }
-
     function tick() {
         const ms = Math.max(0, end - Date.now());
         const s = Math.floor(ms / 1000);
         const days = Math.floor(s / 86400);
-
         updateDaysRing(days);
         units[0].set(pad(Math.floor(s % 86400 / 3600)));
         units[1].set(pad(Math.floor(s % 3600 / 60)));
         units[2].set(pad(s % 60));
-
         const daysFloat = ms / 86400000;
-        root.dataset.urgency =
-            daysFloat < 1 ? 'red' : daysFloat < 3 ? 'orange' : daysFloat < 7 ? 'yellow' : 'green';
+        root.dataset.urgency = daysFloat < 1 ? 'red' : daysFloat < 3 ? 'orange' : daysFloat < 7 ? 'yellow' : 'green';
     }
-
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);

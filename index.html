@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Plan</title>
-<link rel="stylesheet" href="style.css?v=102">
-<script type="module" src="script.js?v=102"></script>
+<link rel="stylesheet" href="style.css?v=103">
+<script type="module" src="script.js?v=103"></script>
 </head>
 <body>
 
@@ -409,6 +409,7 @@ Sign In with Google
 
 </div><!-- end .main-area -->
 </div><!-- end #app -->
+
 <div id="completedModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:9999; padding:24px; overflow-y:auto;">
     <div style="max-width:700px; margin:0 auto; background:#141414; border:1px solid #1f1f1f; border-radius:20px; padding:28px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1f1f1f;">
@@ -430,18 +431,17 @@ Sign In with Google
     <div id="moduleViewerBody"></div>
   </div>
 </div>
-
 <!-- ============ ZOOM MODAL ============ -->
 <div id="zoomModal" class="zoom-modal" onclick="if(event.target===this)closeZoom()">
     <div class="zoom-inner">
         <button class="zoom-close" onclick="closeZoom()">✕</button>
         <div class="zoom-title" id="zoomTitle">Countdown</div>
         <div class="zoom-module" id="zoomModule">General</div>
-        <div class="zoom-numbers">
-            <div class="zoom-unit"><div class="zoom-num" id="zoomDays">00</div><div class="zoom-lbl">DAYS</div></div>
-            <div class="zoom-unit"><div class="zoom-num" id="zoomHours">00</div><div class="zoom-lbl">HRS</div></div>
-            <div class="zoom-unit"><div class="zoom-num" id="zoomMins">00</div><div class="zoom-lbl">MIN</div></div>
-            <div class="zoom-unit"><div class="zoom-num" id="zoomSecs">00</div><div class="zoom-lbl">SEC</div></div>
+        <div class="cc-grid" id="zoomGrid" data-cd-target="">
+            <div class="cc-box"><div class="cc-box-num" data-unit="days">00</div><div class="cc-box-lbl">DAYS</div></div>
+            <div class="cc-box"><div class="cc-box-num" data-unit="hours">00</div><div class="cc-box-lbl">HRS</div></div>
+            <div class="cc-box"><div class="cc-box-num" data-unit="mins">00</div><div class="cc-box-lbl">MIN</div></div>
+            <div class="cc-box"><div class="cc-box-num" data-unit="secs">00</div><div class="cc-box-lbl">SEC</div></div>
         </div>
         <div class="zoom-footer" id="zoomFooter">—</div>
     </div>
@@ -471,6 +471,7 @@ Sign In with Google
         </div>
     </div>
 </div>
+
 <!-- ============ EDIT MODULE MODAL ============ -->
 <div id="editModuleModal" class="edit-modal" onclick="if(event.target===this)closeEditModuleModal()">
     <div class="edit-inner">
@@ -491,7 +492,8 @@ Sign In with Google
         </div>
     </div>
 </div>
-<div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v99</div>
-<script type="module" src="script.js?v=102"></script>
+
+<div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v103</div>
+
 </body>
 </html>
