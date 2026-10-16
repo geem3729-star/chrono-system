@@ -340,6 +340,7 @@ function renderFullCountdowns() {
                         '<div style="color:#888;font-size:0.75rem;margin-top:4px;">' + (e.module || 'General') + ' · ' + d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) + '</div>' +
                     '</div>' +
                     '<div style="font-size:0.7rem;font-weight:700;color:' + color + ';background:color-mix(in srgb, ' + color + ' 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>' +
+                    '<button onclick="editCountdown(' + e.id + ')" title="Edit" style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:#ff8c00;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✎</button>' +
                     '<button onclick="deleteEvent(' + e.id + ')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>' +
                 '</div>';
             }).join('');
