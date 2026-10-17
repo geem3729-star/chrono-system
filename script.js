@@ -617,19 +617,9 @@ function renderAssessmentsPage() {
     if (grid) {
         if (!modules.length) {
             grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
-        } else {
-                       let html = '';
-            
-            // 1. Create a list that includes real modules PLUS a fake "General" module
-            let renderList = [...modules];
-            const hasGeneral = events.some(e => !e.module || e.module === 'General');
-            if (hasGeneral) {
-                renderList.push({ code: 'General', name: 'General Tasks', color: '#ff8c00' });
-            }
-
-            renderList.forEach(m => {
-                // 2. If it's General, grab general events. Otherwise, grab module events.
-                const modEvents = events.filter(e => m.code === 'General' ? (!e.module || e.module === 'General') : e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        } else {            let html = '';
+            modules.forEach(m => {
+                const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
                 const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
                 let badgeClass = 'ontrack', badgeText = 'On Track';
