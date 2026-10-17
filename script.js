@@ -35,6 +35,7 @@ window.switchView = function(viewName, el) {
     if (viewName === 'modules') renderModulesList();
     if (viewName === 'dashboard') renderDashboard();
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
+        if (viewName === 'general') renderGeneralPage();
     if (viewName === 'examelig') renderExamEligFull();
     if (viewName === 'admin') renderAdminPanel();
        if (viewName === 'assessments') { 
@@ -103,6 +104,7 @@ function loadData() {
         renderDashboard();
         renderUpcoming();
         if (document.getElementById('view-countdowns')?.classList.contains('active')) renderFullCountdowns();
+                if (document.getElementById('view-general')?.classList.contains('active')) renderGeneralPage();
         if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
     });
     onValue(ref(db, `users/${currentUser.uid}/modules`), (snapshot) => {
@@ -1514,4 +1516,24 @@ function flipCountdown(container, target) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
+}
+function renderGeneralPage() {
+    const list = document.getElementById('generalTasksList');
+    if (!list) return;
+    
+    // Filter for events that are marked as 'General' (or have no module)
+    const generalEvents = events
+        .filter(e => !e.module || e.module === 'General')
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+    if (!generalEvents.length) {
+        list.innerHTML = '<p style="color:#888;padding:20px;">No General tasks yet.</p>';
+        return;
+    }
+
+    // Reuse the buildCard function from the Countdowns page!
+    list.innerHTML = generalEvents.map(e => buildCard(e, false)).join('');
+    
+    // Start the live countdown timers for these cards
+    attachCardTickers();
 }

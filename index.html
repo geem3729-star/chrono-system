@@ -61,6 +61,7 @@ Sign In with Google
 <div class="nav-section-title">Planner</div>
 <button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)"><span class="nav-icon">📅</span> Calendar</button>
 <button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)"><span class="nav-icon">⏳</span> Countdowns</button>
+<button class="nav-item" data-view="general" onclick="switchView('general', this)"><span class="nav-icon">🌐</span> General</button>
 <button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)"><span class="nav-icon">📖</span> Study Plan</button>
 </div>
 
@@ -248,6 +249,14 @@ Sign In with Google
 <div class="panel-title" style="cursor:pointer;" onclick="toggleHistory()">📜 History (Past Deadlines) <span id="historyArrow">▼</span></div>
 <div id="historyList" style="display:none;flex-direction:column;gap:10px;margin-top:16px;"><p style="color:#888;padding:20px;">No past deadlines yet.</p></div>
 </div>
+</div>
+
+<!-- GENERAL VIEW -->
+<div class="view" id="view-general">
+    <div class="panel">
+        <div class="panel-title">🌐 General Tasks</div>
+        <div id="generalTasksList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;"></div>
+    </div>
 </div>
 
 <!-- EXAM ELIGIBILITY -->
