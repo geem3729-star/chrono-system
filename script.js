@@ -597,7 +597,7 @@ function renderAssessmentsPage() {
     const now = Date.now();
     const total = events.length;
     const completed = events.filter(e => new Date(e.deadline).getTime() <= now).length;
-    const upcoming = events.filter(e => new Date(e.deadline).getTime() > now).length;
+       const upcoming = events.filter(e => e.module && e.module !== 'General' && new Date(e.deadline).getTime() > now).length;
 
     const el = (id) => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
@@ -616,9 +616,18 @@ function renderAssessmentsPage() {
         if (!modules.length) {
             grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
         } else {
-            let html = '';
-            modules.forEach(m => {
-                const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+                       let html = '';
+            
+            // 1. Create a list that includes real modules PLUS a fake "General" module
+            let renderList = [...modules];
+            const hasGeneral = events.some(e => !e.module || e.module === 'General');
+            if (hasGeneral) {
+                renderList.push({ code: 'General', name: 'General Tasks', color: '#ff8c00' });
+            }
+
+            renderList.forEach(m => {
+                // 2. If it's General, grab general events. Otherwise, grab module events.
+                const modEvents = events.filter(e => m.code === 'General' ? (!e.module || e.module === 'General') : e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
                 const progress = modEvents.length > 0 ? Math.round((modCompleted / modEvents.length) * 100) : 0;
                 let badgeClass = 'ontrack', badgeText = 'On Track';
@@ -709,8 +718,15 @@ function renderABList() {
     let html = '';
     let totalShown = 0;
     html += '<div class="ab-col-head"><div></div><div>ASSESSMENT</div><div>WEIGHT</div><div>DUE DATE</div><div>MY MARK</div><div>STATUS</div></div>';
-    modules.forEach(m => {
-        let modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        // Add the fake General module to the dashboard too
+    let renderList = [...modules];
+    const hasGeneral = events.some(e => !e.module || e.module === 'General');
+    if (hasGeneral) {
+        renderList.push({ code: 'General', name: 'General Tasks', color: '#ff8c00' });
+    }
+
+    renderList.forEach(m => {
+        let modEvents = events.filter(e => m.code === 'General' ? (!e.module || e.module === 'General') : e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
         if (abTab === 'upcoming') modEvents = modEvents.filter(e => new Date(e.deadline).getTime() > now);
         if (abTab === 'completed') modEvents = modEvents.filter(e => new Date(e.deadline).getTime() <= now);
         if (searchVal) {
@@ -861,17 +877,18 @@ function renderModuleViewer() {
     window.mvCurrentTab = 'all';
     renderModuleAssessmentList();
 }
-
 function renderModuleAssessmentList() {
     const list = document.getElementById('mvAssessList');
     if (!list) return;
     const color = (modules.find(x => x.code === currentViewerModule) || {}).color || '#ff8c00';
     const now = Date.now();
     const items = window.mvCurrentTab === 'completed' ? window.mvCompletedEvents : window.mvAllEvents;
+
     if (!items.length) {
         list.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#666;">🎉 Nothing here yet.</div>';
         return;
     }
+
     let html = '';
     items.forEach(e => {
         const d = new Date(e.deadline);
@@ -879,44 +896,63 @@ function renderModuleAssessmentList() {
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         const statusColor = isPast ? '#22c55e' : '#3b82f6';
-        const statusText = isPast ? 'COMPLETED' : 'UPCOMING';
+        const statusText  = isPast ? 'COMPLETED' : 'UPCOMING';
+
         const files = pdfFiles.filter(f => f.eventId === e.id);
         let filesHTML = '';
+        
         if (files.length) {
-            filesHTML = '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:12px;">';
+         filesHTML = '<div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; justify-content: center;">';
             files.forEach(f => {
                 const isImg = f.type && f.type.startsWith('image/');
                 const ext = isImg ? 'IMG' : 'PDF';
                 const sizeMB = (f.size / (1024*1024)).toFixed(1);
-                const thumbStyle = isImg ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;' : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
-                filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:10px; overflow:hidden; cursor:pointer; border:1px solid #262626; height:90px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
-                    (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; opacity:0.6;">📄</div>') +
-                    '<div style="position:absolute; bottom:0; left:0; right:0; padding:6px 8px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:6px;">' +
-                        '<div style="width:18px; height:18px; border-radius:4px; background:' + (isImg ? '#3b82f6' : '#ef4444') + '; display:flex; align-items:center; justify-content:center; font-size:0.5rem; font-weight:800; color:#fff;">' + ext + '</div>' +
-                        '<div style="flex:1; min-width:0;"><div style="font-size:0.65rem; color:#fff; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.name + '</div><div style="font-size:0.55rem; color:#888;">' + sizeMB + ' MB</div></div>' +
+                const thumbStyle = isImg 
+                    ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;' 
+                    : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
+                
+                filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; border:1px solid #262626; width: 200px; height: 200px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
+                    (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:5rem; opacity:0.4;">📄</div>') +
+                    '<div style="position:absolute; bottom:0; left:0; right:0; padding:8px 10px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:8px;">' +
+                        '<div style="width:20px; height:20px; border-radius:4px; background:' + (isImg ? '#3b82f6' : '#ef4444') + '; display:flex; align-items:center; justify-content:center; font-size:0.55rem; font-weight:800; color:#fff;">' + ext + '</div>' +
+                        '<div style="flex:1; min-width:0;">' +
+                            '<div style="font-size:0.8rem; color:#fff; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.name + '</div>' +
+                            '<div style="font-size:0.65rem; color:#888;">' + sizeMB + ' MB</div>' +
+                        '</div>' +
                     '</div>' +
-                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:5px; right:5px; width:22px; height:22px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.65rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>' +
+                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:8px; right:8px; width:24px; height:24px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.7rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>' +
                 '</div>';
             });
             filesHTML += '</div>';
         } else {
-            filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;"><span style="font-size:1.2rem; opacity:0.4;">☁️</span><span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span></div>';
+            filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;">' +
+                '<span style="font-size:1.2rem; opacity:0.4;">☁️</span>' +
+                '<span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span>' +
+            '</div>';
         }
-        html += '<div style="background:#141414; border:1px solid #1f1f1f; border-left:3px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:12px;">' +
-            '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">' +
-                '<div style="display:flex; align-items:center; gap:12px; flex:1; min-width:200px;">' +
+
+        html += '<div style="background:#141414; border:1px solid #1f1f1f; border-left:3px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:12px; width: 100%; box-sizing: border-box;">' +
+            '<div style="display:flex; justify-content:flex-start; align-items:center; gap:16px; flex-wrap:wrap;">' +
+                '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:1rem;">📝</div>' +
-                    '<div><div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div><div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div></div>' +
+                    '<div>' +
+                        '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
+                        '<div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
+                    '</div>' +
                 '</div>' +
                 '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
                     '<div style="font-size:0.6rem; font-weight:700; color:' + statusColor + '; background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); padding:4px 12px; border-radius:50px; border:1px solid color-mix(in srgb, ' + statusColor + ' 30%, transparent);">' + statusText + '</div>' +
                     '<button onclick="uploadScopeFor(\'' + currentViewerModule + '\', ' + e.id + ')" style="padding:7px 14px; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.4); color:#ff8c00; border-radius:8px; font-size:0.7rem; font-weight:700; cursor:pointer; white-space:nowrap;">+ Upload</button>' +
                 '</div>' +
             '</div>' +
-            '<div style="display:flex; align-items:center; gap:8px; margin-top:16px;"><span style="font-size:1rem;">📎</span><span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span></div>' +
+            '<div style="display:flex; align-items:center; gap:8px; margin-top:16px; margin-bottom: 8px;">' +
+                '<span style="font-size:1rem;">📎</span>' +
+                '<span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span>' +
+            '</div>' +
             filesHTML +
         '</div>';
     });
+
     list.innerHTML = html;
 }
 
@@ -1138,7 +1174,6 @@ window.toggleModuleForm = function() {
         if (arrow) arrow.style.transform = 'rotate(0deg)';
     }
 };
-
 function renderModalList(list, emptyMessage) {
     if (!list || !list.length) {
         return '<p style="color:#888; text-align:center; padding:40px;">' + emptyMessage + '</p>';
@@ -1151,10 +1186,15 @@ function renderModalList(list, emptyMessage) {
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         const isPast = d.getTime() <= Date.now();
         const tag = isPast ? 'COMPLETED' : 'UPCOMING';
+        
         html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
-            '<div style="flex:1; min-width:180px;"><div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
-            '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div></div>' +
+            '<div style="flex:1; min-width:180px;">' +
+                '<div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
+                '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
+            '</div>' +
             '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' + tag + '</div>' +
+            // ADDED EDIT BUTTON HERE
+            '<button onclick="editCountdown(' + e.id + '); closeCompletedModal();" style="background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); color:#ff8c00; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700; margin-right:4px;">✎</button>' +
             '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
         '</div>';
     });
@@ -1168,8 +1208,8 @@ window.openTotalModal = function() {
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
     if (title) title.textContent = '📝 All Assessments';
-    if (sub) sub.textContent = 'Every assessment across all your modules';
-    const all = events.filter(e => e.module && e.module !== 'General').sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    if (sub) sub.textContent = 'Every single deadline across your account';
+    const all = events.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
     modal.style.display = 'block';
 };
@@ -1183,8 +1223,20 @@ window.openUpcomingModal = function() {
     if (title) title.textContent = '⏰ Upcoming Assessments';
     if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
     const now = Date.now();
-    const upcoming = events.filter(e => e.module && e.module !== 'General').filter(e => new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines. You are caught up!');
+    const upcoming = events.filter(e => e.module && e.module !== 'General' && new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines.');
+    modal.style.display = 'block';
+};
+
+window.openOverdueModal = function() {
+    const modal = document.getElementById('completedModal');
+    const list = document.getElementById('completedModalList');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSubtitle');
+    if (!modal || !list) return;
+    if (title) title.textContent = '⚠️ Overdue Assessments';
+    if (sub) sub.textContent = 'Deadlines that need attention';
+    list.innerHTML = renderModalList([], '🎉 You have no overdue assessments!');
     modal.style.display = 'block';
 };
 
@@ -1217,9 +1269,12 @@ document.addEventListener('DOMContentLoaded', function() {
         el.addEventListener('click', handler);
         el.addEventListener('touchend', handler);
     }
+        const overdueCard = document.getElementById('overdueCardBtn');
+
     bindTap(totalCard, function() { window.openTotalModal(); });
     bindTap(completedCard, function() { window.openCompletedModal(); });
     bindTap(upcomingCard, function() { window.openUpcomingModal(); });
+    bindTap(overdueCard, function() { window.openOverdueModal(); });
 });
 
 document.addEventListener('keydown', function(e) {
