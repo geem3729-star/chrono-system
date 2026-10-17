@@ -37,7 +37,10 @@ window.switchView = function(viewName, el) {
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
     if (viewName === 'examelig') renderExamEligFull();
     if (viewName === 'admin') renderAdminPanel();
-    if (viewName === 'assessments') loadPdfs().then(() => renderAssessmentsPage());
+       if (viewName === 'assessments') { 
+        renderAssessmentsPage(); 
+        loadPdfs(); 
+    }
 };
 
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
