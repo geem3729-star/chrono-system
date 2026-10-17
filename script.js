@@ -1531,6 +1531,7 @@ function renderGeneralPage() {
 // ==========================================
 // CALENDAR PAGE LOGIC (2-Column Layout)
 // ==========================================
+
 let calCurrentDate = new Date();
 
 function renderCalendar() {
@@ -1542,7 +1543,10 @@ function renderCalendar() {
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const now = new Date();
     
-    const firstDay = new Date(year, month, 1).getDay();
+    // Monday = 0, Tuesday = 1, ..., Sunday = 6
+    let rawFirstDay = new Date(year, month, 1).getDay();
+    let firstDay = (rawFirstDay === 0) ? 6 : rawFirstDay - 1;
+    
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     // --- BUILD MONTH GRID ---
@@ -1553,13 +1557,13 @@ function renderCalendar() {
             <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
         </div>
         <div class="cal-grid">
-            <div class="cal-day-name sun">Sun</div>
             <div class="cal-day-name">Mon</div>
             <div class="cal-day-name">Tue</div>
             <div class="cal-day-name">Wed</div>
             <div class="cal-day-name">Thu</div>
             <div class="cal-day-name">Fri</div>
             <div class="cal-day-name">Sat</div>
+            <div class="cal-day-name">Sun</div>
     `;
 
     for (let i = 0; i < firstDay; i++) gridHTML += `<div class="cal-cell cal-empty"></div>`;
@@ -1567,7 +1571,6 @@ function renderCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
-        const isSunday = dayDate.getDay() === 0;
         
         const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
@@ -1582,10 +1585,121 @@ function renderCalendar() {
 
         gridHTML += `
             <div class="cal-cell ${isToday ? 'cal-today' : ''} ${circleClass}">
-                <div class="cal-date-num ${isSunday ? 'sun' : ''}">${d}</div>
+                <div class="cal-date-num">${d}</div>
             </div>
         `;
     }
+    gridHTML += `</div>`;
+
+    // --- BUILD EVENTS LIST ---
+    const todayEvents = [];
+    const tomorrowEvents = [];
+    const upcomingEvents = [];
+    const pastEvents = [];
+
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+    const dayAfterStart = new Date(tomorrowStart);
+    dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+
+    events.forEach(e => {
+        const d = new Date(e.deadline);
+        if (d >= todayStart && d < tomorrowStart) {
+            todayEvents.push(e);
+        } else if (d >= tomorrowStart && d < dayAfterStart) {
+            tomorrowEvents.push(e);
+        } else if (d >= dayAfterStart) {
+            upcomingEvents.push(e);
+        } else {
+            pastEvents.push(e);
+        }
+    });
+
+    upcomingEvents.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+    pastEvents.sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
+
+    // Clean SVG Icons
+    const searchIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+    const settingsIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+    
+    // Red Calendar Icon for Events
+    const calIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
+
+    let listHTML = `
+        <div class="cal-list-header">
+            <div>
+                <h3>Events</h3>
+                <p>${monthNames[month]} ${year}</p>
+            </div>
+            <div class="cal-list-icons">
+                <span style="cursor:pointer;">${searchIcon}</span>
+                <span style="cursor:pointer;">${settingsIcon}</span>
+            </div>
+        </div>
+    `;
+
+    const buildEventRow = (e, isCompleted) => {
+        const d = new Date(e.deadline);
+        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return `
+            <div class="cal-event-row" onclick="editCountdown(${e.id})">
+                <div class="cal-event-icon">${calIcon}</div>
+                <div class="cal-event-date">
+                    <div class="cal-event-day">${dayName}</div>
+                    <div class="cal-event-dmy">${dateStr}</div>
+                    <div class="cal-event-time">${timeStr}</div>
+                </div>
+                <div class="cal-event-info">
+                    <div class="cal-event-title">${e.title || 'Deadline'}</div>
+                    <div class="cal-event-module">${e.module || 'General'}</div>
+                </div>
+                <div class="cal-event-check">
+                    ${isCompleted ? '<span style="color:#ef4444; background:#1a1a1a; padding:2px 6px; border-radius:4px; font-size:0.8rem;">✓</span>' : '☐'}
+                </div>
+            </div>
+        `;
+    };
+
+    if (todayEvents.length === 0) {
+        listHTML += `<div class="cal-group-title">Today</div><div class="cal-empty-msg">No pending event for today</div>`;
+    } else {
+        listHTML += `<div class="cal-group-title">Today</div>`;
+        todayEvents.forEach(e => listHTML += buildEventRow(e, false));
+    }
+
+    if (tomorrowEvents.length > 0) {
+        listHTML += `<div class="cal-group-title">Tomorrow</div>`;
+        tomorrowEvents.forEach(e => listHTML += buildEventRow(e, false));
+    }
+
+    if (upcomingEvents.length > 0) {
+        listHTML += `<div class="cal-group-title">Upcoming events</div>`;
+        upcomingEvents.forEach(e => listHTML += buildEventRow(e, false));
+    }
+
+    if (pastEvents.length > 0) {
+        listHTML += `<div class="cal-group-title">Completed</div>`;
+        pastEvents.forEach(e => listHTML += buildEventRow(e, true));
+    }
+
+    container.innerHTML = `
+        <div class="calendar-layout">
+            <div class="calendar-left panel">${gridHTML}</div>
+            <div class="calendar-right panel">
+                ${listHTML}
+                <button class="cal-fab" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))">+</button>
+            </div>
+        </div>
+    `;
+}
+
+window.changeMonth = function(dir) {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+    renderCalendar();
+};
     gridHTML += `</div>`;
 
     // --- BUILD EVENTS LIST ---
@@ -1663,13 +1777,12 @@ function renderCalendar() {
         pastEvents.forEach(e => listHTML += buildEventRow(e));
     }
 
-    container.innerHTML = `
-        <div class="calendar-layout">
-            <div class="calendar-left panel">${gridHTML}</div>
-            <div class="calendar-right panel">${listHTML}</div>
-        </div>
-    `;
-}
+   container.innerHTML = `
+  <div class="calendar-layout">
+    <div class="calendar-left panel">${gridHTML}</div>
+    <div class="calendar-right panel">${listHTML}</div>
+  </div>
+`;
 
 window.changeMonth = function(dir) {
     calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
