@@ -3865,15 +3865,7 @@ body .logout-mini:hover {
     background: #333;
     color: #fff;
 }
-.cal-has-upcoming .cal-date-num {
-    border: 2px solid #ef4444;
-    color: #ffffff; /* White text inside red circle */
-    font-weight: 600;
-}
-.cal-has-past .cal-date-num {
-    border: 2px solid #555;
-    color: #ffffff; /* White text inside grey circle */
-}
+
 
 /* RIGHT SIDE - LIST */
 .calendar-right {

@@ -1572,20 +1572,28 @@ function renderCalendar() {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
         
-        const dayEvents = events.filter(e => {
+                  const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
         });
 
-        let circleClass = '';
+        let inlineStyle = '';
         if (dayEvents.length > 0) {
-            const hasUpcoming = dayEvents.some(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
-            circleClass = hasUpcoming ? 'cal-has-upcoming' : 'cal-has-past';
+            // Find the first upcoming event for this day, or fallback to the first one
+            const upcomingEv = dayEvents.find(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+            const targetEvent = upcomingEv || dayEvents[0];
+            const c = targetEvent.color || '#ff8c00'; // Pull the exact color
+            
+            if (upcomingEv) {
+                inlineStyle = `style="border: 2px solid ${c}; color: ${c};"`;
+            } else {
+                inlineStyle = `style="border: 2px solid ${c}; color: ${c}; opacity: 0.6;"`;
+            }
         }
 
         gridHTML += `
-            <div class="cal-cell ${isToday ? 'cal-today' : ''} ${circleClass}">
-                <div class="cal-date-num">${d}</div>
+            <div class="cal-cell ${isToday ? 'cal-today' : ''}">
+                <div class="cal-date-num" ${inlineStyle}>${d}</div>
             </div>
         `;
     }
