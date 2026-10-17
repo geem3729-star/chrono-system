@@ -34,6 +34,7 @@ window.switchView = function(viewName, el) {
 
     if (viewName === 'modules') renderModulesList();
     if (viewName === 'dashboard') renderDashboard();
+        if (viewName === 'calendar') renderCalendar();
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
         if (viewName === 'general') renderGeneralPage();
     if (viewName === 'examelig') renderExamEligFull();
@@ -1527,3 +1528,150 @@ function renderGeneralPage() {
     // Start the live countdown timers for these cards
     attachCardTickers();
 }
+// ==========================================
+// CALENDAR PAGE LOGIC (2-Column Layout)
+// ==========================================
+let calCurrentDate = new Date();
+
+function renderCalendar() {
+    const container = document.getElementById('view-calendar');
+    if (!container) return;
+
+    const year = calCurrentDate.getFullYear();
+    const month = calCurrentDate.getMonth();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const now = new Date();
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // --- BUILD MONTH GRID ---
+    let gridHTML = `
+        <div class="cal-header">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+            <h2>${monthNames[month]} ${year}</h2>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid">
+            <div class="cal-day-name sun">Sun</div>
+            <div class="cal-day-name">Mon</div>
+            <div class="cal-day-name">Tue</div>
+            <div class="cal-day-name">Wed</div>
+            <div class="cal-day-name">Thu</div>
+            <div class="cal-day-name">Fri</div>
+            <div class="cal-day-name">Sat</div>
+    `;
+
+    for (let i = 0; i < firstDay; i++) gridHTML += `<div class="cal-cell cal-empty"></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dayDate = new Date(year, month, d);
+        const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
+        const isSunday = dayDate.getDay() === 0;
+        
+        const dayEvents = events.filter(e => {
+            const eDate = new Date(e.deadline);
+            return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
+        });
+
+        let circleClass = '';
+        if (dayEvents.length > 0) {
+            const hasUpcoming = dayEvents.some(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+            circleClass = hasUpcoming ? 'cal-has-upcoming' : 'cal-has-past';
+        }
+
+        gridHTML += `
+            <div class="cal-cell ${isToday ? 'cal-today' : ''} ${circleClass}">
+                <div class="cal-date-num ${isSunday ? 'sun' : ''}">${d}</div>
+            </div>
+        `;
+    }
+    gridHTML += `</div>`;
+
+    // --- BUILD EVENTS LIST ---
+    const todayEvents = [];
+    const upcomingEvents = [];
+    const pastEvents = [];
+
+    events.forEach(e => {
+        const d = new Date(e.deadline);
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrowStart = new Date(todayStart);
+        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+        if (d >= todayStart && d < tomorrowStart) {
+            todayEvents.push(e);
+        } else if (d >= tomorrowStart) {
+            upcomingEvents.push(e);
+        } else {
+            pastEvents.push(e);
+        }
+    });
+
+    upcomingEvents.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+    pastEvents.sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
+
+    let listHTML = `
+        <div class="cal-list-header">
+            <div>
+                <h3>Events</h3>
+                <p>${monthNames[month]} ${year}</p>
+            </div>
+            <div class="cal-list-icons">
+                <span>🔍</span>
+                <span>⚙️</span>
+            </div>
+        </div>
+    `;
+
+    const buildEventRow = (e) => {
+        const d = new Date(e.deadline);
+        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return `
+            <div class="cal-event-row" onclick="editCountdown(${e.id})">
+                <div class="cal-event-date">
+                    <div class="cal-event-day">${dayName}</div>
+                    <div class="cal-event-dmy">${dateStr}</div>
+                    <div class="cal-event-time">${timeStr}</div>
+                </div>
+                <div class="cal-event-info">
+                    <div class="cal-event-title">${e.title || 'Deadline'}</div>
+                    <div class="cal-event-module">${e.module || 'General'}</div>
+                </div>
+                <div class="cal-event-check">☐</div>
+            </div>
+        `;
+    };
+
+    if (todayEvents.length === 0) {
+        listHTML += `<div class="cal-group-title">Today</div>
+                     <div class="cal-empty-msg">No pending event for today</div>`;
+    } else {
+        listHTML += `<div class="cal-group-title">Today</div>`;
+        todayEvents.forEach(e => listHTML += buildEventRow(e));
+    }
+
+    if (upcomingEvents.length > 0) {
+        listHTML += `<div class="cal-group-title">Upcoming events</div>`;
+        upcomingEvents.forEach(e => listHTML += buildEventRow(e));
+    }
+
+    if (pastEvents.length > 0) {
+        listHTML += `<div class="cal-group-title">Completed</div>`;
+        pastEvents.forEach(e => listHTML += buildEventRow(e));
+    }
+
+    container.innerHTML = `
+        <div class="calendar-layout">
+            <div class="calendar-left panel">${gridHTML}</div>
+            <div class="calendar-right panel">${listHTML}</div>
+        </div>
+    `;
+}
+
+window.changeMonth = function(dir) {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+    renderCalendar();
+};
