@@ -1201,7 +1201,7 @@ window.openTotalModal = function() {
     if (!modal || !list) return;
     if (title) title.textContent = '📝 All Assessments';
     if (sub) sub.textContent = 'Every single deadline across your account';
-    const all = events.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const all = events.filter(e => e.module && e.module !== 'General').sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
     modal.style.display = 'block';
 };
@@ -1241,7 +1241,7 @@ window.openCompletedModal = function() {
     if (title) title.textContent = '✅ Completed Deadlines';
     if (sub) sub.textContent = 'All the assessments you have finished';
     const now = Date.now();
-    const completed = events.filter(function(e) { return new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+          const completed = events.filter(function(e) { return e.module && e.module !== 'General' && new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
     list.innerHTML = renderModalList(completed, '🎉 No completed deadlines yet.');
     modal.style.display = 'block';
 };
