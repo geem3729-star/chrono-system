@@ -3793,22 +3793,23 @@ body .logout-mini:hover {
     .zoom-title { font-size: 1.6rem; }
 }
 /* ==========================================
-   CALENDAR PAGE (2-COLUMN)
+   CALENDAR PAGE (2-COLUMN) - FIXED
    ========================================== */
 .calendar-layout {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 340px;
     gap: 20px;
     min-height: 600px;
 }
 @media (max-width: 900px) {
-    .calendar-layout { grid-template-columns: 1fr; height: auto; }
+    .calendar-layout { grid-template-columns: 1fr; }
 }
 
 /* LEFT SIDE - GRID */
 .calendar-left {
     display: flex;
     flex-direction: column;
+    min-width: 0; /* THIS FIXES THE BLOWOUT */
 }
 .cal-header {
     display: flex;
@@ -3825,18 +3826,27 @@ body .logout-mini:hover {
 .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    flex: 1;
+    gap: 8px;
+    width: 100%;
 }
 .cal-day-name {
     text-align: center; font-size: 0.7rem; color: #888; font-weight: 700;
     margin-bottom: 12px;
 }
 .cal-day-name.sun { color: #ef4444; }
+
+/* I added borders back so you can see the boxes */
 .cal-cell {
     aspect-ratio: 1 / 1;
     display: flex; align-items: center; justify-content: center;
     position: relative;
+    background: #0f0f0f;
+    border: 1px solid #1f1f1f;
+    border-radius: 8px;
+}
+.cal-empty {
+    background: transparent;
+    border: none;
 }
 .cal-date-num {
     width: 38px; height: 38px;
@@ -3851,6 +3861,7 @@ body .logout-mini:hover {
 .cal-today .cal-date-num {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
+    font-weight: 700;
 }
 .cal-has-upcoming .cal-date-num {
     border: 2px solid #ef4444;
@@ -3865,6 +3876,7 @@ body .logout-mini:hover {
 /* RIGHT SIDE - LIST */
 .calendar-right {
     display: flex; flex-direction: column; overflow: hidden;
+    min-width: 0; /* THIS FIXES THE BLOWOUT */
 }
 .cal-list-header {
     display: flex; justify-content: space-between; align-items: flex-start;
