@@ -1571,27 +1571,37 @@ function renderCalendar() {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
         
-        const dayEvents = events.filter(e => {
+             const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
         });
 
-        let inlineStyle = '';
+        let cellBgStyle = '';
+        let circleStyle = '';
+
         if (dayEvents.length > 0) {
             const upcomingEv = dayEvents.find(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
             const targetEvent = upcomingEv || dayEvents[0];
             const c = targetEvent.color || '#ff8c00';
             
-            if (upcomingEv) {
-                inlineStyle = `style="border: 2px solid ${c}; color: ${c};"`;
+            // Style the circle
+            circleStyle = `style="border: 2px solid ${c}; color: #ffffff; ${!upcomingEv ? 'opacity: 0.6;' : ''}"`;
+            
+            // Style the rectangle grid
+            if (dayEvents.length > 1) {
+                // If 2 or more events, make a two-tone gradient!
+                const c1 = dayEvents[0].color || '#ff8c00';
+                const c2 = dayEvents[1].color || '#ff8c00';
+                cellBgStyle = `style="background: linear-gradient(135deg, color-mix(in srgb, ${c1} 25%, #0f0f0f) 50%, color-mix(in srgb, ${c2} 25%, #0f0f0f) 50%); border-color: color-mix(in srgb, ${c1} 40%, #1f1f1f);"`;
             } else {
-                inlineStyle = `style="border: 2px solid ${c}; color: ${c}; opacity: 0.6;"`;
+                // If 1 event, shade it with that single color
+                cellBgStyle = `style="background: color-mix(in srgb, ${c} 15%, #0f0f0f); border-color: color-mix(in srgb, ${c} 30%, #1f1f1f);"`;
             }
         }
 
         gridHTML += `
-            <div class="cal-cell ${isToday ? 'cal-today' : ''}">
-                <div class="cal-date-num" ${inlineStyle}>${d}</div>
+            <div class="cal-cell ${isToday ? 'cal-today' : ''}" ${cellBgStyle}>
+                <div class="cal-date-num" ${circleStyle}>${d}</div>
             </div>
         `;
     }
