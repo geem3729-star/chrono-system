@@ -3800,6 +3800,7 @@ body .logout-mini:hover {
     grid-template-columns: 1fr 400px;
     gap: 20px;
     min-height: 600px;
+    align-items: start; /* THIS IS THE FIX */
 }
 @media (max-width: 900px) {
     .calendar-layout { grid-template-columns: 1fr; }
