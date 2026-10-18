@@ -1531,7 +1531,6 @@ function renderGeneralPage() {
 // ==========================================
 // CALENDAR PAGE LOGIC (2-Column Layout)
 // ==========================================
-
 let calCurrentDate = new Date();
 
 function renderCalendar() {
@@ -1572,17 +1571,16 @@ function renderCalendar() {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
         
-                  const dayEvents = events.filter(e => {
+        const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
         });
 
         let inlineStyle = '';
         if (dayEvents.length > 0) {
-            // Find the first upcoming event for this day, or fallback to the first one
             const upcomingEv = dayEvents.find(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
             const targetEvent = upcomingEv || dayEvents[0];
-            const c = targetEvent.color || '#ff8c00'; // Pull the exact color
+            const c = targetEvent.color || '#ff8c00';
             
             if (upcomingEv) {
                 inlineStyle = `style="border: 2px solid ${c}; color: ${c};"`;
@@ -1627,11 +1625,8 @@ function renderCalendar() {
     upcomingEvents.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
     pastEvents.sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
 
-    // Clean SVG Icons
     const searchIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
     const settingsIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
-    
-    // Red Calendar Icon for Events
     const calIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
 
     let listHTML = `
@@ -1653,7 +1648,7 @@ function renderCalendar() {
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         return `
-            <div class="cal-event-row" onclick="editCountdown(${e.id})">
+            <div class="cal-event-row" onclick="zoomCountdown(${e.id})">
                 <div class="cal-event-icon">${calIcon}</div>
                 <div class="cal-event-date">
                     <div class="cal-event-day">${dayName}</div>
@@ -1671,6 +1666,7 @@ function renderCalendar() {
         `;
     };
 
+    // 1. Today
     if (todayEvents.length === 0) {
         listHTML += `<div class="cal-group-title">Today</div><div class="cal-empty-msg">No pending event for today</div>`;
     } else {
@@ -1678,19 +1674,26 @@ function renderCalendar() {
         todayEvents.forEach(e => listHTML += buildEventRow(e, false));
     }
 
+    // 2. Tomorrow
     if (tomorrowEvents.length > 0) {
         listHTML += `<div class="cal-group-title">Tomorrow</div>`;
         tomorrowEvents.forEach(e => listHTML += buildEventRow(e, false));
     }
 
+    // 3. Upcoming (Starts OPEN)
     if (upcomingEvents.length > 0) {
-        listHTML += `<div class="cal-group-title">Upcoming events</div>`;
+        listHTML += `<div class="cal-group-title" style="cursor: pointer;" onclick="toggleCalUpcoming()">Upcoming events <span id="calUpcomingArrow">▲</span></div>`;
+        listHTML += `<div id="calUpcomingList" style="display: flex; flex-direction: column;">`;
         upcomingEvents.forEach(e => listHTML += buildEventRow(e, false));
+        listHTML += `</div>`;
     }
 
+    // 4. Completed (Starts OPEN)
     if (pastEvents.length > 0) {
-        listHTML += `<div class="cal-group-title">Completed</div>`;
+        listHTML += `<div class="cal-group-title" style="cursor: pointer;" onclick="toggleCalCompleted()">Completed <span id="calCompArrow">▲</span></div>`;
+        listHTML += `<div id="calCompletedList" style="display: flex; flex-direction: column;">`;
         pastEvents.forEach(e => listHTML += buildEventRow(e, true));
+        listHTML += `</div>`;
     }
 
     container.innerHTML = `
@@ -1708,91 +1711,27 @@ window.changeMonth = function(dir) {
     calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
     renderCalendar();
 };
-    gridHTML += `</div>`;
 
-    // --- BUILD EVENTS LIST ---
-    const todayEvents = [];
-    const upcomingEvents = [];
-    const pastEvents = [];
-
-    events.forEach(e => {
-        const d = new Date(e.deadline);
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const tomorrowStart = new Date(todayStart);
-        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-
-        if (d >= todayStart && d < tomorrowStart) {
-            todayEvents.push(e);
-        } else if (d >= tomorrowStart) {
-            upcomingEvents.push(e);
-        } else {
-            pastEvents.push(e);
-        }
-    });
-
-    upcomingEvents.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
-    pastEvents.sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
-
-    let listHTML = `
-        <div class="cal-list-header">
-            <div>
-                <h3>Events</h3>
-                <p>${monthNames[month]} ${year}</p>
-            </div>
-            <div class="cal-list-icons">
-                <span>🔍</span>
-                <span>⚙️</span>
-            </div>
-        </div>
-    `;
-
-    const buildEventRow = (e) => {
-        const d = new Date(e.deadline);
-        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
-        const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-        const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        return `
-            <div class="cal-event-row" onclick="editCountdown(${e.id})">
-                <div class="cal-event-date">
-                    <div class="cal-event-day">${dayName}</div>
-                    <div class="cal-event-dmy">${dateStr}</div>
-                    <div class="cal-event-time">${timeStr}</div>
-                </div>
-                <div class="cal-event-info">
-                    <div class="cal-event-title">${e.title || 'Deadline'}</div>
-                    <div class="cal-event-module">${e.module || 'General'}</div>
-                </div>
-                <div class="cal-event-check">☐</div>
-            </div>
-        `;
-    };
-
-    if (todayEvents.length === 0) {
-        listHTML += `<div class="cal-group-title">Today</div>
-                     <div class="cal-empty-msg">No pending event for today</div>`;
+window.toggleCalUpcoming = function() {
+    const list = document.getElementById('calUpcomingList');
+    const arrow = document.getElementById('calUpcomingArrow');
+    if (list.style.display === 'none') {
+        list.style.display = 'flex';
+        arrow.textContent = '▲';
     } else {
-        listHTML += `<div class="cal-group-title">Today</div>`;
-        todayEvents.forEach(e => listHTML += buildEventRow(e));
+        list.style.display = 'none';
+        arrow.textContent = '▼';
     }
+};
 
-    if (upcomingEvents.length > 0) {
-        listHTML += `<div class="cal-group-title">Upcoming events</div>`;
-        upcomingEvents.forEach(e => listHTML += buildEventRow(e));
+window.toggleCalCompleted = function() {
+    const list = document.getElementById('calCompletedList');
+    const arrow = document.getElementById('calCompArrow');
+    if (list.style.display === 'none') {
+        list.style.display = 'flex';
+        arrow.textContent = '▲';
+    } else {
+        list.style.display = 'none';
+        arrow.textContent = '▼';
     }
-
-    if (pastEvents.length > 0) {
-        listHTML += `<div class="cal-group-title">Completed</div>`;
-        pastEvents.forEach(e => listHTML += buildEventRow(e));
-    }
-
-   container.innerHTML = `
-  <div class="calendar-layout">
-    <div class="calendar-left panel">${gridHTML}</div>
-    <div class="calendar-right panel">${listHTML}</div>
-  </div>
-`;
-
-window.changeMonth = function(dir) {
-    calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
-    renderCalendar();
 };
