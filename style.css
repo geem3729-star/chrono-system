@@ -3873,6 +3873,8 @@ body .logout-mini:hover {
     position: relative;
     background: #111;
     border-left: 1px solid #1f1f1f;
+    padding: 16px 24px 24px 24px; /* Reduced the top padding from 24px to 16px */
+    margin-top: -8px; /* Pulls the whole right panel up slightly */
 }
 .cal-list-header {
     display: flex; justify-content: space-between; align-items: flex-start;

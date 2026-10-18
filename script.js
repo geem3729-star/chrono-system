@@ -1642,18 +1642,28 @@ function renderCalendar() {
         </div>
     `;
 
-    const buildEventRow = (e, isCompleted) => {
+     const buildEventRow = (e, isCompleted) => {
         const d = new Date(e.deadline);
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        
+        // 1. Get the exact color of this specific event
+        const eventColor = e.color || '#ff8c00';
+        
+        // 2. Make the SVG icon use that color
+        const dynamicCalIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${eventColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
+
         return `
             <div class="cal-event-row" onclick="zoomCountdown(${e.id})">
-                <div class="cal-event-icon">${calIcon}</div>
+                <!-- 3. Tint the background and border of the icon to match the color -->
+                <div class="cal-event-icon" style="background: color-mix(in srgb, ${eventColor} 15%, transparent); border-color: color-mix(in srgb, ${eventColor} 30%, transparent);">
+                    ${dynamicCalIcon}
+                </div>
                 <div class="cal-event-date">
                     <div class="cal-event-day">${dayName}</div>
                     <div class="cal-event-dmy">${dateStr}</div>
-                    <div class="cal-event-time">${timeStr}</div>
+                    <div class="cal-event-time" style="color: ${eventColor};">${timeStr}</div>
                 </div>
                 <div class="cal-event-info">
                     <div class="cal-event-title">${e.title || 'Deadline'}</div>
