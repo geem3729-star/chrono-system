@@ -26,6 +26,7 @@ let pdfFiles = [];
 const ADMIN_EMAIL = "keketsokagiso25@gmail.com";
 
 window.switchView = function(viewName, el) {
+   if (viewName === 'school-calendar') renderSchoolCalendar();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const view = document.getElementById('view-' + viewName);
@@ -1571,37 +1572,47 @@ function renderCalendar() {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
         
-             const dayEvents = events.filter(e => {
+               const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
         });
 
         let cellBgStyle = '';
         let circleStyle = '';
+        let dotsHTML = '';
 
         if (dayEvents.length > 0) {
             const upcomingEv = dayEvents.find(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
             const targetEvent = upcomingEv || dayEvents[0];
             const c = targetEvent.color || '#ff8c00';
             
-            // Style the circle
+            // 1. Style the main date circle
             circleStyle = `style="border: 2px solid ${c}; color: #ffffff; ${!upcomingEv ? 'opacity: 0.6;' : ''}"`;
             
-            // Style the rectangle grid
+            // 2. Style the background rectangle (softer, transparent hex colors)
             if (dayEvents.length > 1) {
-                // If 2 or more events, make a two-tone gradient!
                 const c1 = dayEvents[0].color || '#ff8c00';
                 const c2 = dayEvents[1].color || '#ff8c00';
-                cellBgStyle = `style="background: linear-gradient(135deg, color-mix(in srgb, ${c1} 25%, #0f0f0f) 50%, color-mix(in srgb, ${c2} 25%, #0f0f0f) 50%); border-color: color-mix(in srgb, ${c1} 40%, #1f1f1f);"`;
+                // Using "22" at the end of hex makes it 13% opacity, creating a soft blend
+                cellBgStyle = `style="background: linear-gradient(135deg, ${c1}22 0%, ${c2}22 100%); border-color: #333;"`;
             } else {
-                // If 1 event, shade it with that single color
-                cellBgStyle = `style="background: color-mix(in srgb, ${c} 15%, #0f0f0f); border-color: color-mix(in srgb, ${c} 30%, #1f1f1f);"`;
+                // Single event: 11% opacity tint
+                cellBgStyle = `style="background: ${c}11; border-color: #333;"`;
             }
+
+            // 3. Add small circles (dots) at the bottom for each event
+            dotsHTML = `<div style="position:absolute; bottom: 8px; display: flex; gap: 4px; justify-content: center; width: 100%; z-index: 10;">`;
+            dayEvents.slice(0, 5).forEach(ev => {
+                const dotColor = ev.color || '#ff8c00';
+                dotsHTML += `<div style="width: 6px; height: 6px; border-radius: 50%; background: ${dotColor}; box-shadow: 0 0 4px ${dotColor};"></div>`;
+            });
+            dotsHTML += `</div>`;
         }
 
         gridHTML += `
             <div class="cal-cell ${isToday ? 'cal-today' : ''}" ${cellBgStyle}>
                 <div class="cal-date-num" ${circleStyle}>${d}</div>
+                ${dotsHTML}
             </div>
         `;
     }
@@ -1756,4 +1767,102 @@ window.toggleCalCompleted = function() {
         list.style.display = 'none';
         arrow.textContent = '▼';
     }
+};
+// ==========================================
+// SCHOOL CALENDAR (NWU 2026 FRAMEWORK)
+// ==========================================
+let schoolCalDate = new Date(2026, 1, 1); // Defaults to Feb 2026
+
+// NWU 2026 Key Dates (You can edit these dates/labels)
+const nwuCalendar = [
+    { start: '2026-02-09', end: '2026-03-27', label: 'Term 1', color: '#4ade80' }, // Green
+    { start: '2026-03-28', end: '2026-04-05', label: 'Recess', color: '#fb923c' }, // Orange
+    { start: '2026-04-06', end: '2026-05-15', label: 'Term 2', color: '#4ade80' },
+    { start: '2026-05-18', end: '2026-06-12', label: 'Exams', color: '#ef4444' },  // Red
+    { start: '2026-06-15', end: '2026-07-05', label: 'Recess', color: '#fb923c' },
+    { start: '2026-07-06', end: '2026-09-18', label: 'Term 3', color: '#4ade80' },
+    { start: '2026-09-19', end: '2026-09-27', label: 'Recess', color: '#fb923c' },
+    { start: '2026-09-28', end: '2026-11-13', label: 'Term 4', color: '#4ade80' },
+    { start: '2026-11-16', end: '2026-12-08', label: 'Exams', color: '#ef4444' },
+    { start: '2026-12-24', end: '2026-12-31', label: 'University Closes', color: '#3b82f6' } // Blue
+];
+
+function renderSchoolCalendar() {
+    const container = document.getElementById('view-school-calendar');
+    if (!container) return;
+
+    const year = schoolCalDate.getFullYear();
+    const month = schoolCalDate.getMonth();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const now = new Date();
+    
+    let rawFirstDay = new Date(year, month, 1).getDay();
+    let firstDay = (rawFirstDay === 0) ? 6 : rawFirstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let gridHTML = `
+        <div class="cal-header">
+            <button class="cal-nav-btn" onclick="changeSchoolMonth(-1)">‹</button>
+            <h2>${monthNames[month]} ${year}</h2>
+            <button class="cal-nav-btn" onclick="changeSchoolMonth(1)">›</button>
+        </div>
+        <div class="cal-grid">
+            <div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div>
+            <div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div>
+            <div class="cal-day-name">Fri</div><div class="cal-day-name">Sat</div>
+            <div class="cal-day-name">Sun</div>
+    `;
+
+    for (let i = 0; i < firstDay; i++) gridHTML += `<div class="cal-cell cal-empty"></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
+
+        // Check if this day falls inside any NWU block
+        let activeBlock = null;
+        nwuCalendar.forEach(block => {
+            if (currentDateStr >= block.start && currentDateStr <= block.end) {
+                activeBlock = block;
+            }
+        });
+
+        let cellBgStyle = '';
+        let circleStyle = '';
+
+        if (activeBlock) {
+            // Apply the specific NWU color to the whole square
+            cellBgStyle = `style="background: color-mix(in srgb, ${activeBlock.color} 20%, #0f0f0f); border-color: color-mix(in srgb, ${activeBlock.color} 50%, #1f1f1f);"`;
+            circleStyle = `style="border: 2px solid ${activeBlock.color}; color: #fff;"`;
+        }
+
+        gridHTML += `
+            <div class="cal-cell ${isToday ? 'cal-today' : ''}" ${cellBgStyle}>
+                <div class="cal-date-num" ${circleStyle}>${d}</div>
+            </div>
+        `;
+    }
+    gridHTML += `</div>`;
+
+    // Legend
+    const legendHTML = `
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #1f1f1f; font-size: 0.75rem; color: #ccc;">
+            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #fb923c;"></span> University recess</div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></span> Exam opportunity</div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #4ade80;"></span> Assessment / Term</div>
+            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #3b82f6;"></span> University closed</div>
+        </div>
+    `;
+
+    container.innerHTML = `
+        <div class="calendar-layout">
+            <div class="calendar-left panel" style="grid-column: 1 / -1;">${gridHTML}</div>
+        </div>
+        ${legendHTML}
+    `;
+}
+
+window.changeSchoolMonth = function(dir) {
+    schoolCalDate.setMonth(schoolCalDate.getMonth() + dir);
+    renderSchoolCalendar();
 };
