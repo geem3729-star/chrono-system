@@ -1773,19 +1773,40 @@ window.toggleCalCompleted = function() {
 // ==========================================
 let schoolCalDate = new Date(2026, 1, 1); // Defaults to Feb 2026
 
-// NWU 2026 Key Dates (You can edit these dates/labels)
-const nwuCalendar = [
-    { start: '2026-02-09', end: '2026-03-27', label: 'Term 1', color: '#4ade80' }, // Green
-    { start: '2026-03-28', end: '2026-04-05', label: 'Recess', color: '#fb923c' }, // Orange
-    { start: '2026-04-06', end: '2026-05-15', label: 'Term 2', color: '#4ade80' },
-    { start: '2026-05-18', end: '2026-06-12', label: 'Exams', color: '#ef4444' },  // Red
-    { start: '2026-06-15', end: '2026-07-05', label: 'Recess', color: '#fb923c' },
-    { start: '2026-07-06', end: '2026-09-18', label: 'Term 3', color: '#4ade80' },
-    { start: '2026-09-19', end: '2026-09-27', label: 'Recess', color: '#fb923c' },
-    { start: '2026-09-28', end: '2026-11-13', label: 'Term 4', color: '#4ade80' },
-    { start: '2026-11-16', end: '2026-12-08', label: 'Exams', color: '#ef4444' },
-    { start: '2026-12-24', end: '2026-12-31', label: 'University Closes', color: '#3b82f6' } // Blue
-];
+function getNWUStatus(dateStr) {
+    // Public Holidays
+    const holidays = ['2026-01-01', '2026-03-21', '2026-04-27', '2026-05-01', '2026-06-16', '2026-08-09', '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'];
+    if (holidays.includes(dateStr)) return { type: 'holiday', color: '#1f1f1f', text: '#ffffff' };
+
+    // University closed
+    if (dateStr >= '2026-12-24' && dateStr <= '2026-12-31') return { type: 'closed', color: '#3b82f6', text: '#ffffff' };
+
+    // Exams
+    if (dateStr >= '2026-05-18' && dateStr <= '2026-06-12') return { type: 'exam1', color: '#ef4444', text: '#ffffff' };
+    if (dateStr >= '2026-11-16' && dateStr <= '2026-12-08') return { type: 'exam2', color: '#93c5fd', text: '#000000' };
+
+    // Recess
+    if ((dateStr >= '2026-03-28' && dateStr <= '2026-04-05') ||
+        (dateStr >= '2026-06-15' && dateStr <= '2026-07-05') ||
+        (dateStr >= '2026-09-19' && dateStr <= '2026-09-27')) {
+        return { type: 'recess', color: '#fb923c', text: '#000000' };
+    }
+
+    // Assessments
+    if (dateStr === '2026-01-14' || dateStr === '2026-01-15' || dateStr === '2026-03-20') {
+        return { type: 'assessment', color: '#fdba74', text: '#000000' };
+    }
+
+    // Terms (Term 1, 2, 3, 4)
+    if ((dateStr >= '2026-02-09' && dateStr <= '2026-03-27') ||
+        (dateStr >= '2026-04-06' && dateStr <= '2026-05-15') ||
+        (dateStr >= '2026-07-06' && dateStr <= '2026-09-18') ||
+        (dateStr >= '2026-09-28' && dateStr <= '2026-11-13')) {
+        return { type: 'term', color: '#4ade80', text: '#000000' };
+    }
+
+    return { type: 'none', color: 'transparent', text: '#ccc' };
+}
 
 function renderSchoolCalendar() {
     const container = document.getElementById('view-school-calendar');
@@ -1819,21 +1840,16 @@ function renderSchoolCalendar() {
         const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
 
-        // Check if this day falls inside any NWU block
-        let activeBlock = null;
-        nwuCalendar.forEach(block => {
-            if (currentDateStr >= block.start && currentDateStr <= block.end) {
-                activeBlock = block;
-            }
-        });
+        const status = getNWUStatus(currentDateStr);
 
         let cellBgStyle = '';
         let circleStyle = '';
 
-        if (activeBlock) {
-            // Apply the specific NWU color to the whole square
-            cellBgStyle = `style="background: color-mix(in srgb, ${activeBlock.color} 20%, #0f0f0f); border-color: color-mix(in srgb, ${activeBlock.color} 50%, #1f1f1f);"`;
-            circleStyle = `style="border: 2px solid ${activeBlock.color}; color: #fff;"`;
+        if (status.type !== 'none') {
+            cellBgStyle = `style="background: color-mix(in srgb, ${status.color} 25%, #0f0f0f); border-color: color-mix(in srgb, ${status.color} 50%, #1f1f1f);"`;
+            circleStyle = `style="border: 2px solid ${status.color}; color: ${status.text};"`;
+        } else {
+            circleStyle = `style="color: #ccc;"`;
         }
 
         gridHTML += `
@@ -1844,21 +1860,31 @@ function renderSchoolCalendar() {
     }
     gridHTML += `</div>`;
 
-    // Legend
+    // Sidebar Legend
     const legendHTML = `
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #1f1f1f; font-size: 0.75rem; color: #ccc;">
-            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #fb923c;"></span> University recess</div>
-            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></span> Exam opportunity</div>
-            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #4ade80;"></span> Assessment / Term</div>
-            <div style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 3px; background: #3b82f6;"></span> University closed</div>
+        <div class="cal-list-header">
+            <div>
+                <h3>NWU 2026</h3>
+                <p>Academic Framework</p>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; font-size: 0.8rem; color: #ccc; overflow-y: auto; max-height: calc(100vh - 250px);">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #fb923c;"></span> University recess</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #ef4444;"></span> 1st examination opportunity</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #93c5fd;"></span> 2nd examination opportunity</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #fdba74;"></span> Assessment</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #1f1f1f; border: 1px solid #333;"></span> Public holiday</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #3b82f6;"></span> University closed</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #4ade80;"></span> Term / Normal day</div>
         </div>
     `;
 
+    // Enforces the exact same grid layout as "My Calendar" so boxes are identical in size
     container.innerHTML = `
         <div class="calendar-layout">
-            <div class="calendar-left panel" style="grid-column: 1 / -1;">${gridHTML}</div>
+            <div class="calendar-left panel">${gridHTML}</div>
+            <div class="calendar-right panel">${legendHTML}</div>
         </div>
-        ${legendHTML}
     `;
 }
 
