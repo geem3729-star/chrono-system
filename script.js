@@ -87,7 +87,6 @@ onAuthStateChanged(auth, async (user) => {
         }
         document.getElementById('userName').textContent = name;
         document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-        // NOTE: #greeting element does not exist in the HTML - removed the crash line.
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('app').style.display = 'grid';
         loadData();
@@ -1754,40 +1753,73 @@ window.toggleCalCompleted = function() {
 };
 
 // ==========================================
-// SCHOOL CALENDAR (NWU 2026 FRAMEWORK)
+// SCHOOL CALENDAR (NWU 2026 FRAMEWORK - EXACT PDF)
 // ==========================================
-let schoolCalDate = new Date(2026, 3, 1);
+let schoolCalDate = new Date(2026, 1, 1); // Defaults to Feb 2026
 
 function getNWUStatus(dateStr, dayOfWeek) {
-    if (dayOfWeek === 0 || dayOfWeek === 6) return null;
-
-    if (dateStr >= '2026-04-01' && dateStr <= '2026-04-30') {
-        if (['2026-04-01', '2026-04-02', '2026-04-07', '2026-04-09', '2026-04-10', '2026-04-13'].includes(dateStr)) {
-            return { color: '#fb923c', text: '#000000', border: '#fb923c' };
-        }
-        if (['2026-04-03', '2026-04-06', '2026-04-27'].includes(dateStr)) {
+    // 1. PUBLIC HOLIDAYS & UNIVERSITY CLOSED
+    const blackDays = [
+        '2026-01-01', '2026-03-21', '2026-04-03', '2026-04-06', 
+        '2026-04-27', '2026-05-01', '2026-06-15', '2026-06-16', 
+        '2026-08-10', '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'
+    ];
+    if (blackDays.includes(dateStr)) {
+        return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
+    }
+    
+    // University closes (25 Dec onwards)
+    if (dateStr >= '2026-12-25' && dateStr <= '2026-12-31') {
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
             return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
         }
-        if (dateStr === '2026-04-08') {
-            return { color: 'transparent', text: '#ef4444', border: '#ef4444' };
-        }
-        if (['2026-04-28', '2026-04-29', '2026-04-30'].includes(dateStr)) {
-            return { color: '#facc15', text: '#000000', border: '#facc15' };
-        }
-        return { color: '#4ade80', text: '#000000', border: '#4ade80' };
     }
 
-    const holidays = ['2026-01-01', '2026-03-21', '2026-05-01', '2026-06-16', '2026-08-09', '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'];
-    if (holidays.includes(dateStr)) return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
+    // 2. SPECIFIC ASSESSMENTS (LIGHT ORANGE)
+    if (dateStr === '2026-04-08' || dateStr === '2026-10-20') {
+        return { color: '#fdba74', text: '#000000', border: '#fdba74' };
+    }
 
-    if (dateStr >= '2026-05-18' && dateStr <= '2026-06-12') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' };
-    if (dateStr >= '2026-11-16' && dateStr <= '2026-12-08') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' };
+    // 3. INTERCHANGES / DISTANCE LEARNING (YELLOW)
+    if ((dateStr >= '2026-04-28' && dateStr <= '2026-04-30') || 
+        (dateStr >= '2026-06-25' && dateStr <= '2026-06-26')) {
+        return { color: '#facc15', text: '#000000', border: '#facc15' };
+    }
 
+    // 4. RECESS (ORANGE)
+    if ((dateStr >= '2026-03-30' && dateStr <= '2026-04-02') ||
+        (dateStr >= '2026-04-09' && dateStr <= '2026-04-13') ||
+        (dateStr === '2026-04-24') ||
+        (dateStr >= '2026-09-25' && dateStr <= '2026-10-02')) {
+        return { color: '#fb923c', text: '#000000', border: '#fb923c' };
+    }
+
+    // 5. 1ST EXAMS (RED) - Weekdays only
+    if ((dateStr >= '2026-05-25' && dateStr <= '2026-06-12') ||
+        (dateStr >= '2026-11-16' && dateStr <= '2026-12-08')) {
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            return { color: '#ef4444', text: '#ffffff', border: '#ef4444' };
+        }
+    }
+
+    // 6. 2ND EXAMS (BLUE) - Weekdays only
+    if ((dateStr >= '2026-06-17' && dateStr <= '2026-06-24') ||
+        (dateStr >= '2026-06-29' && dateStr <= '2026-06-30') ||
+        (dateStr >= '2026-12-09' && dateStr <= '2026-12-18')) {
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            return { color: '#93c5fd', text: '#000000', border: '#93c5fd' };
+        }
+    }
+
+    // 7. CLASSES / TERM (GREEN) - Weekdays only
     if ((dateStr >= '2026-02-09' && dateStr <= '2026-03-27') ||
-        (dateStr >= '2026-05-01' && dateStr <= '2026-05-15') ||
-        (dateStr >= '2026-07-06' && dateStr <= '2026-09-18') ||
+        (dateStr >= '2026-04-07' && dateStr <= '2026-04-23') ||
+        (dateStr >= '2026-05-04' && dateStr <= '2026-05-22') ||
+        (dateStr >= '2026-07-13' && dateStr <= '2026-09-18') ||
         (dateStr >= '2026-10-05' && dateStr <= '2026-11-13')) {
-        return { color: '#4ade80', text: '#000000', border: '#4ade80' };
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            return { color: '#4ade80', text: '#000000', border: '#4ade80' };
+        }
     }
 
     return null;
@@ -1831,9 +1863,8 @@ function renderSchoolCalendar() {
         let circleStyle = '';
 
         if (status) {
-            const bgColor = status.color === 'transparent' ? 'transparent' : `color-mix(in srgb, ${status.color} 25%, #0f0f0f)`;
-            cellBgStyle = `style="background: ${bgColor}; border-color: ${status.border};"`;
-            circleStyle = `style="border: 2px solid ${status.border}; color: ${status.text};"`;
+            cellBgStyle = `style="background: ${status.color}33; border-color: ${status.border};"`;
+            circleStyle = `style="border: 2px solid ${status.border}; color: ${status.text}; background: ${status.color};"`;
         }
 
         gridHTML += `
@@ -1851,16 +1882,14 @@ function renderSchoolCalendar() {
                 <p>Academic Framework</p>
             </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; font-size: 0.75rem; color: #ccc;">
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px; font-size: 0.75rem; color: #ccc;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #4ade80;"></span> Classes</div>
             <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #fb923c;"></span> University recess</div>
             <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #ef4444;"></span> 1st examination opportunity</div>
             <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #93c5fd;"></span> 2nd examination opportunity</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #facc15;"></span> Distance learning / Interchanges</div>
             <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #fdba74;"></span> Assessment</div>
-            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #1e3a8a;"></span> Inter-campus sports day</div>
-            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #facc15;"></span> Interchanges of days</div>
-            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #1f1f1f; border: 1px solid #333;"></span> Public holiday</div>
-            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #3b82f6;"></span> University closed</div>
-            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #4ade80;"></span> Term / Normal day</div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 14px; height: 14px; border-radius: 4px; background: #1f1f1f; border: 1px solid #333;"></span> Public holiday / Closed</div>
         </div>
     `;
 
@@ -1878,7 +1907,7 @@ window.changeSchoolMonth = function(dir) {
 };
 
 // ==========================================
-// THEME TOGGLE (single clean implementation)
+// THEME TOGGLE
 // ==========================================
 (function() {
     const savedTheme = localStorage.getItem('goldenPlanTheme') || 'dark';
@@ -1901,5 +1930,4 @@ window.toggleTheme = function() {
     if (btn) btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
 };
 
-// Alias in case any old markup still references it
 window.forceThemeToggle = window.toggleTheme;
