@@ -26,7 +26,7 @@ let pdfFiles = [];
 const ADMIN_EMAIL = "keketsokagiso25@gmail.com";
 
 window.switchView = function(viewName, el) {
-   if (viewName === 'school-calendar') renderSchoolCalendar();
+    if (viewName === 'school-calendar') renderSchoolCalendar();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const view = document.getElementById('view-' + viewName);
@@ -35,12 +35,12 @@ window.switchView = function(viewName, el) {
 
     if (viewName === 'modules') renderModulesList();
     if (viewName === 'dashboard') renderDashboard();
-        if (viewName === 'calendar') renderCalendar();
+    if (viewName === 'calendar') renderCalendar();
     if (viewName === 'countdowns') { renderFullCountdowns(); populateCdDropdown(); }
-        if (viewName === 'general') renderGeneralPage();
+    if (viewName === 'general') renderGeneralPage();
     if (viewName === 'examelig') renderExamEligFull();
     if (viewName === 'admin') renderAdminPanel();
-       if (viewName === 'assessments') { 
+    if (viewName === 'assessments') { 
         renderAssessmentsPage(); 
         loadPdfs(); 
     }
@@ -106,7 +106,7 @@ function loadData() {
         renderDashboard();
         renderUpcoming();
         if (document.getElementById('view-countdowns')?.classList.contains('active')) renderFullCountdowns();
-                if (document.getElementById('view-general')?.classList.contains('active')) renderGeneralPage();
+        if (document.getElementById('view-general')?.classList.contains('active')) renderGeneralPage();
         if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
     });
     onValue(ref(db, `users/${currentUser.uid}/modules`), (snapshot) => {
@@ -208,6 +208,7 @@ function renderDashboard() {
     renderModules();
     renderUpcoming();
 }
+
 function renderModules() {
     const row = document.getElementById('modulesRow');
     if (!row) return;
@@ -309,7 +310,7 @@ function renderUpcoming() {
         html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
         html += '<span class="cm-date">' + d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + '</span>';
         html += '</div>';
-               const pad2 = n => String(n).padStart(2, '0');
+        const pad2 = n => String(n).padStart(2, '0');
         html += '<div class="cc-grid">';
         html += '<div class="cc-box"><div class="cc-box-num" data-unit="days">' + pad2(r.days) + '</div><div class="cc-box-lbl">DAYS</div></div>';
         html += '<div class="cc-box"><div class="cc-box-num" data-unit="hours">' + pad2(r.hours) + '</div><div class="cc-box-lbl">HRS</div></div>';
@@ -319,7 +320,7 @@ function renderUpcoming() {
         html += '</div>';
     });
     c.innerHTML = html;
-        attachCardTickers();
+    attachCardTickers();
 }
 
 function renderFullCountdowns() {
@@ -353,7 +354,7 @@ function renderFullCountdowns() {
             }).join('');
         }
     }
-       attachCardTickers();
+    attachCardTickers();
 }
 
 function attachCardTickers() {
@@ -511,6 +512,7 @@ function renderExamEligFull() {
     });
     list.innerHTML = html;
 }
+
 async function renderAdminPanel() {
     const list = document.getElementById('adminUserList');
     const stats = document.getElementById('adminStats');
@@ -601,7 +603,7 @@ function renderAssessmentsPage() {
     const now = Date.now();
     const total = events.length;
     const completed = events.filter(e => new Date(e.deadline).getTime() <= now).length;
-       const upcoming = events.filter(e => e.module && e.module !== 'General' && new Date(e.deadline).getTime() > now).length;
+    const upcoming = events.filter(e => e.module && e.module !== 'General' && new Date(e.deadline).getTime() > now).length;
 
     const el = (id) => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
@@ -619,7 +621,8 @@ function renderAssessmentsPage() {
     if (grid) {
         if (!modules.length) {
             grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
-        } else {            let html = '';
+        } else {            
+            let html = '';
             modules.forEach(m => {
                 const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 const modCompleted = modEvents.filter(e => new Date(e.deadline).getTime() <= now).length;
@@ -712,7 +715,7 @@ function renderABList() {
     let html = '';
     let totalShown = 0;
     html += '<div class="ab-col-head"><div></div><div>ASSESSMENT</div><div>WEIGHT</div><div>DUE DATE</div><div>MY MARK</div><div>STATUS</div></div>';
-        // Add the fake General module to the dashboard too
+    
     let renderList = [...modules];
     const hasGeneral = events.some(e => !e.module || e.module === 'General');
     if (hasGeneral) {
@@ -871,6 +874,7 @@ function renderModuleViewer() {
     window.mvCurrentTab = 'all';
     renderModuleAssessmentList();
 }
+
 function renderModuleAssessmentList() {
     const list = document.getElementById('mvAssessList');
     if (!list) return;
@@ -1168,6 +1172,7 @@ window.toggleModuleForm = function() {
         if (arrow) arrow.style.transform = 'rotate(0deg)';
     }
 };
+
 function renderModalList(list, emptyMessage) {
     if (!list || !list.length) {
         return '<p style="color:#888; text-align:center; padding:40px;">' + emptyMessage + '</p>';
@@ -1187,7 +1192,6 @@ function renderModalList(list, emptyMessage) {
                 '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
             '</div>' +
             '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' + tag + '</div>' +
-            // ADDED EDIT BUTTON HERE
             '<button onclick="editCountdown(' + e.id + '); closeCompletedModal();" style="background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); color:#ff8c00; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700; margin-right:4px;">✎</button>' +
             '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
         '</div>';
@@ -1243,7 +1247,7 @@ window.openCompletedModal = function() {
     if (title) title.textContent = '✅ Completed Deadlines';
     if (sub) sub.textContent = 'All the assessments you have finished';
     const now = Date.now();
-          const completed = events.filter(function(e) { return e.module && e.module !== 'General' && new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
+    const completed = events.filter(function(e) { return e.module && e.module !== 'General' && new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
     list.innerHTML = renderModalList(completed, '🎉 No completed deadlines yet.');
     modal.style.display = 'block';
 };
@@ -1263,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         el.addEventListener('click', handler);
         el.addEventListener('touchend', handler);
     }
-        const overdueCard = document.getElementById('overdueCardBtn');
+    const overdueCard = document.getElementById('overdueCardBtn');
 
     bindTap(totalCard, function() { window.openTotalModal(); });
     bindTap(completedCard, function() { window.openCompletedModal(); });
@@ -1298,6 +1302,7 @@ window.zoomCountdown = function(id) {
     const modal = document.getElementById('zoomModal');
     if (modal) modal.style.display = 'flex';
 };
+
 function renderZoomContent(e) {
     const color = e.color || '#ff8c00';
     const d = new Date(e.deadline);
@@ -1318,7 +1323,6 @@ function renderZoomContent(e) {
     const grid = document.getElementById('zoomGrid');
     if (grid) grid.dataset.cdTarget = e.deadline;
 
-    // Kill any previous ticker and start a fresh one on the grid
     if (window._zoomTicker) clearInterval(window._zoomTicker);
     const end = new Date(e.deadline).getTime();
     const pad = n => String(n).padStart(2, '0');
@@ -1339,6 +1343,7 @@ function renderZoomContent(e) {
     update();
     window._zoomTicker = setInterval(update, 1000);
 }
+
 window.closeZoom = function() {
     const modal = document.getElementById('zoomModal');
     if (modal) modal.style.display = 'none';
@@ -1509,11 +1514,11 @@ function flipCountdown(container, target) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
 }
+
 function renderGeneralPage() {
     const list = document.getElementById('generalTasksList');
     if (!list) return;
     
-    // Filter for events that are marked as 'General' (or have no module)
     const generalEvents = events
         .filter(e => !e.module || e.module === 'General')
         .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
@@ -1523,12 +1528,10 @@ function renderGeneralPage() {
         return;
     }
 
-    // Reuse the buildCard function from the Countdowns page!
     list.innerHTML = generalEvents.map(e => buildCard(e, false)).join('');
-    
-    // Start the live countdown timers for these cards
     attachCardTickers();
 }
+
 // ==========================================
 // CALENDAR PAGE LOGIC (2-Column Layout)
 // ==========================================
@@ -1543,13 +1546,11 @@ function renderCalendar() {
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const now = new Date();
     
-    // Monday = 0, Tuesday = 1, ..., Sunday = 6
     let rawFirstDay = new Date(year, month, 1).getDay();
     let firstDay = (rawFirstDay === 0) ? 6 : rawFirstDay - 1;
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    // --- BUILD MONTH GRID ---
     let gridHTML = `
         <div class="cal-header">
             <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
@@ -1572,7 +1573,7 @@ function renderCalendar() {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
         
-               const dayEvents = events.filter(e => {
+        const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
         });
@@ -1586,21 +1587,16 @@ function renderCalendar() {
             const targetEvent = upcomingEv || dayEvents[0];
             const c = targetEvent.color || '#ff8c00';
             
-            // 1. Style the main date circle
             circleStyle = `style="border: 2px solid ${c}; color: #ffffff; ${!upcomingEv ? 'opacity: 0.6;' : ''}"`;
             
-            // 2. Style the background rectangle (softer, transparent hex colors)
             if (dayEvents.length > 1) {
                 const c1 = dayEvents[0].color || '#ff8c00';
                 const c2 = dayEvents[1].color || '#ff8c00';
-                // Using "22" at the end of hex makes it 13% opacity, creating a soft blend
                 cellBgStyle = `style="background: linear-gradient(135deg, ${c1}22 0%, ${c2}22 100%); border-color: #333;"`;
             } else {
-                // Single event: 11% opacity tint
                 cellBgStyle = `style="background: ${c}11; border-color: #333;"`;
             }
 
-            // 3. Add small circles (dots) at the bottom for each event
             dotsHTML = `<div style="position:absolute; bottom: 8px; display: flex; gap: 4px; justify-content: center; width: 100%; z-index: 10;">`;
             dayEvents.slice(0, 5).forEach(ev => {
                 const dotColor = ev.color || '#ff8c00';
@@ -1618,7 +1614,6 @@ function renderCalendar() {
     }
     gridHTML += `</div>`;
 
-    // --- BUILD EVENTS LIST ---
     const todayEvents = [];
     const tomorrowEvents = [];
     const upcomingEvents = [];
@@ -1648,9 +1643,8 @@ function renderCalendar() {
 
     const searchIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
     const settingsIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
-    const calIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
 
-        let listHTML = `
+    let listHTML = `
         <div class="cal-list-header">
             <div>
                 <h3>Events</h3>
@@ -1665,21 +1659,18 @@ function renderCalendar() {
             </div>
         </div>
     `;
-     const buildEventRow = (e, isCompleted) => {
+
+    const buildEventRow = (e, isCompleted) => {
         const d = new Date(e.deadline);
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         
-        // 1. Get the exact color of this specific event
         const eventColor = e.color || '#ff8c00';
-        
-        // 2. Make the SVG icon use that color
         const dynamicCalIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${eventColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
 
         return `
             <div class="cal-event-row" onclick="zoomCountdown(${e.id})">
-                <!-- 3. Tint the background and border of the icon to match the color -->
                 <div class="cal-event-icon" style="background: color-mix(in srgb, ${eventColor} 15%, transparent); border-color: color-mix(in srgb, ${eventColor} 30%, transparent);">
                     ${dynamicCalIcon}
                 </div>
@@ -1699,7 +1690,6 @@ function renderCalendar() {
         `;
     };
 
-    // 1. Today
     if (todayEvents.length === 0) {
         listHTML += `<div class="cal-group-title">Today</div><div class="cal-empty-msg">No pending event for today</div>`;
     } else {
@@ -1707,13 +1697,11 @@ function renderCalendar() {
         todayEvents.forEach(e => listHTML += buildEventRow(e, false));
     }
 
-    // 2. Tomorrow
     if (tomorrowEvents.length > 0) {
         listHTML += `<div class="cal-group-title">Tomorrow</div>`;
         tomorrowEvents.forEach(e => listHTML += buildEventRow(e, false));
     }
 
-    // 3. Upcoming (Starts OPEN)
     if (upcomingEvents.length > 0) {
         listHTML += `<div class="cal-group-title" style="cursor: pointer;" onclick="toggleCalUpcoming()">Upcoming events <span id="calUpcomingArrow">▲</span></div>`;
         listHTML += `<div id="calUpcomingList" style="display: flex; flex-direction: column;">`;
@@ -1721,7 +1709,6 @@ function renderCalendar() {
         listHTML += `</div>`;
     }
 
-    // 4. Completed (Starts OPEN)
     if (pastEvents.length > 0) {
         listHTML += `<div class="cal-group-title" style="cursor: pointer;" onclick="toggleCalCompleted()">Completed <span id="calCompArrow">▲</span></div>`;
         listHTML += `<div id="calCompletedList" style="display: flex; flex-direction: column;">`;
@@ -1734,7 +1721,6 @@ function renderCalendar() {
             <div class="calendar-left panel">${gridHTML}</div>
             <div class="calendar-right panel">
                 ${listHTML}
-                
             </div>
         </div>
     `;
@@ -1771,56 +1757,49 @@ window.toggleCalCompleted = function() {
 // ==========================================
 // SCHOOL CALENDAR (NWU 2026 FRAMEWORK)
 // ==========================================
-let schoolCalDate = new Date(2026, 1, 1); // Defaults to Feb 2026
+let schoolCalDate = new Date(2026, 3, 1); // Defaults to April 2026 so you can see the fix immediately
 
-function getNWUStatus(dateStr) {
-    // 1. Public Holidays (Dark/Black)
-    const holidays = [
-        '2026-01-01', '2026-03-21', '2026-04-03', '2026-04-06', 
-        '2026-04-27', '2026-05-01', '2026-06-16', '2026-08-09', 
-        '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'
-    ];
-    if (holidays.includes(dateStr)) return { color: '#1f1f1f', text: '#ffffff' };
+function getNWUStatus(dateStr, dayOfWeek) {
+    // 1. WEEKENDS ARE ALWAYS EMPTY (Unless specifically overridden)
+    if (dayOfWeek === 0 || dayOfWeek === 6) return null;
 
-    // 2. 2nd Examination Opportunity (Light Blue) - from the January image
-    if (dateStr >= '2026-01-05' && dateStr <= '2026-01-09') return { color: '#93c5fd', text: '#000000' };
-
-    // 3. University Recess (Orange)
-    if (dateStr === '2026-01-02' || 
-        (dateStr >= '2026-03-28' && dateStr <= '2026-04-05') || 
-        (dateStr >= '2026-06-15' && dateStr <= '2026-07-05') || 
-        (dateStr >= '2026-09-21' && dateStr <= '2026-10-04')) {
-        return { color: '#fb923c', text: '#000000' };
+    // 2. EXACT MATCH FOR APRIL 2026 (Following your PDF exactly)
+    if (dateStr >= '2026-04-01' && dateStr <= '2026-04-30') {
+        // Recess (Orange)
+        if (['2026-04-01', '2026-04-02', '2026-04-07', '2026-04-09', '2026-04-10', '2026-04-13'].includes(dateStr)) {
+            return { color: '#fb923c', text: '#000000', border: '#fb923c' };
+        }
+        // Public Holiday (Black)
+        if (['2026-04-03', '2026-04-06', '2026-04-27'].includes(dateStr)) {
+            return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
+        }
+        // Red Text Only (April 8)
+        if (dateStr === '2026-04-08') {
+            return { color: 'transparent', text: '#ef4444', border: '#ef4444' };
+        }
+        // Interchanges of days (Yellow)
+        if (['2026-04-28', '2026-04-29', '2026-04-30'].includes(dateStr)) {
+            return { color: '#facc15', text: '#000000', border: '#facc15' };
+        }
+        // Term (Green) - Default for other weekdays in April
+        return { color: '#4ade80', text: '#000000', border: '#4ade80' };
     }
 
-    // 4. 1st Examination Opportunity (Red)
-    if ((dateStr >= '2026-05-18' && dateStr <= '2026-06-12') || 
-        (dateStr >= '2026-11-16' && dateStr <= '2026-12-08')) {
-        return { color: '#ef4444', text: '#ffffff' };
-    }
+    // 3. GENERAL RULES FOR OTHER MONTHS
+    const holidays = ['2026-01-01', '2026-03-21', '2026-05-01', '2026-06-16', '2026-08-09', '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'];
+    if (holidays.includes(dateStr)) return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
 
-    // 5. University Closed (Dark Blue)
-    if (dateStr >= '2026-12-24' && dateStr <= '2026-12-31') return { color: '#3b82f6', text: '#ffffff' };
-
-    // 6. Interchanges of days (Yellow)
-    if (dateStr === '2026-08-10') return { color: '#facc15', text: '#000000' };
-
-    // 7. Assessments (Peach) - from the September image
-    if (dateStr === '2026-09-01' || dateStr === '2026-09-02' || dateStr === '2026-09-03' || dateStr === '2026-09-04' || 
-        dateStr === '2026-09-07' || dateStr === '2026-09-08' || dateStr === '2026-09-09' || dateStr === '2026-09-10' || 
-        dateStr === '2026-09-11' || dateStr === '2026-09-23') {
-        return { color: '#fdba74', text: '#000000' };
-    }
-
-    // 8. Term / Normal Day (Green)
+    if (dateStr >= '2026-05-18' && dateStr <= '2026-06-12') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' }; // 1st Exams
+    if (dateStr >= '2026-11-16' && dateStr <= '2026-12-08') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' }; // 1st Exams
+    
     if ((dateStr >= '2026-02-09' && dateStr <= '2026-03-27') || 
-        (dateStr >= '2026-04-07' && dateStr <= '2026-05-15') || 
+        (dateStr >= '2026-05-01' && dateStr <= '2026-05-15') || 
         (dateStr >= '2026-07-06' && dateStr <= '2026-09-18') || 
         (dateStr >= '2026-10-05' && dateStr <= '2026-11-13')) {
-        return { color: '#4ade80', text: '#000000' };
+        return { color: '#4ade80', text: '#000000', border: '#4ade80' }; // Term
     }
 
-    return null; // Empty day
+    return null;
 }
 
 function renderSchoolCalendar() {
@@ -1854,14 +1833,17 @@ function renderSchoolCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
-        const status = getNWUStatus(dateStr);
+        const dayOfWeek = new Date(year, month, d).getDay(); 
+        const status = getNWUStatus(dateStr, dayOfWeek);
 
         let cellBgStyle = '';
         let circleStyle = '';
 
         if (status) {
-            cellBgStyle = `style="background: color-mix(in srgb, ${status.color} 25%, #0f0f0f); border-color: ${status.color};"`;
-            circleStyle = `style="border: 2px solid ${status.color}; color: ${status.text};"`;
+            // Handle transparent background for April 8
+            const bgColor = status.color === 'transparent' ? 'transparent' : `color-mix(in srgb, ${status.color} 25%, #0f0f0f)`;
+            cellBgStyle = `style="background: ${bgColor}; border-color: ${status.border};"`;
+            circleStyle = `style="border: 2px solid ${status.border}; color: ${status.text};"`;
         }
 
         gridHTML += `
@@ -1872,7 +1854,6 @@ function renderSchoolCalendar() {
     }
     gridHTML += `</div>`;
 
-    // Sidebar Legend
     const legendHTML = `
         <div class="cal-list-header">
             <div>
@@ -1893,7 +1874,6 @@ function renderSchoolCalendar() {
         </div>
     `;
 
-    // This restores the exact 2-column layout so the squares are perfectly sized!
     container.innerHTML = `
         <div class="calendar-layout">
             <div class="calendar-left panel">${gridHTML}</div>

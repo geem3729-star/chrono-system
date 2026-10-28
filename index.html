@@ -96,17 +96,22 @@ Sign In with Google
 <div class="main-area">
 
 <div class="topbar">
-<div class="topbar-left-group">
-<button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">
-<span></span><span></span><span></span>
-</button>
-<div class="user-pill">
-<div class="user-avatar" id="userAvatar">?</div>
-</div>
-<span id="userName" style="display:none;">Guest</span>
-<h1 id="greeting" style="display:none;">Good evening! </h1>
-</div>
-<button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
+    <div class="topbar-left-group">
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="user-pill">
+            <div class="user-avatar" id="userAvatar">?</div>
+        </div>
+        <span id="userName" style="display:none;">Guest</span>
+        <h1 id="greeting" style="display:none;">Good evening! </h1>
+    </div>
+    
+    <!-- NEW THEME TOGGLE BUTTON & LOGOUT -->
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <button id="themeToggleBtn" class="icon-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode">☀️</button>
+        <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
+    </div>
 </div>
 
 <div class="content">
