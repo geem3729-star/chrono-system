@@ -40,9 +40,9 @@ window.switchView = function(viewName, el) {
     if (viewName === 'general') renderGeneralPage();
     if (viewName === 'examelig') renderExamEligFull();
     if (viewName === 'admin') renderAdminPanel();
-    if (viewName === 'assessments') { 
-        renderAssessmentsPage(); 
-        loadPdfs(); 
+    if (viewName === 'assessments') {
+        renderAssessmentsPage();
+        loadPdfs();
     }
 };
 
@@ -53,6 +53,7 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
         if (e.code === 'auth/popup-blocked') {
             alert('Please allow popups for this site, then try again.\n\nSafari: Settings → Safari → Block Pop-ups → OFF');
         } else if (e.code === 'auth/popup-closed-by-user') {
+            // silent
         } else {
             alert('Sign-in failed: ' + e.message);
         }
@@ -86,7 +87,7 @@ onAuthStateChanged(auth, async (user) => {
         }
         document.getElementById('userName').textContent = name;
         document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-        document.getElementById('greeting').textContent = `Good evening, ${name}! 👋`;
+        // NOTE: #greeting element does not exist in the HTML - removed the crash line.
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('app').style.display = 'grid';
         loadData();
@@ -207,6 +208,7 @@ function getTimeRemaining(iso) {
 function renderDashboard() {
     renderModules();
     renderUpcoming();
+    renderABList();
 }
 
 function renderModules() {
@@ -296,17 +298,13 @@ function renderUpcoming() {
         const r = getTimeRemaining(e.deadline);
         const d = new Date(e.deadline);
         const color = e.color || '#ff8c00';
-        const days = r.days;
-        const daysPct = Math.min(100, (days / 30) * 100);
-        const circ = 2 * Math.PI * 40;
-        const offset = circ - (daysPct / 100) * circ;
         html += '<div class="countdown-mini" data-cd-target="' + e.deadline + '" style="--card-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
         html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>';
         html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>';
         html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete">✕</button>';
         html += '</div>';
-        html += '<div class="cm-header" style="padding-right:100px;">';
+        html += '<div class="cm-header">';
         html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
         html += '<span class="cm-date">' + d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) + '</span>';
         html += '</div>';
@@ -621,7 +619,7 @@ function renderAssessmentsPage() {
     if (grid) {
         if (!modules.length) {
             grid.innerHTML = '<p style="color:#888;padding:20px;">Add modules first to see your assessment plan.</p>';
-        } else {            
+        } else {
             let html = '';
             modules.forEach(m => {
                 const modEvents = events.filter(e => e.module === m.code).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
@@ -715,7 +713,7 @@ function renderABList() {
     let html = '';
     let totalShown = 0;
     html += '<div class="ab-col-head"><div></div><div>ASSESSMENT</div><div>WEIGHT</div><div>DUE DATE</div><div>MY MARK</div><div>STATUS</div></div>';
-    
+
     let renderList = [...modules];
     const hasGeneral = events.some(e => !e.module || e.module === 'General');
     if (hasGeneral) {
@@ -898,17 +896,17 @@ function renderModuleAssessmentList() {
 
         const files = pdfFiles.filter(f => f.eventId === e.id);
         let filesHTML = '';
-        
+
         if (files.length) {
          filesHTML = '<div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; justify-content: center;">';
             files.forEach(f => {
                 const isImg = f.type && f.type.startsWith('image/');
                 const ext = isImg ? 'IMG' : 'PDF';
                 const sizeMB = (f.size / (1024*1024)).toFixed(1);
-                const thumbStyle = isImg 
-                    ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;' 
+                const thumbStyle = isImg
+                    ? 'background-image:url(' + f.data + '); background-size:cover; background-position:center;'
                     : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
-                
+
                 filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; border:1px solid #262626; width: 200px; height: 200px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
                     (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:5rem; opacity:0.4;">📄</div>') +
                     '<div style="position:absolute; bottom:0; left:0; right:0; padding:8px 10px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:8px;">' +
@@ -1185,7 +1183,7 @@ function renderModalList(list, emptyMessage) {
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         const isPast = d.getTime() <= Date.now();
         const tag = isPast ? 'COMPLETED' : 'UPCOMING';
-        
+
         html += '<div style="background:linear-gradient(90deg, color-mix(in srgb, ' + color + ' 20%, #141414) 0%, #141414 100%); border:1px solid color-mix(in srgb, ' + color + ' 35%, #262626); border-left:4px solid ' + color + '; border-radius:12px; padding:14px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
             '<div style="flex:1; min-width:180px;">' +
                 '<div style="color:#fff; font-weight:700; font-size:0.95rem;">' + (e.title || 'Deadline') + '</div>' +
@@ -1518,7 +1516,7 @@ function flipCountdown(container, target) {
 function renderGeneralPage() {
     const list = document.getElementById('generalTasksList');
     if (!list) return;
-    
+
     const generalEvents = events
         .filter(e => !e.module || e.module === 'General')
         .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
@@ -1533,7 +1531,7 @@ function renderGeneralPage() {
 }
 
 // ==========================================
-// CALENDAR PAGE LOGIC (2-Column Layout)
+// CALENDAR PAGE LOGIC
 // ==========================================
 let calCurrentDate = new Date();
 
@@ -1545,12 +1543,12 @@ function renderCalendar() {
     const month = calCurrentDate.getMonth();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const now = new Date();
-    
+
     let rawFirstDay = new Date(year, month, 1).getDay();
     let firstDay = (rawFirstDay === 0) ? 6 : rawFirstDay - 1;
-    
+
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     let gridHTML = `
         <div class="cal-header">
             <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
@@ -1572,7 +1570,7 @@ function renderCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dayDate = new Date(year, month, d);
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
-        
+
         const dayEvents = events.filter(e => {
             const eDate = new Date(e.deadline);
             return eDate.getDate() === d && eDate.getMonth() === month && eDate.getFullYear() === year;
@@ -1586,9 +1584,9 @@ function renderCalendar() {
             const upcomingEv = dayEvents.find(e => new Date(e.deadline) >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
             const targetEvent = upcomingEv || dayEvents[0];
             const c = targetEvent.color || '#ff8c00';
-            
+
             circleStyle = `style="border: 2px solid ${c}; color: #ffffff; ${!upcomingEv ? 'opacity: 0.6;' : ''}"`;
-            
+
             if (dayEvents.length > 1) {
                 const c1 = dayEvents[0].color || '#ff8c00';
                 const c2 = dayEvents[1].color || '#ff8c00';
@@ -1665,7 +1663,7 @@ function renderCalendar() {
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
         const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
         const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        
+
         const eventColor = e.color || '#ff8c00';
         const dynamicCalIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${eventColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
 
@@ -1754,49 +1752,42 @@ window.toggleCalCompleted = function() {
         arrow.textContent = '▼';
     }
 };
+
 // ==========================================
 // SCHOOL CALENDAR (NWU 2026 FRAMEWORK)
 // ==========================================
-let schoolCalDate = new Date(2026, 3, 1); // Defaults to April 2026 so you can see the fix immediately
+let schoolCalDate = new Date(2026, 3, 1);
 
 function getNWUStatus(dateStr, dayOfWeek) {
-    // 1. WEEKENDS ARE ALWAYS EMPTY (Unless specifically overridden)
     if (dayOfWeek === 0 || dayOfWeek === 6) return null;
 
-    // 2. EXACT MATCH FOR APRIL 2026 (Following your PDF exactly)
     if (dateStr >= '2026-04-01' && dateStr <= '2026-04-30') {
-        // Recess (Orange)
         if (['2026-04-01', '2026-04-02', '2026-04-07', '2026-04-09', '2026-04-10', '2026-04-13'].includes(dateStr)) {
             return { color: '#fb923c', text: '#000000', border: '#fb923c' };
         }
-        // Public Holiday (Black)
         if (['2026-04-03', '2026-04-06', '2026-04-27'].includes(dateStr)) {
             return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
         }
-        // Red Text Only (April 8)
         if (dateStr === '2026-04-08') {
             return { color: 'transparent', text: '#ef4444', border: '#ef4444' };
         }
-        // Interchanges of days (Yellow)
         if (['2026-04-28', '2026-04-29', '2026-04-30'].includes(dateStr)) {
             return { color: '#facc15', text: '#000000', border: '#facc15' };
         }
-        // Term (Green) - Default for other weekdays in April
         return { color: '#4ade80', text: '#000000', border: '#4ade80' };
     }
 
-    // 3. GENERAL RULES FOR OTHER MONTHS
     const holidays = ['2026-01-01', '2026-03-21', '2026-05-01', '2026-06-16', '2026-08-09', '2026-09-24', '2026-12-16', '2026-12-25', '2026-12-26'];
     if (holidays.includes(dateStr)) return { color: '#1f1f1f', text: '#ffffff', border: '#1f1f1f' };
 
-    if (dateStr >= '2026-05-18' && dateStr <= '2026-06-12') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' }; // 1st Exams
-    if (dateStr >= '2026-11-16' && dateStr <= '2026-12-08') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' }; // 1st Exams
-    
-    if ((dateStr >= '2026-02-09' && dateStr <= '2026-03-27') || 
-        (dateStr >= '2026-05-01' && dateStr <= '2026-05-15') || 
-        (dateStr >= '2026-07-06' && dateStr <= '2026-09-18') || 
+    if (dateStr >= '2026-05-18' && dateStr <= '2026-06-12') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' };
+    if (dateStr >= '2026-11-16' && dateStr <= '2026-12-08') return { color: '#ef4444', text: '#ffffff', border: '#ef4444' };
+
+    if ((dateStr >= '2026-02-09' && dateStr <= '2026-03-27') ||
+        (dateStr >= '2026-05-01' && dateStr <= '2026-05-15') ||
+        (dateStr >= '2026-07-06' && dateStr <= '2026-09-18') ||
         (dateStr >= '2026-10-05' && dateStr <= '2026-11-13')) {
-        return { color: '#4ade80', text: '#000000', border: '#4ade80' }; // Term
+        return { color: '#4ade80', text: '#000000', border: '#4ade80' };
     }
 
     return null;
@@ -1810,11 +1801,11 @@ function renderSchoolCalendar() {
     const month = schoolCalDate.getMonth();
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const now = new Date();
-    
+
     let rawFirstDay = new Date(year, month, 1).getDay();
     let firstDay = (rawFirstDay === 0) ? 6 : rawFirstDay - 1;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     let gridHTML = `
         <div class="cal-header">
             <button class="cal-nav-btn" onclick="changeSchoolMonth(-1)">‹</button>
@@ -1833,14 +1824,13 @@ function renderSchoolCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear();
-        const dayOfWeek = new Date(year, month, d).getDay(); 
+        const dayOfWeek = new Date(year, month, d).getDay();
         const status = getNWUStatus(dateStr, dayOfWeek);
 
         let cellBgStyle = '';
         let circleStyle = '';
 
         if (status) {
-            // Handle transparent background for April 8
             const bgColor = status.color === 'transparent' ? 'transparent' : `color-mix(in srgb, ${status.color} 25%, #0f0f0f)`;
             cellBgStyle = `style="background: ${bgColor}; border-color: ${status.border};"`;
             circleStyle = `style="border: 2px solid ${status.border}; color: ${status.text};"`;
@@ -1886,3 +1876,30 @@ window.changeSchoolMonth = function(dir) {
     schoolCalDate.setMonth(schoolCalDate.getMonth() + dir);
     renderSchoolCalendar();
 };
+
+// ==========================================
+// THEME TOGGLE (single clean implementation)
+// ==========================================
+(function() {
+    const savedTheme = localStorage.getItem('goldenPlanTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    });
+})();
+
+window.toggleTheme = function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('goldenPlanTheme', newTheme);
+
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+};
+
+// Alias in case any old markup still references it
+window.forceThemeToggle = window.toggleTheme;

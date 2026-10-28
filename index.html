@@ -4,8 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Plan</title>
-<link rel="stylesheet" href="style.css?v=103">
-<script type="module" src="script.js?v=103"></script>
+<link rel="stylesheet" href="style.css?v=1000">
+<script type="module" src="script.js?v=1000"></script>
+<style>
+    body.light-mode { background-color: #f4f4f5 !important; color: #18181b !important; }
+    body.light-mode .app, body.light-mode .main-area, body.light-mode .content { background-color: #f4f4f5 !important; color: #18181b !important; }
+    body.light-mode .sidebar, body.light-mode .topbar, body.light-mode .bottom-bar, body.light-mode .panel { background-color: #ffffff !important; border-color: #e4e4e7 !important; color: #18181b !important; }
+    body.light-mode h1, body.light-mode h2, body.light-mode h3, body.light-mode .panel-title, body.light-mode .nav-item, body.light-mode .cal-day-name { color: #18181b !important; }
+    body.light-mode .nav-item:hover { background-color: #f4f4f5 !important; }
+    body.light-mode input, body.light-mode select, body.light-mode textarea { background-color: #f9f9fa !important; color: #18181b !important; border-color: #d4d4d8 !important; }
+    body.light-mode .module-card, body.light-mode .countdown-card, body.light-mode .countdown-mini { color: #ffffff !important; }
+</style>
 </head>
 <body>
 
@@ -17,8 +26,6 @@
 <div id="authScreen" style="display:none;">
 <div class="auth-box">
 <div class="auth-logo">
-
- <!-- Safari warning -->
 <div id="safariWarning" style="display:none; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); border-radius:12px; padding:14px 18px; margin-bottom:20px; font-size:0.8rem; color:#ff8c00; text-align:left; line-height:1.6;">
     <strong>⚠️ Safari users:</strong> Google sign-in may not work on Safari due to iOS restrictions. If sign-in fails, please open this page in <strong>Chrome</strong> instead.
 </div>   
@@ -104,12 +111,10 @@ Sign In with Google
             <div class="user-avatar" id="userAvatar">?</div>
         </div>
         <span id="userName" style="display:none;">Guest</span>
-        <h1 id="greeting" style="display:none;">Good evening! </h1>
     </div>
     
-    <!-- NEW THEME TOGGLE BUTTON & LOGOUT -->
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <button id="themeToggleBtn" class="icon-btn" onclick="toggleTheme()" title="Toggle Light/Dark Mode">☀️</button>
+    <div style="display: flex; gap: 12px; align-items: center; grid-column: 3; justify-self: end;">
+        <button id="themeToggleBtn" onclick="toggleTheme()" style="font-size: 1.4rem; cursor: pointer; background: transparent; border: none; padding: 5px; outline: none;">☀️</button>
         <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
     </div>
 </div>
@@ -423,13 +428,12 @@ Sign In with Google
     </div>
 </div>
 
-<!-- ============ MODULE VIEWER MODAL ============ -->
 <div id="moduleViewerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:9999; padding:8px; overflow-y:auto;">
   <div style="max-width:none; margin:0 auto; background:#0f0f0f; border:1px solid #1f1f1f; border-radius:20px; padding:28px; min-height:calc(100vh - 32px);">
     <div id="moduleViewerBody"></div>
   </div>
 </div>
-<!-- ============ ZOOM MODAL ============ -->
+
 <div id="zoomModal" class="zoom-modal" onclick="if(event.target===this)closeZoom()">
     <div class="zoom-inner">
         <button class="zoom-close" onclick="closeZoom()">✕</button>
@@ -445,7 +449,6 @@ Sign In with Google
     </div>
 </div>
 
-<!-- ============ EDIT MODAL ============ -->
 <div id="editModal" class="edit-modal" onclick="if(event.target===this)closeEditModal()">
     <div class="edit-inner">
         <div class="edit-header">
@@ -470,7 +473,6 @@ Sign In with Google
     </div>
 </div>
 
-<!-- ============ EDIT MODULE MODAL ============ -->
 <div id="editModuleModal" class="edit-modal" onclick="if(event.target===this)closeEditModuleModal()">
     <div class="edit-inner">
         <div class="edit-header">
@@ -491,7 +493,7 @@ Sign In with Google
     </div>
 </div>
 
-<div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v103</div>
+<div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v1000</div>
 
 </body>
 </html>

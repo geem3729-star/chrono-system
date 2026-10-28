@@ -2393,7 +2393,6 @@ body .logout-mini:hover {
         order: -1;
     }
 }
-
 @media (max-width: 600px) {
     #moduleViewerModal {
         padding: 12px !important;
@@ -2405,12 +2404,12 @@ body .logout-mini:hover {
     .mv-action-btn {
         padding: 12px 14px;
     }
+}
 
 @media (min-width: 1600px) {
     #moduleViewerModal > div {
         max-width: 90% !important;
     }
-  }
 }
 /* ============================================================
    ASSESSMENT BOARD
@@ -4085,6 +4084,253 @@ body .logout-mini:hover {
 [data-theme="light"] .bottom-bar {
     background: #ffffff !important;
     border-color: #e4e4e7 !important;
+}
+
+[data-theme="light"] .bottom-step .bs-label strong {
+    color: #18181b !important;
+}
+
+[data-theme="light"] .bottom-quote {
+    color: #71717a !important;
+}
+/* ============================================================
+   NUCLEAR LIGHT MODE OVERRIDE - DO NOT DELETE
+   ============================================================ */
+
+/* 1. Base Background and Text */
+[data-theme="light"] body,
+[data-theme="light"] .app,
+[data-theme="light"] .main-area,
+[data-theme="light"] .content {
+    background-color: #f4f4f5 !important;
+    color: #18181b !important;
+}
+
+/* 2. Sidebar & Topbar */
+[data-theme="light"] .sidebar,
+[data-theme="light"] .topbar,
+[data-theme="light"] .bottom-bar {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+}
+
+[data-theme="light"] .nav-item {
+    color: #3f3f46 !important;
+}
+
+[data-theme="light"] .nav-item:hover {
+    background-color: #f4f4f5 !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .nav-section-title,
+[data-theme="light"] .golden-focus {
+    background-color: #f9f9fa !important;
+    color: #71717a !important;
+    border-color: #e4e4e7 !important;
+}
+
+/* 3. All Panels, Cards, and Modals */
+[data-theme="light"] .panel,
+[data-theme="light"] .assess-stat-card,
+[data-theme="light"] .coming-soon,
+[data-theme="light"] .calendar-right,
+[data-theme="light"] .cal-cell,
+[data-theme="light"] .edit-inner,
+[data-theme="light"] .mv-action-btn,
+[data-theme="light"] #completedModal > div,
+[data-theme="light"] #moduleViewerModal > div {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    color: #18181b !important;
+}
+
+/* 4. Force Text Colors */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] .panel-title,
+[data-theme="light"] .cal-day-name,
+[data-theme="light"] .assess-section-title,
+[data-theme="light"] .ab-module-code,
+[data-theme="light"] .ab-row-name,
+[data-theme="light"] .cal-event-title {
+    color: #18181b !important;
+}
+
+/* 5. Inputs and Forms */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea,
+[data-theme="light"] .edit-field input,
+[data-theme="light"] .ab-search {
+    background-color: #f9f9fa !important;
+    color: #18181b !important;
+    border-color: #d4d4d8 !important;
+}
+
+/* 6. Table Headers and Progress Bars */
+[data-theme="light"] .ab-col-head,
+[data-theme="light"] .ab-row,
+[data-theme="light"] .module-assess-list li {
+    border-color: #e4e4e7 !important;
+    color: #3f3f46 !important;
+}
+[data-theme="light"] .ab-progress-bar,
+[data-theme="light"] .module-assess-progress-bar {
+    background-color: #e4e4e7 !important;
+}
+
+/* 7. Fix Colored Cards (Keep text white so it doesn't vanish on bright colors) */
+[data-theme="light"] .module-card,
+[data-theme="light"] .countdown-card,
+[data-theme="light"] .countdown-mini,
+[data-theme="light"] .zoom-inner {
+    color: #ffffff !important;
+}
+[data-theme="light"] .module-card .module-name,
+[data-theme="light"] .countdown-card .cc-title,
+[data-theme="light"] .countdown-mini .cm-title,
+[data-theme="light"] .cc-box-num {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+}
+
+/* 8. Dynamic JS Inline Overrides */
+[data-theme="light"] div[style*="background:#141414"],
+[data-theme="light"] div[style*="background: #141414"],
+[data-theme="light"] div[style*="background:#1a1a1a"],
+[data-theme="light"] div[style*="background: #1a1a1a"] {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    color: #18181b !important;
+}
+/* ============================================================
+   CSS FIXES & LIGHT MODE OVERRIDES
+   ============================================================ */
+
+/* Fix the broken red/green debug module card */
+.module-card {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--module-color, #ff8c00) 15%, #0f0f0f) 0%,
+        color-mix(in srgb, var(--module-color, #ff8c00) 5%, #0f0f0f) 100%) !important;
+    border: 2px solid color-mix(in srgb, var(--module-color, #ff8c00) 50%, transparent) !important;
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--module-color, #ff8c00) 10%, transparent) !important;
+}
+
+/* Fix the text padding so it doesn't hide behind the buttons */
+.module-card .module-header {
+    padding-right: 0 !important; 
+    margin-top: 10px !important;
+}
+
+/* Fix the countdown card text overflow */
+.countdown-mini .cm-header {
+    padding-right: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+}
+
+/* ============================================================
+   NUCLEAR LIGHT MODE OVERRIDES
+   ============================================================ */
+[data-theme="light"] body,
+[data-theme="light"] .app,
+[data-theme="light"] .main-area,
+[data-theme="light"] .content {
+    background-color: #f4f4f5 !important;
+    color: #18181b !important;
+}
+
+[data-theme="light"] .sidebar,
+[data-theme="light"] .topbar,
+[data-theme="light"] .bottom-bar {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+}
+
+[data-theme="light"] .nav-item {
+    color: #3f3f46 !important;
+}
+
+[data-theme="light"] .nav-item:hover {
+    background-color: #f4f4f5 !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .nav-item.active {
+    background-color: #ff8c00 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .nav-section-title,
+[data-theme="light"] .golden-focus {
+    background-color: #f9f9fa !important;
+    color: #71717a !important;
+    border-color: #e4e4e7 !important;
+}
+
+[data-theme="light"] .panel,
+[data-theme="light"] .assess-stat-card,
+[data-theme="light"] .coming-soon,
+[data-theme="light"] .calendar-right,
+[data-theme="light"] .cal-cell,
+[data-theme="light"] .edit-inner,
+[data-theme="light"] .mv-action-btn,
+[data-theme="light"] #completedModal > div,
+[data-theme="light"] #moduleViewerModal > div {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    color: #18181b !important;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] .panel-title,
+[data-theme="light"] .cal-day-name,
+[data-theme="light"] .assess-section-title,
+[data-theme="light"] .ab-module-code,
+[data-theme="light"] .ab-row-name,
+[data-theme="light"] .cal-event-title,
+[data-theme="light"] .sidebar-logo h2 {
+    color: #18181b !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea,
+[data-theme="light"] .edit-field input,
+[data-theme="light"] .ab-search {
+    background-color: #f9f9fa !important;
+    color: #18181b !important;
+    border-color: #d4d4d8 !important;
+}
+
+[data-theme="light"] .ab-col-head,
+[data-theme="light"] .ab-row,
+[data-theme="light"] .module-assess-list li {
+    border-color: #e4e4e7 !important;
+    color: #3f3f46 !important;
+}
+
+[data-theme="light"] .module-card,
+[data-theme="light"] .countdown-card,
+[data-theme="light"] .countdown-mini,
+[data-theme="light"] .zoom-inner {
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .module-card .module-name,
+[data-theme="light"] .countdown-card .cc-title,
+[data-theme="light"] .countdown-mini .cm-title,
+[data-theme="light"] .cc-box-num {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
 }
 
 [data-theme="light"] .bottom-step .bs-label strong {
