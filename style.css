@@ -4093,6 +4093,63 @@ body .logout-mini:hover {
 [data-theme="light"] .bottom-quote {
     color: #71717a !important;
 }
+
+:root {
+    color-scheme: dark;
+    --color-accent: #ff8c00;
+    --color-background: #0a0a0a;
+    --color-surface: #141414;
+    --color-border: #262626;
+    --radius-card: 14px;
+}
+
+[data-theme="light"] {
+    color-scheme: light;
+}
+
+.panel {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    border-radius: var(--radius-card);
+}
+
+.assess-stat-card,
+.coming-soon {
+    border-radius: var(--radius-card);
+}
+
+body {
+    background-color: var(--color-background);
+}
+
+.ui-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.15em;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+@media (min-width: 901px) {
+    body .topbar .mobile-menu-btn,
+    body .mobile-menu-btn {
+        display: none !important;
+    }
+}
 /* ============================================================
    NUCLEAR LIGHT MODE OVERRIDE - DO NOT DELETE
    ============================================================ */
