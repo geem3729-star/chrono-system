@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB3YOrV6h6gYkPa6O1SaSJXbAemmfMu3Lg",
@@ -22,8 +22,14 @@ let events = [];
 let modules = [];
 let allUsers = [];
 let pdfFiles = [];
+let dataUnsubscribers = [];
+let authGeneration = 0;
 
 const ADMIN_EMAIL = "keketsokagiso25@gmail.com";
+
+function iconMarkup(name) {
+    return '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#' + name + '"></use></svg>';
+}
 
 window.switchView = function(viewName, el) {
     if (viewName === 'school-calendar') renderSchoolCalendar();
@@ -65,8 +71,10 @@ window.handleLogout = async function() {
 };
 
 onAuthStateChanged(auth, async (user) => {
+    const generation = ++authGeneration;
     const ls = document.getElementById('loadingScreen');
     if (ls) ls.style.display = 'none';
+    stopDataSync();
     if (user) {
         currentUser = user;
         const name = user.displayName || user.email.split('@')[0];
@@ -81,6 +89,7 @@ onAuthStateChanged(auth, async (user) => {
                 await set(userRef, { uid: user.uid, name: name, email: user.email, photo: user.photoURL || '', firstSeen: now, lastSeen: now, loginCount: 1 });
             }
         } catch (e) { console.error('Log user error:', e); }
+        if (generation !== authGeneration) return;
         if (user.email === ADMIN_EMAIL) {
             const adminBtn = document.getElementById('adminNavBtn');
             if (adminBtn) adminBtn.style.display = 'flex';
@@ -93,6 +102,13 @@ onAuthStateChanged(auth, async (user) => {
         renderDashboard();
         setupModuleForm();
     } else {
+        currentUser = null;
+        events = [];
+        modules = [];
+        allUsers = [];
+        pdfFiles = [];
+        const adminBtn = document.getElementById('adminNavBtn');
+        if (adminBtn) adminBtn.style.display = 'none';
         document.getElementById('authScreen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
     }
@@ -100,7 +116,10 @@ onAuthStateChanged(auth, async (user) => {
 
 function loadData() {
     if (!currentUser) return;
-    onValue(ref(db, `users/${currentUser.uid}/events`), (snapshot) => {
+    stopDataSync();
+    const uid = currentUser.uid;
+    dataUnsubscribers.push(onValue(ref(db, `users/${uid}/events`), (snapshot) => {
+        if (currentUser?.uid !== uid) return;
         const val = snapshot.val();
         events = val ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x)) : [];
         renderDashboard();
@@ -108,20 +127,27 @@ function loadData() {
         if (document.getElementById('view-countdowns')?.classList.contains('active')) renderFullCountdowns();
         if (document.getElementById('view-general')?.classList.contains('active')) renderGeneralPage();
         if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
-    });
-    onValue(ref(db, `users/${currentUser.uid}/modules`), (snapshot) => {
+    }));
+    dataUnsubscribers.push(onValue(ref(db, `users/${uid}/modules`), (snapshot) => {
+        if (currentUser?.uid !== uid) return;
         const val = snapshot.val();
         modules = val ? (Array.isArray(val) ? val.filter(x => x) : Object.values(val).filter(x => x)) : [];
         renderDashboard();
         renderModulesList();
         if (document.getElementById('view-assessments')?.classList.contains('active')) renderAssessmentsPage();
-    });
+    }));
     if (currentUser.email === ADMIN_EMAIL) {
-        onValue(ref(db, `allUsers`), (snapshot) => {
+        dataUnsubscribers.push(onValue(ref(db, `allUsers`), (snapshot) => {
+            if (currentUser?.uid !== uid) return;
             allUsers = snapshot.exists() ? Object.values(snapshot.val()).filter(x => x) : [];
             if (document.getElementById('view-admin')?.classList.contains('active')) renderAdminPanel();
-        });
+        }));
     }
+}
+
+function stopDataSync() {
+    dataUnsubscribers.forEach(unsubscribe => unsubscribe());
+    dataUnsubscribers = [];
 }
 
 async function saveEvents() {
@@ -152,7 +178,8 @@ async function savePdfs() {
 
 function setupModuleForm() {
     const preset = document.getElementById('presetModule');
-    if (!preset) return;
+    if (!preset || preset.dataset.initialized) return;
+    preset.dataset.initialized = 'true';
     const codeInput = document.getElementById('moduleCode');
     const nameInput = document.getElementById('moduleName');
     const slider = document.getElementById('moduleMarkSlider');
@@ -215,7 +242,7 @@ function renderModules() {
     if (!row) return;
     if (!modules.length) {
         row.innerHTML = '<div class="module-card" style="grid-column:1/-1;"><p style="color:#888;padding:24px;text-align:center;">No modules yet. Go to Modules to add them.</p></div>' +
-            '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">0%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">Add modules to begin</div></div>';
+            '<div class="overall-card"><div class="trophy"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#trophy"></use></svg></div><div class="overall-pct">0%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">Add modules to begin</div></div>';
         return;
     }
     let html = '';
@@ -226,14 +253,14 @@ function renderModules() {
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-        let bc = 'eligible'; let bt = '✅ Qualify';
-        if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
-        else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
+        let bc = 'eligible'; let bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Qualify';
+        if (mark < 40) { bc = 'atrisk'; bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Dont Qualify'; }
+        else if (mark < 60) { bc = 'warning'; bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Warning'; }
         html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
-        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
-        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit">✎</button>';
-        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete">✕</button>';
+        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#expand"></use></svg></button>';
+        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>';
         html += '</div>';
         html += '<div class="module-header"><div><span class="module-name">' + m.code + '</span><span class="module-full">' + m.name + '</span></div></div>';
         html += '<div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="' + color + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"/></svg>';
@@ -247,7 +274,7 @@ function renderModules() {
     if (avg >= 75) tag = 'Excellent!';
     else if (avg >= 60) tag = 'Good Progress!';
     else if (avg >= 40) tag = 'Keep Pushing!';
-    html += '<div class="overall-card"><div class="trophy">🏆</div><div class="overall-pct">' + avg + '%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">' + tag + '</div></div>';
+    html += '<div class="overall-card"><div class="trophy"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#trophy"></use></svg></div><div class="overall-pct">' + avg + '%</div><div class="overall-label">Overall Average</div><div class="overall-tagline">' + tag + '</div></div>';
     row.innerHTML = html;
 }
 
@@ -264,14 +291,14 @@ function renderModulesList() {
         const circ = 2 * Math.PI * 36;
         const off = circ - (Math.min(100, mark) / 100) * circ;
         const color = m.color || '#ff8c00';
-        let bc = 'eligible'; let bt = '✅ Qualify';
-        if (mark < 40) { bc = 'atrisk'; bt = '⚠️ Dont Qualify'; }
-        else if (mark < 60) { bc = 'warning'; bt = '🟡 Warning'; }
+        let bc = 'eligible'; let bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Qualify';
+        if (mark < 40) { bc = 'atrisk'; bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Dont Qualify'; }
+        else if (mark < 60) { bc = 'warning'; bt = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Warning'; }
         html += '<div class="module-card" style="--module-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
-        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View">⛶</button>';
-        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit">✎</button>';
-        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete">✕</button>';
+        html += '<button onclick="event.stopPropagation(); viewModuleAssessments(\'' + m.code + '\')" title="View"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#expand"></use></svg></button>';
+        html += '<button onclick="event.stopPropagation(); editModule(' + m.id + ')" title="Edit"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteModule(' + m.id + ')" title="Delete"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>';
         html += '</div>';
         html += '<div class="module-header"><div><span class="module-name">' + m.code + '</span><span class="module-full">' + m.name + '</span></div></div>';
         html += '<div class="module-ring"><svg viewBox="0 0 90 90"><circle class="ring-bg" cx="45" cy="45" r="36"/><circle class="ring-progress" cx="45" cy="45" r="36" stroke="' + color + '" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"/></svg>';
@@ -299,9 +326,9 @@ function renderUpcoming() {
         const color = e.color || '#ff8c00';
         html += '<div class="countdown-mini" data-cd-target="' + e.deadline + '" style="--card-color:' + color + '; position:relative;">';
         html += '<div class="card-actions">';
-        html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>';
-        html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>';
-        html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete">✕</button>';
+        html += '<button onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#expand"></use></svg></button>';
+        html += '<button onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>';
+        html += '<button class="danger" onclick="event.stopPropagation(); deleteEvent(' + e.id + ')" title="Delete"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>';
         html += '</div>';
         html += '<div class="cm-header">';
         html += '<span class="cm-title">' + (e.title || 'Deadline') + '</span>';
@@ -345,8 +372,8 @@ function renderFullCountdowns() {
                         '<div style="color:#888;font-size:0.75rem;margin-top:4px;">' + (e.module || 'General') + ' · ' + d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) + '</div>' +
                     '</div>' +
                     '<div style="font-size:0.7rem;font-weight:700;color:' + color + ';background:color-mix(in srgb, ' + color + ' 15%, transparent);padding:4px 12px;border-radius:50px;white-space:nowrap;flex-shrink:0;">COMPLETED</div>' +
-                    '<button onclick="editCountdown(' + e.id + ')" title="Edit" style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:#ff8c00;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✎</button>' +
-                    '<button onclick="deleteEvent(' + e.id + ')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>' +
+                    '<button onclick="editCountdown(' + e.id + ')" title="Edit" style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:#ff8c00;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>' +
+                    '<button onclick="deleteEvent(' + e.id + ')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:28px;height:28px;border-radius:50%;cursor:pointer;flex-shrink:0;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>' +
                 '</div>';
             }).join('');
         }
@@ -400,9 +427,9 @@ function buildCard(e, isPast) {
 
     return '<div class="countdown-card ' + blinkClass + '" data-cd-id="' + e.id + '" data-cd-target="' + e.deadline + '" style="opacity:' + opacity + ';position:relative;--card-color:' + color + ';">' +
         '<div class="cc-actions">' +
-            '<button class="cc-action-btn" onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen">⛶</button>' +
-            '<button class="cc-action-btn" onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit">✎</button>' +
-            '<button class="cc-action-btn cc-delete" data-id="' + e.id + '" title="Delete">✕</button>' +
+            '<button class="cc-action-btn" onclick="event.stopPropagation(); zoomCountdown(' + e.id + ')" title="Fullscreen"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#expand"></use></svg></button>' +
+            '<button class="cc-action-btn" onclick="event.stopPropagation(); editCountdown(' + e.id + ')" title="Edit"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>' +
+            '<button class="cc-action-btn cc-delete" data-id="' + e.id + '" title="Delete"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>' +
         '</div>' +
         '<div class="cc-header"><div style="padding-right:120px;"><div class="cc-title">' + title + '</div></div></div>' +
         '<div class="cc-grid">' +
@@ -486,8 +513,6 @@ setInterval(() => {
     }
 }, 1000);
 
-function renderExamElig() {}
-
 function renderExamEligFull() {
     const list = document.getElementById('examEligListFull');
     if (!list) return;
@@ -500,7 +525,7 @@ function renderExamEligFull() {
         const mark = m.currentMark || 0;
         const eligible = mark >= 40;
         const color = eligible ? '#4ade80' : '#fb923c';
-        const text = eligible ? '✅ Eligible for exam' : '⚠️ Not yet (need 40%)';
+        const text = eligible ? '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Eligible for exam' : '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Not yet (need 40%)';
         html += '<div class="eligibility-item">' +
             '<div><div class="elig-name">' + m.code + ' — ' + (m.name || m.code) + '</div>' +
             '<div class="elig-note">Current mark: ' + mark + '%</div></div>' +
@@ -572,7 +597,7 @@ async function renderAdminPanel() {
                     u.name + (isMe ? '<span style="font-size:0.65rem;background:#ff8c00;color:#fff;padding:2px 8px;border-radius:50px;font-weight:700;">YOU</span>' : '') +
                 '</div>' +
                 '<div style="font-size:0.75rem;color:#888;margin-top:2px;">' + u.email + '</div>' +
-                '<div style="font-size:0.72rem;color:#666;margin-top:6px;">📅 Joined: ' + firstStr + ' &nbsp;·&nbsp; 🔄 Logins: ' + (u.loginCount || 1) + '</div>' +
+                '<div style="font-size:0.72rem;color:#666;margin-top:6px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calendar"></use></svg> Joined: ' + firstStr + ' &nbsp;·&nbsp; <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#repeat"></use></svg> Logins: ' + (u.loginCount || 1) + '</div>' +
             '</div>' +
             '<div style="text-align:right;min-width:180px;">' +
                 '<div style="font-size:0.7rem;color:#666;margin-bottom:4px;">LAST SEEN</div>' +
@@ -706,7 +731,7 @@ function renderABList() {
     const now = Date.now();
     const searchVal = (document.getElementById('abSearchInput')?.value || '').toLowerCase().trim();
     if (!modules.length) {
-        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">📚</div><div>Add modules first to see your assessment plan.</div></div>';
+        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></div><div>Add modules first to see your assessment plan.</div></div>';
         return;
     }
     let html = '';
@@ -746,15 +771,15 @@ function renderABList() {
             let progressLabel = '';
             if (isPast) {
                 pct = hasMark ? Math.min(100, Number(e.currentMark)) : 100;
-                progressLabel = hasMark ? '✓ ' + e.currentMark + '%' : '✓ Done';
+                progressLabel = iconMarkup('check') + ' ' + (hasMark ? e.currentMark + '%' : 'Done');
             } else {
                 pct = Math.max(2, Math.min(100, 100 - (daysLeft / 90) * 100));
-                progressLabel = '⏱ ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
+                progressLabel = '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#clock"></use></svg> ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
             }
             const markDisplay = hasMark ? e.currentMark + ' / 100' : '- / 100';
             html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
                 '<div class="ab-row-main">' +
-                    '<div class="ab-row-icon">📄</div>' +
+                    '<div class="ab-row-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#file"></use></svg></div>' +
                     '<div class="ab-row-info"><div class="ab-row-name">' + (e.title || 'Assessment') + '</div><div class="ab-row-sub">' + (e.module || '') + '</div></div>' +
                     '<div class="ab-row-meta">' + (e.weight || 0) + '%</div>' +
                     '<div class="ab-row-meta">' + dateStr + '</div>' +
@@ -773,7 +798,7 @@ function renderABList() {
     if (!totalShown) {
         const hasAny = events.some(ev => modules.some(m => m.code === ev.module));
         const msg = hasAny ? 'Nothing matches your filter.' : 'No assessments yet. Add one on the Countdowns page and pick a module.';
-        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">🎉</div><div>' + msg + '</div></div>';
+        container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg></div><div>' + msg + '</div></div>';
         return;
     }
     container.innerHTML = html;
@@ -814,19 +839,19 @@ function renderModuleViewer() {
         '</div>' +
         '<div style="display:flex; align-items:center; gap:12px;">' +
             '<div style="background:#141414; border:1px solid #262626; border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:10px;">' +
-                '<div style="width:32px; height:32px; border-radius:8px; background:rgba(255,140,0,0.1); display:flex; align-items:center; justify-content:center; font-size:1rem;">📅</div>' +
+                '<div style="width:32px; height:32px; border-radius:8px; background:rgba(255,140,0,0.1); display:flex; align-items:center; justify-content:center; font-size:1rem;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calendar"></use></svg></div>' +
                 '<div><div style="font-size:0.65rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">Today</div>' +
                 '<div style="font-size:0.8rem; color:#f5f5f5; font-weight:600;">' + new Date().toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) + '</div></div>' +
             '</div>' +
-            '<button onclick="closeModuleViewer()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:42px; height:42px; border-radius:50%; cursor:pointer; font-weight:700; font-size:1rem;">✕</button>' +
+            '<button onclick="closeModuleViewer()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:42px; height:42px; border-radius:50%; cursor:pointer; font-weight:700; font-size:1rem;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>' +
         '</div>' +
     '</div>';
     html += '<div style="margin-bottom:22px;">' +
-        '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:12px; display:flex; align-items:center; gap:8px;">⚡ Quick Actions</div>' +
+        '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:12px; display:flex; align-items:center; gap:8px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#zap"></use></svg> Quick Actions</div>' +
         '<div class="mv-actions-grid">' +
-            '<button onclick="viewImagesFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(59,130,246,0.15);">🖼️</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View Images</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all images</div></div></button>' +
-            '<button onclick="viewPdfsFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(239,68,68,0.15);">📄</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View PDFs</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all PDFs</div></div></button>' +
-            '<button onclick="uploadModuleFile(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(139,92,246,0.15);">📤</span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">Upload Files</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Add study materials</div></div></button>' +
+            '<button onclick="viewImagesFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(59,130,246,0.15);"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#image"></use></svg></span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View Images</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all images</div></div></button>' +
+            '<button onclick="viewPdfsFor(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(239,68,68,0.15);"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#file"></use></svg></span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">View PDFs</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Open all PDFs</div></div></button>' +
+            '<button onclick="uploadModuleFile(\'' + m.code + '\')" class="mv-action-btn"><span class="mv-action-icon" style="background:rgba(139,92,246,0.15);"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#upload"></use></svg></span><div style="text-align:left; min-width:0;"><div style="color:#f5f5f5; font-weight:600; font-size:0.8rem;">Upload Files</div><div style="font-size:0.68rem; color:#888; font-weight:400;">Add study materials</div></div></button>' +
         '</div>' +
     '</div>';
     html += '<div style="display:flex; gap:24px; border-bottom:1px solid #1f1f1f; margin-bottom:20px;">' +
@@ -840,7 +865,7 @@ function renderModuleViewer() {
     html += '<div class="mv-left" id="mvAssessList"></div>';
     html += '<div class="mv-right">' +
         '<div style="background:#141414; border:1px solid #1f1f1f; border-radius:14px; padding:18px; margin-bottom:16px;">' +
-            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:16px; display:flex; align-items:center; gap:8px;">📊 Progress Overview</div>' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#f5f5f5; margin-bottom:16px; display:flex; align-items:center; gap:8px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg> Progress Overview</div>' +
             '<div style="display:flex; align-items:center; justify-content:center; margin-bottom:18px;">' +
                 '<div style="position:relative; width:120px; height:120px;">' +
                     '<svg viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">' +
@@ -860,7 +885,7 @@ function renderModuleViewer() {
             '</div>' +
         '</div>' +
         '<div style="background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02)); border:1px solid rgba(59,130,246,0.25); border-radius:14px; padding:16px;">' +
-            '<div style="font-size:0.75rem; font-weight:700; color:#60a5fa; margin-bottom:6px; display:flex; align-items:center; gap:8px;">💡 Stay on track!</div>' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#60a5fa; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#lightbulb"></use></svg> Stay on track!</div>' +
             '<div style="font-size:0.72rem; color:#888; line-height:1.5;">Keep up with your assessments, view your resources, and make sure to upload your files where needed.</div>' +
         '</div>' +
     '</div>';
@@ -880,7 +905,7 @@ function renderModuleAssessmentList() {
     const items = window.mvCurrentTab === 'completed' ? window.mvCompletedEvents : window.mvAllEvents;
 
     if (!items.length) {
-        list.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#666;">🎉 Nothing here yet.</div>';
+        list.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#666;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Nothing here yet.</div>';
         return;
     }
 
@@ -907,7 +932,7 @@ function renderModuleAssessmentList() {
                     : 'background:linear-gradient(135deg,#1f1f1f,#0f0f0f);';
 
                 filesHTML += '<div onclick="openFileViewer(' + f.id + ')" style="position:relative; border-radius:12px; overflow:hidden; cursor:pointer; border:1px solid #262626; width: 200px; height: 200px; display:flex; align-items:flex-start; ' + thumbStyle + '">' +
-                    (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:5rem; opacity:0.4;">📄</div>') +
+                    (isImg ? '' : '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:5rem; opacity:0.4;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#file"></use></svg></div>') +
                     '<div style="position:absolute; bottom:0; left:0; right:0; padding:8px 10px; background:rgba(0,0,0,0.85); display:flex; align-items:center; gap:8px;">' +
                         '<div style="width:20px; height:20px; border-radius:4px; background:' + (isImg ? '#3b82f6' : '#ef4444') + '; display:flex; align-items:center; justify-content:center; font-size:0.55rem; font-weight:800; color:#fff;">' + ext + '</div>' +
                         '<div style="flex:1; min-width:0;">' +
@@ -915,13 +940,13 @@ function renderModuleAssessmentList() {
                             '<div style="font-size:0.65rem; color:#888;">' + sizeMB + ' MB</div>' +
                         '</div>' +
                     '</div>' +
-                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:8px; right:8px; width:24px; height:24px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.7rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;">✕</button>' +
+                    '<button onclick="event.stopPropagation(); deleteModuleFile(' + f.id + ')" style="position:absolute; top:8px; right:8px; width:24px; height:24px; background:rgba(239,68,68,0.95); border:2px solid #fff; border-radius:50%; color:#fff; font-size:0.7rem; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>' +
                 '</div>';
             });
             filesHTML += '</div>';
         } else {
             filesHTML = '<div style="margin-top:12px; padding:14px; background:rgba(255,255,255,0.02); border:1px dashed #262626; border-radius:10px; display:flex; align-items:center; gap:10px;">' +
-                '<span style="font-size:1.2rem; opacity:0.4;">☁️</span>' +
+                '<span style="font-size:1.2rem; opacity:0.4;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#cloud"></use></svg></span>' +
                 '<span style="font-size:0.75rem; color:#666;">No scope or materials uploaded yet.</span>' +
             '</div>';
         }
@@ -929,10 +954,10 @@ function renderModuleAssessmentList() {
         html += '<div style="background:#141414; border:1px solid #1f1f1f; border-left:3px solid ' + color + '; border-radius:12px; padding:16px 18px; margin-bottom:12px; width: 100%; box-sizing: border-box;">' +
             '<div style="display:flex; justify-content:flex-start; align-items:center; gap:16px; flex-wrap:wrap;">' +
                 '<div style="display:flex; align-items:center; gap:12px;">' +
-                    '<div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:1rem;">📝</div>' +
+                    '<div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-size:1rem;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></div>' +
                     '<div>' +
                         '<div style="font-weight:700; color:#f5f5f5; font-size:0.95rem;">' + (e.title || 'Assessment') + '</div>' +
-                        '<div style="font-size:0.7rem; color:#888; margin-top:2px;">📅 ' + dateStr + ' at ' + timeStr + '</div>' +
+                        '<div style="font-size:0.7rem; color:#888; margin-top:2px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calendar"></use></svg> ' + dateStr + ' at ' + timeStr + '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
@@ -941,7 +966,7 @@ function renderModuleAssessmentList() {
                 '</div>' +
             '</div>' +
             '<div style="display:flex; align-items:center; gap:8px; margin-top:16px; margin-bottom: 8px;">' +
-                '<span style="font-size:1rem;">📎</span>' +
+                '<span style="font-size:1rem;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#paperclip"></use></svg></span>' +
                 '<span style="font-size:0.68rem; font-weight:700; color:#888; letter-spacing:0.05em; text-transform:uppercase;">Scope & Materials</span>' +
             '</div>' +
             filesHTML +
@@ -986,15 +1011,15 @@ window.uploadScopeFor = function(moduleCode, eventId) {
 async function handleScopeFile(file, moduleCode, eventId) {
     const isPdf = file.type === 'application/pdf';
     const isImage = file.type.startsWith('image/');
-    if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
-    if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
+    if (!isPdf && !isImage) return alert('Only PDF or image files are allowed.');
+    if (file.size > 3 * 1024 * 1024) return alert('File is too large. Maximum size is 3 MB.');
     const reader = new FileReader();
     reader.onload = async (e) => {
         pdfFiles.push({ id: Date.now(), name: file.name, module: moduleCode, eventId: eventId, type: file.type, size: file.size, data: e.target.result, uploadedAt: new Date().toISOString() });
         await savePdfs();
         renderModuleViewer();
         renderAssessmentsPage();
-        alert('✅ Uploaded for this assessment!');
+        alert('File uploaded for this assessment.');
     };
     reader.readAsDataURL(file);
 }
@@ -1013,14 +1038,14 @@ window.uploadModuleFile = function(moduleCode) {
 async function handleModuleFile(file, moduleCode) {
     const isPdf = file.type === 'application/pdf';
     const isImage = file.type.startsWith('image/');
-    if (!isPdf && !isImage) return alert('⚠️ Only PDF or image files allowed');
-    if (file.size > 3 * 1024 * 1024) return alert('⚠️ File too big (max 3MB)');
+    if (!isPdf && !isImage) return alert('Only PDF or image files are allowed.');
+    if (file.size > 3 * 1024 * 1024) return alert('File is too large. Maximum size is 3 MB.');
     const reader = new FileReader();
     reader.onload = async (e) => {
         pdfFiles.push({ id: Date.now(), name: file.name, module: moduleCode, type: file.type, size: file.size, data: e.target.result, uploadedAt: new Date().toISOString() });
         await savePdfs();
         renderAssessmentsPage();
-        alert('✅ File uploaded to ' + moduleCode);
+        alert('File uploaded to ' + moduleCode + '.');
     };
     reader.readAsDataURL(file);
 }
@@ -1189,8 +1214,8 @@ function renderModalList(list, emptyMessage) {
                 '<div style="color:#888; font-size:0.72rem; margin-top:4px;">' + (e.module || 'General') + ' · ' + dateStr + ' at ' + timeStr + '</div>' +
             '</div>' +
             '<div style="font-size:0.7rem; font-weight:700; color:' + color + '; background:color-mix(in srgb, ' + color + ' 15%, transparent); padding:5px 14px; border-radius:50px; border:1px solid color-mix(in srgb, ' + color + ' 30%, transparent);">' + tag + '</div>' +
-            '<button onclick="editCountdown(' + e.id + '); closeCompletedModal();" style="background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); color:#ff8c00; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700; margin-right:4px;">✎</button>' +
-            '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;">✕</button>' +
+            '<button onclick="editCountdown(' + e.id + '); closeCompletedModal();" style="background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); color:#ff8c00; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700; margin-right:4px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>' +
+            '<button onclick="deleteEvent(' + e.id + '); closeCompletedModal();" style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0; font-weight:700;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>' +
         '</div>';
     });
     return html;
@@ -1202,10 +1227,10 @@ window.openTotalModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-    if (title) title.textContent = '📝 All Assessments';
+    if (title) title.textContent = 'All Assessments';
     if (sub) sub.textContent = 'Every single deadline across your account';
     const all = events.filter(e => e.module && e.module !== 'General').sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-    list.innerHTML = renderModalList(all, '🎉 No assessments yet.');
+    list.innerHTML = renderModalList(all, '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> No assessments yet.');
     modal.style.display = 'block';
 };
 
@@ -1215,11 +1240,11 @@ window.openUpcomingModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-    if (title) title.textContent = '⏰ Upcoming Assessments';
+    if (title) title.textContent = 'Upcoming Assessments';
     if (sub) sub.textContent = 'Deadlines coming up, sorted by date';
     const now = Date.now();
     const upcoming = events.filter(e => e.module && e.module !== 'General' && new Date(e.deadline).getTime() > now).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-    list.innerHTML = renderModalList(upcoming, '🎉 No upcoming deadlines.');
+    list.innerHTML = renderModalList(upcoming, '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> No upcoming deadlines.');
     modal.style.display = 'block';
 };
 
@@ -1229,9 +1254,9 @@ window.openOverdueModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-    if (title) title.textContent = '⚠️ Overdue Assessments';
+    if (title) title.textContent = 'Overdue Assessments';
     if (sub) sub.textContent = 'Deadlines that need attention';
-    list.innerHTML = renderModalList([], '🎉 You have no overdue assessments!');
+    list.innerHTML = renderModalList([], '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> You have no overdue assessments!');
     modal.style.display = 'block';
 };
 
@@ -1241,11 +1266,11 @@ window.openCompletedModal = function() {
     const title = document.getElementById('modalTitle');
     const sub = document.getElementById('modalSubtitle');
     if (!modal || !list) return;
-    if (title) title.textContent = '✅ Completed Deadlines';
+    if (title) title.textContent = 'Completed Deadlines';
     if (sub) sub.textContent = 'All the assessments you have finished';
     const now = Date.now();
     const completed = events.filter(function(e) { return e.module && e.module !== 'General' && new Date(e.deadline).getTime() <= now; }).sort(function(a, b) { return new Date(b.deadline) - new Date(a.deadline); });
-    list.innerHTML = renderModalList(completed, '🎉 No completed deadlines yet.');
+    list.innerHTML = renderModalList(completed, '<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> No completed deadlines yet.');
     modal.style.display = 'block';
 };
 
@@ -1289,7 +1314,7 @@ document.addEventListener('keydown', function(e) {
     }
 })();
 
-console.log('👑 Golden Plan loaded!');
+console.log('Golden Plan loaded.');
 
 window.zoomCountdown = function(id) {
     const e = events.find(ev => ev.id === id);
@@ -1393,7 +1418,7 @@ window.saveCountdownEdit = async function() {
     renderFullCountdowns();
     renderUpcoming();
     renderDashboard();
-    alert('✅ Countdown updated');
+    alert('Countdown updated.');
 };
 
 window.editModule = function(id) {
@@ -1428,7 +1453,7 @@ window.saveModuleEdit = async function() {
     renderModules();
     renderModulesList();
     renderDashboard();
-    alert('✅ Module updated');
+    alert('Module updated.');
 };
 
 function makeFlip() {
@@ -1681,7 +1706,7 @@ function renderCalendar() {
                     <div class="cal-event-module">${e.module || 'General'}</div>
                 </div>
                 <div class="cal-event-check">
-                    ${isCompleted ? '<span style="color:#ef4444; background:#1a1a1a; padding:2px 6px; border-radius:4px; font-size:0.8rem;">✓</span>' : '☐'}
+                    ${isCompleted ? iconMarkup('check') : iconMarkup('square')}
                 </div>
             </div>
         `;
@@ -1912,10 +1937,15 @@ window.changeSchoolMonth = function(dir) {
 (function() {
     const savedTheme = localStorage.getItem('goldenPlanTheme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = savedTheme === 'dark' ? '#111318' : '#f4f4f5';
 
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('themeToggleBtn');
-        if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        if (btn) {
+            btn.innerHTML = iconMarkup(savedTheme === 'dark' ? 'sun' : 'moon');
+            btn.setAttribute('aria-label', savedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        }
     });
 })();
 
@@ -1926,8 +1956,14 @@ window.toggleTheme = function() {
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('goldenPlanTheme', newTheme);
 
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = newTheme === 'dark' ? '#111318' : '#f4f4f5';
+
     const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    if (btn) {
+        btn.innerHTML = iconMarkup(newTheme === 'dark' ? 'sun' : 'moon');
+        btn.setAttribute('aria-label', newTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    }
 };
 
 window.forceThemeToggle = window.toggleTheme;
