@@ -6,20 +6,12 @@
 <title>Golden Plan</title>
 
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#ff8c00">
-<link rel="stylesheet" href="style.css?v=1000">
-<script type="module" src="script.js?v=1000"></script>
-<style>
-    body.light-mode { background-color: #f4f4f5 !important; color: #18181b !important; }
-    body.light-mode .app, body.light-mode .main-area, body.light-mode .content { background-color: #f4f4f5 !important; color: #18181b !important; }
-    body.light-mode .sidebar, body.light-mode .topbar, body.light-mode .bottom-bar, body.light-mode .panel { background-color: #ffffff !important; border-color: #e4e4e7 !important; color: #18181b !important; }
-    body.light-mode h1, body.light-mode h2, body.light-mode h3, body.light-mode .panel-title, body.light-mode .nav-item, body.light-mode .cal-day-name { color: #18181b !important; }
-    body.light-mode .nav-item:hover { background-color: #f4f4f5 !important; }
-    body.light-mode input, body.light-mode select, body.light-mode textarea { background-color: #f9f9fa !important; color: #18181b !important; border-color: #d4d4d8 !important; }
-    body.light-mode .module-card, body.light-mode .countdown-card, body.light-mode .countdown-mini { color: #ffffff !important; }
-</style>
+<meta name="theme-color" content="#111318">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="script.js"></script>
 </head>
 <body>
 
@@ -32,23 +24,23 @@
 <div class="auth-box">
 <div class="auth-logo">
 <div id="safariWarning" style="display:none; background:rgba(255,140,0,0.1); border:1px solid rgba(255,140,0,0.3); border-radius:12px; padding:14px 18px; margin-bottom:20px; font-size:0.8rem; color:#ff8c00; text-align:left; line-height:1.6;">
-    <strong>⚠️ Safari users:</strong> Google sign-in may not work on Safari due to iOS restrictions. If sign-in fails, please open this page in <strong>Chrome</strong> instead.
+    <strong><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg> Safari users:</strong> Google sign-in may not work on Safari due to iOS restrictions. If sign-in fails, please open this page in <strong>Chrome</strong> instead.
 </div>   
-<h1>👑 GOLDEN PLAN</h1>
+<h1><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#crown"></use></svg> GOLDEN PLAN</h1>
 <p>Academic Command Center</p>
 </div>
 <button id="googleSignInBtn" class="google-btn">
 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
 Sign In with Google
 </button>
-<p class="auth-hint">🔐 Sign in to sync your academic data across all devices.</p>
+<p class="auth-hint"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Sign in to sync your academic data across all devices.</p>
 </div>
 </div>
 
 <div id="app" class="app" style="display:none;">
 <aside class="sidebar">
 <div class="sidebar-logo">
-<span class="crown">👑</span>
+<span class="crown"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#crown"></use></svg></span>
 <div>
 <h2>GOLDEN PLAN</h2>
 <small>Academic Command Center</small>
@@ -57,48 +49,48 @@ Sign In with Google
 
 <div class="nav-section">
 <div class="nav-section-title">Main</div>
-<button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)"><span class="nav-icon">🏠</span> Dashboard</button>
+<button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#home"></use></svg></span> Dashboard</button>
 </div>
 
 <div class="nav-section">
 <div class="nav-section-title">Academics</div>
-<button class="nav-item" data-view="modules" onclick="switchView('modules', this)"><span class="nav-icon">📚</span> Modules</button>
-<button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)"><span class="nav-icon">📝</span> Assessments</button>
-<button class="nav-item" data-view="marks" onclick="switchView('marks', this)"><span class="nav-icon">📊</span> Marks</button>
-<button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)"><span class="nav-icon">🧮</span> Grade Calculator</button>
-<button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)"><span class="nav-icon">✅</span> Exam Eligibility</button>
+<button class="nav-item" data-view="modules" onclick="switchView('modules', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></span> Modules</button>
+<button class="nav-item" data-view="assessments" onclick="switchView('assessments', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></span> Assessments</button>
+<button class="nav-item" data-view="marks" onclick="switchView('marks', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg></span> Marks</button>
+<button class="nav-item" data-view="gradecalc" onclick="switchView('gradecalc', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calculator"></use></svg></span> Grade Calculator</button>
+<button class="nav-item" data-view="examelig" onclick="switchView('examelig', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg></span> Exam Eligibility</button>
 </div>
 
 <div class="nav-section">
 <div class="nav-section-title">Planner</div>
-<button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)"><span class="nav-icon">📅</span> My Calendar</button>
-<button class="nav-item" data-view="school-calendar" onclick="switchView('school-calendar', this)"><span class="nav-icon">🏫</span> School Calendar</button>
-<button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)"><span class="nav-icon">⏳</span> Countdowns</button>
-<button class="nav-item" data-view="general" onclick="switchView('general', this)"><span class="nav-icon">🌐</span> General</button>
-<button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)"><span class="nav-icon">📖</span> Study Plan</button>
+<button class="nav-item" data-view="calendar" onclick="switchView('calendar', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calendar"></use></svg></span> My Calendar</button>
+<button class="nav-item" data-view="school-calendar" onclick="switchView('school-calendar', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#building"></use></svg></span> School Calendar</button>
+<button class="nav-item" data-view="countdowns" onclick="switchView('countdowns', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#hourglass"></use></svg></span> Countdowns</button>
+<button class="nav-item" data-view="general" onclick="switchView('general', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#globe"></use></svg></span> General</button>
+<button class="nav-item" data-view="studyplan" onclick="switchView('studyplan', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></span> Study Plan</button>
 </div>
 
 <div class="nav-section">
 <div class="nav-section-title">Personal</div>
-<button class="nav-item" data-view="goals" onclick="switchView('goals', this)"><span class="nav-icon">🎯</span> Goals</button>
-<button class="nav-item" data-view="projects" onclick="switchView('projects', this)"><span class="nav-icon">💻</span> Projects</button>
-<button class="nav-item" data-view="habits" onclick="switchView('habits', this)"><span class="nav-icon">🔁</span> Habits</button>
+<button class="nav-item" data-view="goals" onclick="switchView('goals', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#target"></use></svg></span> Goals</button>
+<button class="nav-item" data-view="projects" onclick="switchView('projects', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#laptop"></use></svg></span> Projects</button>
+<button class="nav-item" data-view="habits" onclick="switchView('habits', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#repeat"></use></svg></span> Habits</button>
 </div>
 
 <div class="nav-section">
 <div class="nav-section-title">Tools</div>
-<button class="nav-item" data-view="notes" onclick="switchView('notes', this)"><span class="nav-icon">📝</span> Notes</button>
-<button class="nav-item" data-view="resources" onclick="switchView('resources', this)"><span class="nav-icon">📚</span> Resources</button>
+<button class="nav-item" data-view="notes" onclick="switchView('notes', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></span> Notes</button>
+<button class="nav-item" data-view="resources" onclick="switchView('resources', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></span> Resources</button>
 </div>
 
 <div class="nav-section" id="adminNavBtn" style="display:none;">
 <div class="nav-section-title">Admin</div>
-<button class="nav-item" data-view="admin" onclick="switchView('admin', this)"><span class="nav-icon">👥</span> Users</button>
+<button class="nav-item" data-view="admin" onclick="switchView('admin', this)"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#users"></use></svg></span> Users</button>
 </div>
 
 <div class="sidebar-footer">
 <div class="golden-focus">
-<div class="icon">👑</div>
+<div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#crown"></use></svg></div>
 <div class="title">GOLDEN FOCUS</div>
 <div class="quote">"Discipline today, freedom tomorrow."</div>
 </div>
@@ -119,7 +111,7 @@ Sign In with Google
     </div>
     
     <div style="display: flex; gap: 12px; align-items: center; grid-column: 3; justify-self: end;">
-        <button id="themeToggleBtn" onclick="toggleTheme()" style="font-size: 1.4rem; cursor: pointer; background: transparent; border: none; padding: 5px; outline: none;">☀️</button>
+        <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Switch to light theme" title="Switch theme" style="font-size: 1.4rem; cursor: pointer; background: transparent; border: none; padding: 5px;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#sun"></use></svg></button>
         <button class="logout-mini" onclick="handleLogout()">LOGOUT</button>
     </div>
 </div>
@@ -131,12 +123,12 @@ Sign In with Google
 <div class="dashboard-grid">
 <div class="left-col">
 <div class="panel">
-<div class="panel-title">📊 Academic Overview</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg> Academic Overview</div>
 <div class="modules-row" id="modulesRow"><p style="color:#666;padding:20px;">Loading...</p></div>
 </div>
 
 <div class="panel">
-<div class="panel-title">📝 Assessments Overview</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg> Assessments Overview</div>
 
 <div class="ab-controls" style="margin-bottom:16px;">
   <div class="ab-tabs">
@@ -145,7 +137,7 @@ Sign In with Google
     <button class="ab-tab" data-ab-tab="completed" onclick="setABTab('completed')">Completed</button>
   </div>
   <div class="ab-search" style="flex:1;">
-    <span>🔍</span>
+    <span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#search"></use></svg></span>
     <input type="text" id="abSearchInput" placeholder="Search..." oninput="renderABList()">
   </div>
 </div>
@@ -156,16 +148,16 @@ Sign In with Google
 </div>
 <div class="right-col">
 <div class="panel">
-<div class="panel-title">⏳ Upcoming Countdowns</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#hourglass"></use></svg> Upcoming Countdowns</div>
 <div id="upcomingCountdowns"><p style="color:#666;font-size:0.8rem;">No upcoming deadlines</p></div>
 </div>
 <div class="panel">
-<div class="panel-title">⚡ Quick Actions</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#zap"></use></svg> Quick Actions</div>
 <div class="quick-actions">
-<div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))"><span class="qa-icon">⏳</span>Add<br>Countdown</div>
-<div class="quick-action" onclick="switchView('modules', document.querySelector('[data-view=modules]'))"><span class="qa-icon">📚</span>Add<br>Module</div>
-<div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))"><span class="qa-icon">🎯</span>Add<br>Goal</div>
-<div class="quick-action" onclick="switchView('notes', document.querySelector('[data-view=notes]'))"><span class="qa-icon">📝</span>Add<br>Note</div>
+<div class="quick-action" onclick="switchView('countdowns', document.querySelector('[data-view=countdowns]'))"><span class="qa-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#hourglass"></use></svg></span>Add<br>Countdown</div>
+<div class="quick-action" onclick="switchView('modules', document.querySelector('[data-view=modules]'))"><span class="qa-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></span>Add<br>Module</div>
+<div class="quick-action" onclick="switchView('goals', document.querySelector('[data-view=goals]'))"><span class="qa-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#target"></use></svg></span>Add<br>Goal</div>
+<div class="quick-action" onclick="switchView('notes', document.querySelector('[data-view=notes]'))"><span class="qa-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></span>Add<br>Note</div>
 </div>
 </div>
 </div>
@@ -176,13 +168,13 @@ Sign In with Google
 <div class="view" id="view-modules">
 <div class="panel" style="margin-bottom:20px;">
 <button type="button" onclick="toggleModuleForm()" style="width:100%;background:transparent;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;text-align:left;">
-<span class="panel-title" style="margin:0;color:#999;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">➕ Add New Module</span>
+<span class="panel-title" style="margin:0;color:#999;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg> Add New Module</span>
 <span id="moduleFormArrow" style="color:#ff8c00;font-size:1rem;transition:transform 0.3s;display:inline-block;">▼</span>
 </button>
 
 <div id="moduleFormBody" style="display:none;margin-top:20px;">
 <div style="margin-bottom:16px;">
-<label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">📚 Pick From Your Course</label>
+<label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg> Pick From Your Course</label>
 <select id="presetModule" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;font-size:0.9rem;outline:none;">
 <option value="">-- Select a module --</option>
 <option value="CMPG172|Computer Programming 2">CMPG172 — Computer Programming 2</option>
@@ -192,7 +184,7 @@ Sign In with Google
 <option value="APPM172|Applied Mathematics">APPM172 — Applied Mathematics</option>
 <option value="STTN111|Statistics for Science">STTN111 — Statistics for Science</option>
 <option value="NPHY172|Physics for Informatics">NPHY172 — Physics for Informatics</option>
-<option value="CUSTOM">✏️ Custom module</option>
+<option value="CUSTOM"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg> Custom module</option>
 </select>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
@@ -218,12 +210,12 @@ Sign In with Google
 <input type="color" id="moduleColor" value="#ff8c00" style="width:100%;padding:6px;height:48px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;cursor:pointer;">
 </div>
 </div>
-<button id="addModuleBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Module</button>
+<button id="addModuleBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg> Add Module</button>
 </div>
 </div>
 
 <div class="panel" style="margin-top:20px;">
-    <div class="panel-title">📚 My Modules</div>
+    <div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg> My Modules</div>
     <div id="modulesList" class="modules-row"></div>
 </div>
 
@@ -233,7 +225,7 @@ Sign In with Google
 <div class="view" id="view-countdowns">
 <div class="panel" style="margin-bottom:20px;">
 <button type="button" onclick="toggleCountdownForm()" style="width:100%;background:transparent;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;text-align:left;">
-<span class="panel-title" style="margin:0;color:#999;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">➕ Add New Countdown</span>
+<span class="panel-title" style="margin:0;color:#999;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg> Add New Countdown</span>
 <span id="cdFormArrow" style="color:#ff8c00;font-size:1rem;transition:transform 0.3s;display:inline-block;">▼</span>
 </button>
 <div id="countdownFormBody" style="display:none;margin-top:20px;">
@@ -254,15 +246,15 @@ Sign In with Google
 <label style="display:block;color:#c5c5c5;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-transform:uppercase;">Consequence</label>
 <input type="text" id="cdConsequence" placeholder="e.g., Fail the module" style="width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #262626;border-radius:10px;color:#fff;outline:none;">
 </div>
-<button id="addCountdownBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;">➕ Add Countdown</button>
+<button id="addCountdownBtn" style="padding:14px 32px;background:#ff8c00;border:none;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg> Add Countdown</button>
 </div>
 </div>
 <div class="panel" style="margin-bottom:20px;">
-<div class="panel-title">⏳ Active Countdowns</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#hourglass"></use></svg> Active Countdowns</div>
 <div id="fullCountdownsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;"><p style="color:#888;padding:20px;">No active countdowns.</p></div>
 </div>
 <div class="panel">
-<div class="panel-title" style="cursor:pointer;" onclick="toggleHistory()">📜 History (Past Deadlines) <span id="historyArrow">▼</span></div>
+<div class="panel-title" style="cursor:pointer;" onclick="toggleHistory()"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#scroll"></use></svg> History (Past Deadlines) <span id="historyArrow">▼</span></div>
 <div id="historyList" style="display:none;flex-direction:column;gap:10px;margin-top:16px;"><p style="color:#888;padding:20px;">No past deadlines yet.</p></div>
 </div>
 </div>
@@ -270,7 +262,7 @@ Sign In with Google
 <!-- GENERAL VIEW -->
 <div class="view" id="view-general">
     <div class="panel">
-        <div class="panel-title">🌐 General Tasks</div>
+        <div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#globe"></use></svg> General Tasks</div>
         <div id="generalTasksList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;"></div>
     </div>
 </div>
@@ -278,7 +270,7 @@ Sign In with Google
 <!-- EXAM ELIGIBILITY -->
 <div class="view" id="view-examelig">
 <div class="panel">
-<div class="panel-title">✅ Exam Eligibility</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Exam Eligibility</div>
 <div id="examEligListFull"><p style="color:#888;padding:20px;">Add modules first.</p></div>
 </div>
 </div>
@@ -288,14 +280,14 @@ Sign In with Google
 
 <div class="assessment-header">
 <div>
-<h2 class="assess-page-title">📝 Assessments</h2>
+<h2 class="assess-page-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg> Assessments</h2>
 <p class="assess-page-subtitle">Track your assessments, upload study materials and stay on top of your modules.</p>
 </div>
 </div>
 
 <div class="assess-stats-grid">
     <div class="assess-stat-card clickable" id="totalCardBtn" onclick="openTotalModal()" style="--stat-color:#ff8c00;">
-        <div class="stat-icon-wrap">📋</div>
+        <div class="stat-icon-wrap"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#clipboard"></use></svg></div>
         <div>
             <div class="stat-label">Total Assessments</div>
             <div class="stat-number" id="statTotal">0</div>
@@ -305,7 +297,7 @@ Sign In with Google
     </div>
     
     <div class="assess-stat-card clickable" id="upcomingCardBtn" onclick="openUpcomingModal()" style="--stat-color:#3b82f6;">
-        <div class="stat-icon-wrap">⏰</div>
+        <div class="stat-icon-wrap"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#clock"></use></svg></div>
         <div>
             <div class="stat-label">Upcoming</div>
             <div class="stat-number" id="statUpcoming">0</div>
@@ -315,7 +307,7 @@ Sign In with Google
     </div>
     
     <div class="assess-stat-card clickable" id="overdueCardBtn" onclick="openOverdueModal()" style="--stat-color:#ef4444;">
-        <div class="stat-icon-wrap">⚠️</div>
+        <div class="stat-icon-wrap"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#alert"></use></svg></div>
         <div>
             <div class="stat-label">Overdue</div>
             <div class="stat-number" id="statOverdue">0</div>
@@ -325,7 +317,7 @@ Sign In with Google
     </div>
     
     <div class="assess-stat-card clickable" id="completedCardBtn" onclick="openCompletedModal()" style="--stat-color:#22c55e;">
-        <div class="stat-icon-wrap">✅</div>
+        <div class="stat-icon-wrap"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg></div>
         <div>
             <div class="stat-label">Completed</div>
             <div class="stat-number" id="statCompleted">0</div>
@@ -348,25 +340,25 @@ Sign In with Google
 </div>
 
 <!-- PLACEHOLDERS -->
-<div class="view" id="view-marks"><div class="coming-soon"><div class="icon">📊</div><h2>Marks</h2><p>Coming soon</p></div></div>
-<div class="view" id="view-gradecalc"><div class="coming-soon"><div class="icon">🧮</div><h2>Grade Calculator</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-marks"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg></div><h2>Marks</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-gradecalc"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#calculator"></use></svg></div><h2>Grade Calculator</h2><p>Coming soon</p></div></div>
 <div class="view" id="view-calendar"></div>
 <div class="view" id="view-school-calendar"></div>
-<div class="view" id="view-studyplan"><div class="coming-soon"><div class="icon">📖</div><h2>Study Plan</h2><p>Coming soon</p></div></div>
-<div class="view" id="view-goals"><div class="coming-soon"><div class="icon">🎯</div><h2>Goals</h2><p>Coming soon</p></div></div>
-<div class="view" id="view-projects"><div class="coming-soon"><div class="icon">💻</div><h2>Projects</h2><p>Coming soon</p></div></div>
-<div class="view" id="view-habits"><div class="coming-soon"><div class="icon">🔁</div><h2>Habits</h2><p>Coming soon</p></div></div>
-<div class="view" id="view-notes"><div class="coming-soon"><div class="icon">📝</div><h2>Notes</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-studyplan"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#book-open"></use></svg></div><h2>Study Plan</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-goals"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#target"></use></svg></div><h2>Goals</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-projects"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#laptop"></use></svg></div><h2>Projects</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-habits"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#repeat"></use></svg></div><h2>Habits</h2><p>Coming soon</p></div></div>
+<div class="view" id="view-notes"><div class="coming-soon"><div class="icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></div><h2>Notes</h2><p>Coming soon</p></div></div>
 
 <!-- ADMIN -->
 <div class="view" id="view-admin">
 <div class="panel" style="margin-bottom:20px;">
-<div class="panel-title">👥 User Statistics</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#users"></use></svg> User Statistics</div>
 <div id="adminStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
 </div>
 <div class="panel" style="margin-bottom:20px;">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-<div class="panel-title" style="margin:0;">📊 User Activity Over Time</div>
+<div class="panel-title" style="margin:0;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg> User Activity Over Time</div>
 <div style="display:flex;gap:8px;">
 <button id="chartBtnDays" onclick="setChartRange('days')" class="chart-tab active">Days</button>
 <button id="chartBtnWeeks" onclick="setChartRange('weeks')" class="chart-tab">Weeks</button>
@@ -377,7 +369,7 @@ Sign In with Google
 <div id="userActivityLabels" style="display:flex;gap:8px;padding:8px 0;overflow-x:auto;"></div>
 </div>
 <div class="panel">
-<div class="panel-title">📋 All Users Who Signed In</div>
+<div class="panel-title"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#clipboard"></use></svg> All Users Who Signed In</div>
 <div id="adminUserList"><p style="color:#888;padding:20px;">Loading...</p></div>
 </div>
 </div>
@@ -386,7 +378,7 @@ Sign In with Google
 
 <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
-<div id="fileViewerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgb(199, 195, 195); z-index:10001; padding:24px;">
+<div id="fileViewerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(10, 10, 10, 0.96); z-index:10001; padding:24px;">
 <div style="max-width:1100px; margin:0 auto; height:100%; display:flex; flex-direction:column;">
 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #1f1f1f; margin-bottom:16px;">
 <div>
@@ -394,8 +386,8 @@ Sign In with Google
 <div id="viewerFileModule" style="font-size:0.75rem; color:#888; margin-top:2px;">Module</div>
 </div>
 <div style="display:flex; gap:12px;">
-<a id="viewerDownloadBtn" href="#" download style="padding:10px 18px; background:#ff8c00; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.8rem;">⬇ Download</a>
-<button onclick="closeFileViewer()" style="padding:10px 18px; background:#1a1a1a; border:1px solid #262626; color:#ccc; border-radius:8px; font-weight:600; font-size:0.8rem; cursor:pointer;">✕ Close</button>
+<a id="viewerDownloadBtn" href="#" download style="padding:10px 18px; background:#ff8c00; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.8rem;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg> Download</a>
+<button onclick="closeFileViewer()" style="padding:10px 18px; background:#1a1a1a; border:1px solid #262626; color:#ccc; border-radius:8px; font-weight:600; font-size:0.8rem; cursor:pointer;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg> Close</button>
 </div>
 </div>
 <div id="viewerContent" style="flex:1; overflow:auto; border-radius:12px; background:#0a0a0a; display:flex; align-items:center; justify-content:center;"></div>
@@ -404,13 +396,13 @@ Sign In with Google
 
 <div class="bottom-bar">
 <div class="bottom-steps">
-<div class="bottom-step"><span class="bs-icon">📝</span><div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div></div>
+<div class="bottom-step"><span class="bs-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#notebook-pen"></use></svg></span><div class="bs-label"><strong>Plan</strong><span>Know what to do</span></div></div>
 <span style="color:#333;">→</span>
-<div class="bottom-step"><span class="bs-icon">🎯</span><div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div></div>
+<div class="bottom-step"><span class="bs-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#target"></use></svg></span><div class="bs-label"><strong>Focus</strong><span>Do it with discipline</span></div></div>
 <span style="color:#333;">→</span>
-<div class="bottom-step"><span class="bs-icon">📊</span><div class="bs-label"><strong>Track</strong><span>Measure progress</span></div></div>
+<div class="bottom-step"><span class="bs-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#chart"></use></svg></span><div class="bs-label"><strong>Track</strong><span>Measure progress</span></div></div>
 <span style="color:#333;">→</span>
-<div class="bottom-step"><span class="bs-icon">🏆</span><div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div></div>
+<div class="bottom-step"><span class="bs-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#trophy"></use></svg></span><div class="bs-label"><strong>Achieve</strong><span>Reach your goals</span></div></div>
 </div>
 <div class="bottom-quote">"The more you sweat in peace, the less you bleed in war."</div>
 </div>
@@ -422,10 +414,10 @@ Sign In with Google
     <div style="max-width:700px; margin:0 auto; background:#141414; border:1px solid #1f1f1f; border-radius:20px; padding:28px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #1f1f1f;">
             <div>
-                <div id="modalTitle" style="font-size:1.2rem; font-weight:700; color:#f5f5f5;">✅ Completed Deadlines</div>
+                <div id="modalTitle" style="font-size:1.2rem; font-weight:700; color:#f5f5f5;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#check"></use></svg> Completed Deadlines</div>
                 <div id="modalSubtitle" style="font-size:0.75rem; color:#888; margin-top:4px;">All the assessments you've finished</div>
             </div>
-            <button onclick="closeCompletedModal()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;">✕</button>
+            <button onclick="closeCompletedModal()" style="background:#1a1a1a; border:1px solid #262626; color:#ccc; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>
         </div>
         <div id="completedModalList">
             <p style="color:#888; text-align:center; padding:20px;">Loading...</p>
@@ -441,7 +433,7 @@ Sign In with Google
 
 <div id="zoomModal" class="zoom-modal" onclick="if(event.target===this)closeZoom()">
     <div class="zoom-inner">
-        <button class="zoom-close" onclick="closeZoom()">✕</button>
+        <button class="zoom-close" onclick="closeZoom()"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>
         <div class="zoom-title" id="zoomTitle">Countdown</div>
         <div class="zoom-module" id="zoomModule">General</div>
         <div class="cc-grid" id="zoomGrid" data-cd-target="">
@@ -458,7 +450,7 @@ Sign In with Google
     <div class="edit-inner">
         <div class="edit-header">
             <div class="edit-title">Edit Countdown</div>
-            <button class="edit-close" onclick="closeEditModal()">✕</button>
+            <button class="edit-close" onclick="closeEditModal()"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>
         </div>
         <input type="hidden" id="editId">
         <div class="edit-grid">
@@ -482,7 +474,7 @@ Sign In with Google
     <div class="edit-inner">
         <div class="edit-header">
             <div class="edit-title">Edit Module</div>
-            <button class="edit-close" onclick="closeEditModuleModal()">✕</button>
+            <button class="edit-close" onclick="closeEditModuleModal()"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#x"></use></svg></button>
         </div>
         <input type="hidden" id="editModId">
         <div class="edit-grid">
@@ -497,8 +489,6 @@ Sign In with Google
         </div>
     </div>
 </div>
-
-<div style="position:fixed; bottom:8px; right:8px; font-size:0.6rem; color:#444; z-index:99999;">v1000</div>
 
 </body>
 </html>
