@@ -699,6 +699,13 @@ function renderAssessmentsPage() {
         el('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
     }
 }
+// --- ADDED COLLAPSE FEATURE ---
+window.collapsedModules = window.collapsedModules || {};
+
+window.toggleModuleCollapse = function(moduleCode) {
+    window.collapsedModules[moduleCode] = !window.collapsedModules[moduleCode];
+    renderABList(); 
+};
 
 function renderABList() {
     const container = document.getElementById('abList');
@@ -730,10 +737,21 @@ function renderABList() {
         totalShown += modEvents.length;
         const color = m.color || '#ff8c00';
         const iconChar = (m.code || '?').charAt(0);
+        
+        // Check if this module is collapsed
+        const isCollapsed = window.collapsedModules[m.code] === true;
+        const bodyDisplay = isCollapsed ? 'none' : 'block';
+        const arrowRotation = isCollapsed ? '-90deg' : '0deg';
+
         html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
-            '<div class="ab-module-header"><div class="ab-module-title"><div class="ab-module-icon">' + iconChar + '</div>' +
-            '<div><div class="ab-module-code">' + m.code + '</div><div class="ab-module-name">' + (m.name || m.code) + '</div></div></div></div>' +
-            '<div class="ab-module-body">';
+            // Clickable header with arrow
+            '<div class="ab-module-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleModuleCollapse(\'' + m.code + '\')">' +
+                '<div class="ab-module-title"><div class="ab-module-icon">' + iconChar + '</div>' +
+                '<div><div class="ab-module-code">' + m.code + '</div><div class="ab-module-name">' + (m.name || m.code) + '</div></div></div>' +
+                '<div style="color:#888; font-size:1rem; transition:transform 0.3s; transform:rotate(' + arrowRotation + '); padding-right:16px;">▼</div>' +
+            '</div>' +
+            '<div class="ab-module-body" style="display:' + bodyDisplay + ';">';
+            
         modEvents.forEach(e => {
             const d = new Date(e.deadline);
             const isPast = d.getTime() <= now;
