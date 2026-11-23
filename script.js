@@ -699,12 +699,9 @@ function renderAssessmentsPage() {
         el('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
     }
 }
-
-// --- ADDED COLLAPSE FEATURE & BUG FIX ---
 window.collapsedModules = window.collapsedModules || {};
 
 window.toggleModuleCollapse = function(moduleCode) {
-    // If it's undefined, it means it's currently closed. So we open it.
     window.collapsedModules[moduleCode] = !window.collapsedModules[moduleCode];
     renderABList(); 
 };
@@ -738,24 +735,30 @@ function renderABList() {
             modEvents = modEvents.filter(e => (e.title || '').toLowerCase().includes(searchVal) || (e.module || '').toLowerCase().includes(searchVal) || (m.name || '').toLowerCase().includes(searchVal));
         }
         
-        // Allow showing modules even if they have 0 events (unless searching or filtering tabs)
         const isFiltering = abTab !== 'all' || searchVal;
         if (isFiltering && !modEvents.length) return;
 
-        totalShown += modEvents.length || 1; // count the module as shown if we get here
+        totalShown += modEvents.length || 1; 
         
         const color = m.color || '#ff8c00';
         const iconChar = (m.code || '?').charAt(0);
         
         const isCollapsed = window.collapsedModules[m.code] !== false;
         const bodyDisplay = isCollapsed ? 'none' : 'block';
-        const arrowChar = isCollapsed ? '&gt;' : '&or;'; 
+        const arrowRotation = isCollapsed ? '0deg' : '90deg';
 
         html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
             '<div class="ab-module-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding-right: 16px;" onclick="toggleModuleCollapse(\'' + m.code + '\')">' +
                 '<div class="ab-module-title"><div class="ab-module-icon">' + iconChar + '</div>' +
                 '<div><div class="ab-module-code">' + m.code + '</div><div class="ab-module-name">' + (m.name || m.code) + '</div></div></div>' +
-                '<div style="color:#888; font-size:1.1rem; font-weight:700;">' + arrowChar + '</div>' +
+                
+                // --- THE SOLID TRIANGLE ICON (MATCHES YOUR IMAGE) ---
+                '<div style="color:#888; display:flex; align-items:center; justify-content:center; width: 24px; height: 24px;">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="transition: transform 0.3s ease; transform: rotate(' + arrowRotation + ');">' +
+                        '<polygon points="5,3 19,12 5,21"></polygon>' +
+                    '</svg>' +
+                '</div>' +
+                // ----------------------------------------------------
             '</div>' +
             '<div class="ab-module-body" style="display:' + bodyDisplay + ';">';
             
