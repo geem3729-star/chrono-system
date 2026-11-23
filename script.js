@@ -699,10 +699,12 @@ function renderAssessmentsPage() {
         el('overviewRing').setAttribute('stroke-dashoffset', circ - (pct * circ));
     }
 }
-// --- ADDED COLLAPSE FEATURE ---
+
+// --- ADDED COLLAPSE FEATURE & BUG FIX ---
 window.collapsedModules = window.collapsedModules || {};
 
 window.toggleModuleCollapse = function(moduleCode) {
+    // If it's undefined, it means it's currently closed. So we open it.
     window.collapsedModules[moduleCode] = !window.collapsedModules[moduleCode];
     renderABList(); 
 };
@@ -712,10 +714,12 @@ function renderABList() {
     if (!container) return;
     const now = Date.now();
     const searchVal = (document.getElementById('abSearchInput')?.value || '').toLowerCase().trim();
+    
     if (!modules.length) {
         container.innerHTML = '<div style="text-align:center; padding:80px 20px; color:#666;"><div style="font-size:3rem; opacity:0.4; margin-bottom:12px;">📚</div><div>Add modules first to see your assessment plan.</div></div>';
         return;
     }
+    
     let html = '';
     let totalShown = 0;
     html += '<div class="ab-col-head"><div></div><div>ASSESSMENT</div><div>WEIGHT</div><div>DUE DATE</div><div>MY MARK</div><div>STATUS</div></div>';
@@ -733,61 +737,69 @@ function renderABList() {
         if (searchVal) {
             modEvents = modEvents.filter(e => (e.title || '').toLowerCase().includes(searchVal) || (e.module || '').toLowerCase().includes(searchVal) || (m.name || '').toLowerCase().includes(searchVal));
         }
-        if (!modEvents.length) return;
-        totalShown += modEvents.length;
+        
+        // Allow showing modules even if they have 0 events (unless searching or filtering tabs)
+        const isFiltering = abTab !== 'all' || searchVal;
+        if (isFiltering && !modEvents.length) return;
+
+        totalShown += modEvents.length || 1; // count the module as shown if we get here
+        
         const color = m.color || '#ff8c00';
         const iconChar = (m.code || '?').charAt(0);
         
-        // Check if this module is collapsed
-        const isCollapsed = window.collapsedModules[m.code] === true;
+        const isCollapsed = window.collapsedModules[m.code] !== false;
         const bodyDisplay = isCollapsed ? 'none' : 'block';
-        const arrowRotation = isCollapsed ? '-90deg' : '0deg';
+        const arrowChar = isCollapsed ? '&gt;' : '&or;'; 
 
         html += '<div class="ab-module-group" style="--mod-color:' + color + ';">' +
-            // Clickable header with arrow
-            '<div class="ab-module-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleModuleCollapse(\'' + m.code + '\')">' +
+            '<div class="ab-module-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding-right: 16px;" onclick="toggleModuleCollapse(\'' + m.code + '\')">' +
                 '<div class="ab-module-title"><div class="ab-module-icon">' + iconChar + '</div>' +
                 '<div><div class="ab-module-code">' + m.code + '</div><div class="ab-module-name">' + (m.name || m.code) + '</div></div></div>' +
-                '<div style="color:#888; font-size:1rem; transition:transform 0.3s; transform:rotate(' + arrowRotation + '); padding-right:16px;">▼</div>' +
+                '<div style="color:#888; font-size:1.1rem; font-weight:700;">' + arrowChar + '</div>' +
             '</div>' +
             '<div class="ab-module-body" style="display:' + bodyDisplay + ';">';
             
-        modEvents.forEach(e => {
-            const d = new Date(e.deadline);
-            const isPast = d.getTime() <= now;
-            const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            const daysLeft = Math.floor((d.getTime() - now) / 86400000);
-            const statusColor = isPast ? '#22c55e' : '#f59e0b';
-            const statusText = isPast ? 'Completed' : 'Upcoming';
-            const hasMark = Number(e.currentMark) > 0;
-            let pct = 0;
-            let progressLabel = '';
-            if (isPast) {
-                pct = hasMark ? Math.min(100, Number(e.currentMark)) : 100;
-                progressLabel = hasMark ? '✓ ' + e.currentMark + '%' : '✓ Done';
-            } else {
-                pct = Math.max(2, Math.min(100, 100 - (daysLeft / 90) * 100));
-                progressLabel = '⏱ ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
-            }
-            const markDisplay = hasMark ? e.currentMark + ' / 100' : '- / 100';
-            html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
-                '<div class="ab-row-main">' +
-                    '<div class="ab-row-icon">📄</div>' +
-                    '<div class="ab-row-info"><div class="ab-row-name">' + (e.title || 'Assessment') + '</div><div class="ab-row-sub">' + (e.module || '') + '</div></div>' +
-                    '<div class="ab-row-meta">' + (e.weight || 0) + '%</div>' +
-                    '<div class="ab-row-meta">' + dateStr + '</div>' +
-                    '<div class="ab-row-meta">' + markDisplay + '</div>' +
-                    '<div class="ab-row-status" style="background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); color:' + statusColor + '; border-color:color-mix(in srgb, ' + statusColor + ' 35%, transparent);">' + statusText + '</div>' +
-                '</div>' +
-                '<div class="ab-row-progress">' +
-                    '<div class="ab-progress-label">' + progressLabel + '</div>' +
-                    '<div class="ab-progress-bar"><div class="ab-progress-fill" style="width:' + pct + '%; background:' + (isPast ? '#22c55e' : color) + ';"></div></div>' +
-                    '<div class="ab-progress-pct">' + Math.round(pct) + '%</div>' +
-                '</div>' +
-            '</div>';
-        });
+        if (!modEvents.length) {
+            html += '<div style="padding: 16px; color: #666; font-size: 0.85rem;">No assessments added to this module yet.</div>';
+        } else {
+            modEvents.forEach(e => {
+                const d = new Date(e.deadline);
+                const isPast = d.getTime() <= now;
+                const dateStr = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                const daysLeft = Math.floor((d.getTime() - now) / 86400000);
+                const statusColor = isPast ? '#22c55e' : '#f59e0b';
+                const statusText = isPast ? 'Completed' : 'Upcoming';
+                const hasMark = Number(e.currentMark) > 0;
+                let pct = 0;
+                let progressLabel = '';
+                if (isPast) {
+                    pct = hasMark ? Math.min(100, Number(e.currentMark)) : 100;
+                    progressLabel = hasMark ? '✓ ' + e.currentMark + '%' : '✓ Done';
+                } else {
+                    pct = Math.max(2, Math.min(100, 100 - (daysLeft / 90) * 100));
+                    progressLabel = '⏱ ' + (daysLeft > 0 ? daysLeft + ' days left' : 'Today');
+                }
+                const markDisplay = hasMark ? e.currentMark + ' / 100' : '- / 100';
+                html += '<div class="ab-row" onclick="viewModuleAssessments(\'' + m.code + '\')">' +
+                    '<div class="ab-row-main">' +
+                        '<div class="ab-row-icon">📄</div>' +
+                        '<div class="ab-row-info"><div class="ab-row-name">' + (e.title || 'Assessment') + '</div><div class="ab-row-sub">' + (e.module || '') + '</div></div>' +
+                        '<div class="ab-row-meta">' + (e.weight || 0) + '%</div>' +
+                        '<div class="ab-row-meta">' + dateStr + '</div>' +
+                        '<div class="ab-row-meta">' + markDisplay + '</div>' +
+                        '<div class="ab-row-status" style="background:color-mix(in srgb, ' + statusColor + ' 15%, transparent); color:' + statusColor + '; border-color:color-mix(in srgb, ' + statusColor + ' 35%, transparent);">' + statusText + '</div>' +
+                    '</div>' +
+                    '<div class="ab-row-progress">' +
+                        '<div class="ab-progress-label">' + progressLabel + '</div>' +
+                        '<div class="ab-progress-bar"><div class="ab-progress-fill" style="width:' + pct + '%; background:' + (isPast ? '#22c55e' : color) + ';"></div></div>' +
+                        '<div class="ab-progress-pct">' + Math.round(pct) + '%</div>' +
+                    '</div>' +
+                '</div>';
+            });
+        }
         html += '</div></div>';
     });
+    
     if (!totalShown) {
         const hasAny = events.some(ev => modules.some(m => m.code === ev.module));
         const msg = hasAny ? 'Nothing matches your filter.' : 'No assessments yet. Add one on the Countdowns page and pick a module.';
@@ -797,7 +809,6 @@ function renderABList() {
     container.innerHTML = html;
 }
 window.renderABList = renderABList;
-
 let currentViewerModule = null;
 window.viewModuleAssessments = function(moduleCode) {
     currentViewerModule = moduleCode;
